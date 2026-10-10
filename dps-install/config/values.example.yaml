@@ -1,0 +1,296 @@
+# L20-12 当前 DPS 0.9 部署的公开、主机特定配置示例。
+# 只包含 Secret 名称/key 引用；对应密码、JWT、TLS 私钥和 kubeconfig 不随 Git 交付。
+# 本文件不会创建 LDAP 用户、数据库、Secret 或现有部署的身份/持久化数据。
+# 使用前核对目标主机、域名/IP、namespace、存储和 Docker DNAT NetworkPolicy。
+# 按 AGENTS.md、installstep.md 与 dps-install/prerequisites.md 安全准备私密输入。
+# 在目标环境审阅后另行准备 values.yaml；不要覆盖 L20-12 的现行 values.yaml。
+# 克隆仓库不能直接恢复现有部署，不提供一键重建保证。
+global:
+  defaultStorageClass: local-path
+  imagePullSecrets: []
+  postgresql:
+    host: 10.6.131.43
+    service:
+      ports:
+        postgresql: '15432'
+    sslMode: verify-full
+    sslRootCert: /secrets/postgresql/ca.crt
+    auth:
+      username: dps
+      database: dps
+      existingSecret: dps-postgresql
+      secretKeys:
+        passwordKey: password
+        userPasswordKey: database-password
+  database:
+    user: dps
+    names:
+      config: dps_prs_config
+      configStaged: dps_prs_config_staged
+      controller: dps_prs_controller
+  storage:
+    bucketName: dps-prs
+    s3Endpoint: ''
+    region: us-east-1
+    existingSecret: dps-prs-s3
+    accessKeyIdKey: admin_access_key_id
+    secretAccessKeyKey: admin_secret_access_key
+postgresql:
+  enabled: false
+  image:
+    repository: postgres
+    tag: '17'
+    pullPolicy: IfNotPresent
+power-steering:
+  enabled: true
+  postgresql:
+    enabled: false
+  global:
+    image:
+      tag: 2.1.0
+      pullPolicy: IfNotPresent
+    lgtm: false
+  config:
+    extraEnv: &id001
+    - name: PGSSLMODE
+      value: verify-full
+    - name: PGSSLROOTCERT
+      value: /secrets/postgresql/ca.crt
+    extraVolumes:
+    - &id002
+      name: postgresql-ca
+      secret:
+        secretName: dps-postgresql-ca
+        items:
+        - key: ca.crt
+          path: ca.crt
+    extraVolumeMounts:
+    - &id003
+      name: postgresql-ca
+      mountPath: /secrets/postgresql
+      readOnly: true
+    extraEgressRules:
+    - &id004
+      to:
+      - ipBlock:
+          cidr: 10.6.131.43/32
+      ports:
+      - port: 15432
+        protocol: TCP
+    - &id005
+      to:
+      - ipBlock:
+          cidr: 172.30.90.2/32
+      ports:
+      - port: 5432
+        protocol: TCP
+  controller:
+    cluster:
+      shadowMode: false
+      dps:
+        host: dps-server-grpc
+        port: 8080
+        tls:
+          insecure: false
+          skipVerify: false
+          caCertPath: /secrets/dps/ca.crt
+        auth:
+          enabled: true
+          secretName: dps-prs-dps-auth
+    extraEnv: *id001
+    extraVolumes:
+    - *id002
+    - name: dps-ca
+      secret:
+        secretName: dps-server-tls
+        items:
+        - key: ca.crt
+          path: ca.crt
+    extraVolumeMounts:
+    - *id003
+    - name: dps-ca
+      mountPath: /secrets/dps
+      readOnly: true
+    extraEgressRules:
+    - *id004
+    - *id005
+    - to:
+      - ipBlock:
+          cidr: 10.6.131.43/32
+      ports:
+      - port: 6443
+        protocol: TCP
+  seaweedfs:
+    enabled: true
+    master:
+      logs:
+        type: emptyDir
+    filer:
+      logs:
+        type: emptyDir
+    volume:
+      logs:
+        type: emptyDir
+    s3:
+      existingConfigSecret: dps-prs-s3
+      createBuckets:
+      - name: dps-prs
+        anonymousRead: false
+      logs:
+        type: emptyDir
+dps:
+  enabled: true
+  image:
+    repository: nvcr.io/nvidia/dps-server
+    tag: 0.9.0
+  ingress:
+    enabled: true
+    hostname: api.dps.lab
+    className: traefik
+    tlsPassthrough: true
+    traefik:
+      entryPoints:
+      - websecure
+  serverTLS:
+    transportSecurity: tls
+    existingSecret: dps-server-tls
+  auth:
+    authenticatorType: ldap
+    oidc:
+      enabled: false
+    jwt:
+      existingSecret: dps-jwt-keys
+      existingSecretKey: private-key.pem
+    auth_required_groups: dcpower-users
+  ldap:
+    enabled: true
+    serverUrl: ldaps://10.6.131.43:1636
+    bindDn: uid=dps-bind,ou=services,dc=dps,dc=lab
+    baseDn: dc=dps,dc=lab
+    userFilter: (&(objectClass=person)(uid={username}))
+    groupProfile: groupOfNames
+    groupFilter: (&(objectClass=groupOfNames)(member={userdn}))
+    groupAttribute: cn
+    defaultRole: ''
+    groupRoleMapping: dcpower-users=admin
+    bindPassword:
+      existingSecret: dps-ldap-bind
+      existingSecretKey: bind-password
+      mountSecret: true
+    certSource: file
+    tlsCaCert: /secrets/ldap/ca.crt
+    tlsClientCert: /secrets/ldap/tls.crt
+    tlsClientKey: /secrets/ldap/tls.key
+    volumeMounts:
+    - name: ldap-certs
+      mountPath: /secrets/ldap
+      readOnly: true
+    volumes:
+    - name: ldap-certs
+      projected:
+        sources:
+        - secret:
+            name: dps-ldap-ca
+            items:
+            - key: ca.crt
+              path: ca.crt
+        - secret:
+            name: dps-ldap-client-tls
+            items:
+            - key: tls.crt
+              path: tls.crt
+            - key: tls.key
+              path: tls.key
+  bcm:
+    uiEnabled: false
+    auth:
+      basic:
+        username: ''
+  nautobot:
+    enabled: false
+  monitoring:
+    enabled: false
+  credentialsStore: k8sSecret
+  k8sSecret:
+    labelSelector: app.kubernetes.io/component=bmc-credentials
+  bmcTLS:
+    caCertPath: /secrets/bmc/ca.crt
+  redfish:
+    auth:
+      method: session
+      defaultSecretName: bmc-shared-secret
+    tls:
+      transportSecurity: tls
+      insecureSkipVerify: false
+      certs:
+        caFile: /secrets/bmc/ca.crt
+  secrets:
+  - name: dps-postgresql-ca
+    secretKey: ca.crt
+    mountPath: /secrets/postgresql/ca.crt
+  - name: dps-bmc-ca
+    secretKey: ca.crt
+    mountPath: /secrets/bmc/ca.crt
+  telemetry:
+    metrics:
+      source: bmc
+  prs:
+    enabled: true
+    hostPort: http://dps-power-config.dps.svc.cluster.local:8000
+    controllerHostPort: http://dps-power-controller.dps.svc.cluster.local:8001
+    headroomPercent: -15.0
+    schedulerIntervalSeconds: 5.0
+    historyWindowSize: 0
+    predictorSafetyGapWatts: 0.0
+  excursionMitigation:
+    strategy: ''
+  cors:
+    allowedOrigins: https://ui.dps.lab
+  persistence:
+    size: 1Gi
+    storageClass: local-path
+  agent:
+    allowHandshakeFallback: false
+  grpcServiceMTLSCN:
+    nvidia.dcpower.v1.DPSAgentService:
+    - gb300-lab-agent
+  gateway:
+    enabled: false
+agent:
+  enabled: true
+  replicas: 1
+  agentID: gb300-lab-agent
+  tls:
+    transportSecurity: mtls
+    existingSecret: dps-agent-tls
+    insecureSkipVerify: false
+  capabilities:
+    zapp:
+      enabled: false
+    compliance:
+      enabled: false
+ui:
+  enabled: true
+  image:
+    repository: nvcr.io/nvidia/dps-ui
+    tag: 0.9.0
+  auth:
+    provider: dps
+  ingress:
+    enabled: true
+    hostname: ui.dps.lab
+    className: traefik
+    tls:
+    - hosts:
+      - ui.dps.lab
+      secretName: dps-ingress-tls
+    annotations:
+      traefik.ingress.kubernetes.io/router.entrypoints: websecure
+      traefik.ingress.kubernetes.io/router.tls: 'true'
+  api:
+    proxyEnabled: true
+    hostname: dps-server-http.dps.svc.cluster.local
+    port: '8000'
+    scheme: http
+  gateway:
+    enabled: false

@@ -1,0 +1,20 @@
+# Native single-node Kubernetes on the physical L20-12 host.
+node-name: l20-12
+node-ip: 10.6.131.43
+advertise-address: 10.6.131.43
+bind-address: 0.0.0.0
+https-listen-port: 6443
+flannel-iface: bond0
+cluster-cidr: 10.42.0.0/16
+service-cidr: 10.43.0.0/16
+data-dir: /raid/vince/deploy/dps-install/data/kubernetes/k3s
+default-local-storage-path: /raid/vince/deploy/dps-install/data/kubernetes/storage
+kubelet-arg:
+  - root-dir=/raid/vince/deploy/dps-install/data/kubernetes/kubelet
+resolv-conf: /run/systemd/resolve/resolv.conf
+write-kubeconfig: /raid/vince/deploy/dps-install/config/kubernetes/k3s-admin.yaml
+write-kubeconfig-mode: "0600"
+tls-san:
+  - 10.6.131.43
+  - L20-12
+  - l20-12

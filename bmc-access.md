@@ -1,0 +1,1 @@
+hardware-sim/bmc-access.md

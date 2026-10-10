@@ -1,0 +1,9 @@
+# Logical simulated GB300 power-shelf model retained from the SDK topology.
+# Each shelf is modeled as 33 kW at 95% efficiency; eight shelves per rack.
+# Register explicitly with dpsctl device upsert before topology validation/import.
+- type: PowerSupply
+  description: GB300 Power Shelf at 33000W 95 Pct Eff
+  model: PowerSupply95_33000W
+  spec:
+    maxLoadWatts: 33000
+    efficiencyFactor: 0.95

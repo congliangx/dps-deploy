@@ -1,0 +1,103 @@
+{
+  "checked_at": "2026-10-10T17:33:55.589137+08:00",
+  "scope": "Current simulated BMC direct endpoint and actual DPS Agent Pod network health; DPS Core diagnostics separately recorded",
+  "bmc_health_passed": true,
+  "service_checks": {
+    "total_checks": 12,
+    "passed_checks": 12,
+    "all_service_checks_passed": true
+  },
+  "service_report": "/raid/vince/deploy/verification/reports/bmc-service-health.json",
+  "endpoints": {
+    "checked_at": "2026-10-10T09:28:35.499132+00:00",
+    "rack_count": 4,
+    "nodes": 72,
+    "healthy_nodes": 72,
+    "failed_nodes": 0,
+    "gpu_count": 288,
+    "cpu_count": 144,
+    "rack_summary": [
+      {
+        "rack": "gb300-rack-01",
+        "nodes": 18,
+        "healthy_nodes": 18,
+        "gpu_count": 72,
+        "cpu_count": 36
+      },
+      {
+        "rack": "gb300-rack-02",
+        "nodes": 18,
+        "healthy_nodes": 18,
+        "gpu_count": 72,
+        "cpu_count": 36
+      },
+      {
+        "rack": "gb300-rack-03",
+        "nodes": 18,
+        "healthy_nodes": 18,
+        "gpu_count": 72,
+        "cpu_count": 36
+      },
+      {
+        "rack": "gb300-rack-04",
+        "nodes": 18,
+        "healthy_nodes": 18,
+        "gpu_count": 72,
+        "cpu_count": 36
+      }
+    ],
+    "tls_ca_verified": true,
+    "readyz_livez_ok_nodes": 72,
+    "system_manager_processor_chassis_health": "All observed Health=OK; State=Enabled; systems/chassis PowerState=On",
+    "power_telemetry_and_limits_valid": true,
+    "get_requests": 2232,
+    "report": "/raid/vince/deploy/verification/reports/verification-inventory.json"
+  },
+  "actual_agent_pod_network": {
+    "checked_at": "2026-10-10T17:28:49.848762+08:00",
+    "passed": true,
+    "pod": "dps-server-agent-fff897b75-gkclg",
+    "network_namespace_match": true,
+    "healthy_nodes": 72,
+    "failed_nodes": 0,
+    "tls_ca_verified": true,
+    "get_requests": 1152,
+    "report": "/raid/vince/deploy/verification/reports/dps-pod-bmc-connectivity.json"
+  },
+  "dps_core_health_diagnostics": {
+    "passed": false,
+    "topology_active": false,
+    "connection_check": {
+      "diag_msg": "Command execution failed with an error",
+      "error": {
+        "code": "INVALID_OPERATION",
+        "error": "no agent configuration available",
+        "grpc_code": 9
+      },
+      "ok": false
+    },
+    "node_status_check": {
+      "diag_msg": "Command execution failed with an error",
+      "error": {
+        "code": "SERVER_NOT_STARTED",
+        "error": "the server has not been started",
+        "grpc_code": 13
+      },
+      "ok": false
+    },
+    "interpretation": "Current inactive topology has no deployed Agent device configuration. These failures do not establish BMC unhealthiness or Core Pod downtime. Core-to-Agent-to-BMC health dispatch is not verified.",
+    "report": "/raid/vince/deploy/verification/reports/bmc-dps-health-check.json"
+  },
+  "http_methods": [
+    "GET"
+  ],
+  "bmc_power_writes": false,
+  "services_restarted": false,
+  "topology_activated": false,
+  "known_fixture_limitations": [
+    "SDK GB300 power capabilities and 4-GPU/2-CPU inventory are present, but some upstream captured fixture identity strings still identify GB200 or Generic.",
+    "This report verifies simulator inventory and reads only; it does not claim DPS integration or physical GB300 hardware validation.",
+    "Repeated serial numbers and UUID values come from shared upstream response fixtures and do not identify distinct physical devices.",
+    "Simulator credentials are accepted but not enforced; this check validates health and strict TLS, not BMC access-control enforcement."
+  ]
+}

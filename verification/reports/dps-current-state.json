@@ -1,0 +1,247 @@
+{
+  "checked_at": "2026-10-10T17:10:19.097343+08:00",
+  "context": "dps-l20-12",
+  "release": [
+    {
+      "name": "dps",
+      "namespace": "dps",
+      "revision": "5",
+      "updated": "2026-10-10 16:54:44.703198481 +0800 CST",
+      "status": "deployed",
+      "chart": "dps-0.9.0",
+      "app_version": "0.9.0"
+    }
+  ],
+  "authentication": {
+    "authenticator": "ldap",
+    "username": "dps-lab",
+    "role": "admin",
+    "endpoint": "ldaps://10.6.131.43:1636",
+    "auth_checks": {
+      "passed": 28,
+      "total": 28
+    },
+    "ldap_checks": {
+      "passed": 18,
+      "total": 18
+    },
+    "auth_checks_at": "2026-10-10T10:52:29.699349+08:00"
+  },
+  "nodes": [
+    {
+      "name": "l20-12",
+      "ready": true,
+      "kubelet_version": "v1.34.12+k3s1"
+    }
+  ],
+  "pods": [
+    {
+      "name": "dps-power-config-5f6cb4ccd4-5d6rg",
+      "phase": "Running",
+      "ready": true,
+      "restart_count": 6
+    },
+    {
+      "name": "dps-power-controller-85886794b5-dnk4k",
+      "phase": "Running",
+      "ready": true,
+      "restart_count": 0
+    },
+    {
+      "name": "dps-seaweedfs-filer-0",
+      "phase": "Running",
+      "ready": true,
+      "restart_count": 0
+    },
+    {
+      "name": "dps-seaweedfs-master-0",
+      "phase": "Running",
+      "ready": true,
+      "restart_count": 0
+    },
+    {
+      "name": "dps-seaweedfs-s3-79b44fd95b-vhwvq",
+      "phase": "Running",
+      "ready": true,
+      "restart_count": 0
+    },
+    {
+      "name": "dps-seaweedfs-volume-0",
+      "phase": "Running",
+      "ready": true,
+      "restart_count": 0
+    },
+    {
+      "name": "dps-server-0",
+      "phase": "Running",
+      "ready": true,
+      "restart_count": 0
+    },
+    {
+      "name": "dps-server-agent-fff897b75-gkclg",
+      "phase": "Running",
+      "ready": true,
+      "restart_count": 0
+    },
+    {
+      "name": "dps-ui-55f7cdc7c-gmg95",
+      "phase": "Running",
+      "ready": true,
+      "restart_count": 0
+    }
+  ],
+  "openldap": "healthy",
+  "topologies": [
+    {
+      "leaf_node_names": [
+        "gb300-r01-0001",
+        "gb300-r01-0002",
+        "gb300-r01-0003",
+        "gb300-r01-0004",
+        "gb300-r01-0005",
+        "gb300-r01-0006",
+        "gb300-r01-0007",
+        "gb300-r01-0008",
+        "gb300-r01-0009",
+        "gb300-r01-0010",
+        "gb300-r01-0011",
+        "gb300-r01-0012",
+        "gb300-r01-0013",
+        "gb300-r01-0014",
+        "gb300-r01-0015",
+        "gb300-r01-0016",
+        "gb300-r01-0017",
+        "gb300-r01-0018",
+        "gb300-r02-0001",
+        "gb300-r02-0002",
+        "gb300-r02-0003",
+        "gb300-r02-0004",
+        "gb300-r02-0005",
+        "gb300-r02-0006",
+        "gb300-r02-0007",
+        "gb300-r02-0008",
+        "gb300-r02-0009",
+        "gb300-r02-0010",
+        "gb300-r02-0011",
+        "gb300-r02-0012",
+        "gb300-r02-0013",
+        "gb300-r02-0014",
+        "gb300-r02-0015",
+        "gb300-r02-0016",
+        "gb300-r02-0017",
+        "gb300-r02-0018",
+        "gb300-r03-0001",
+        "gb300-r03-0002",
+        "gb300-r03-0003",
+        "gb300-r03-0004",
+        "gb300-r03-0005",
+        "gb300-r03-0006",
+        "gb300-r03-0007",
+        "gb300-r03-0008",
+        "gb300-r03-0009",
+        "gb300-r03-0010",
+        "gb300-r03-0011",
+        "gb300-r03-0012",
+        "gb300-r03-0013",
+        "gb300-r03-0014",
+        "gb300-r03-0015",
+        "gb300-r03-0016",
+        "gb300-r03-0017",
+        "gb300-r03-0018",
+        "gb300-r04-0001",
+        "gb300-r04-0002",
+        "gb300-r04-0003",
+        "gb300-r04-0004",
+        "gb300-r04-0005",
+        "gb300-r04-0006",
+        "gb300-r04-0007",
+        "gb300-r04-0008",
+        "gb300-r04-0009",
+        "gb300-r04-0010",
+        "gb300-r04-0011",
+        "gb300-r04-0012",
+        "gb300-r04-0013",
+        "gb300-r04-0014",
+        "gb300-r04-0015",
+        "gb300-r04-0016",
+        "gb300-r04-0017",
+        "gb300-r04-0018"
+      ],
+      "policy_bundle": "MaxLPS",
+      "topology_name": "dps-gb300-4rack"
+    }
+  ],
+  "topology_status": {
+    "diag_msg": "Success",
+    "ok": true
+  },
+  "postgresql": "healthy",
+  "settings": {
+    "global_policy_bundle": "MaxLPS",
+    "metrics_interval_seconds": "30",
+    "prs_enabled": "true",
+    "prs_headroom_percent": "-15",
+    "prs_history_window_size": "0",
+    "prs_predictor_safety_gap_watts": "0",
+    "prs_scheduler_interval_seconds": "5"
+  },
+  "prs": {
+    "enabled": true,
+    "power_steering_version": "2.1.0",
+    "seaweedfs_version": "4.18",
+    "headroom_percent": -15,
+    "scheduler_seconds": 5,
+    "domain_count": 0,
+    "verification": {
+      "passed": 35,
+      "total": 35
+    },
+    "verified_at": "2026-10-10T17:05:41.804854+08:00",
+    "s3_data_paths": [
+      "/raid/vince/deploy/dps-install/data/kubernetes/storage/pvc-3d542a34-8262-407e-9bf5-f77f4c95e8fe_dps_data-dps-dps-seaweedfs-master-0",
+      "/raid/vince/deploy/dps-install/data/kubernetes/storage/pvc-399686fe-62c5-411a-9299-665af8501b0a_dps_data-filer-dps-seaweedfs-filer-0",
+      "/raid/vince/deploy/dps-install/data/kubernetes/storage/pvc-7e83a904-58e4-46db-930b-eabf9525de26_dps_data1-dps-seaweedfs-volume-0"
+    ],
+    "database_tls": {
+      "sessions": [
+        {
+          "datname": "dps_prs_controller",
+          "client_addr": "172.30.90.1/32",
+          "usename": "dps",
+          "ssl": true,
+          "version": "TLSv1.3"
+        },
+        {
+          "datname": "dps_prs_config",
+          "client_addr": "172.30.90.1/32",
+          "usename": "dps",
+          "ssl": true,
+          "version": "TLSv1.3"
+        },
+        {
+          "datname": "dps_prs_config_staged",
+          "client_addr": "172.30.90.1/32",
+          "usename": "dps",
+          "ssl": true,
+          "version": "TLSv1.3"
+        },
+        {
+          "datname": "dps_prs_config",
+          "client_addr": "172.30.90.1/32",
+          "usename": "dps",
+          "ssl": true,
+          "version": "TLSv1.3"
+        },
+        {
+          "datname": "dps_prs_controller",
+          "client_addr": "172.30.90.1/32",
+          "usename": "dps",
+          "ssl": true,
+          "version": "TLSv1.3"
+        }
+      ],
+      "source_address_note": "Docker bridge SNAT presents 172.30.90.1 to PostgreSQL; direct Pod probes separately verify each Pod configuration."
+    },
+    "dynamic_power_control_verified": false
+  }
+}

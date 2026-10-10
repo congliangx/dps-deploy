@@ -1,0 +1,254 @@
+{
+  "updated_at": "2026-10-10T17:33:55.589137+08:00",
+  "host": "root@L20-12",
+  "work_dir": "/raid/vince/deploy",
+  "kubernetes": "Native K3s v1.34.12+k3s1 on physical node l20-12",
+  "dps_release": {
+    "name": "dps",
+    "namespace": "dps",
+    "version": "0.9.0",
+    "helm_revision": 5,
+    "status": "deployed",
+    "core_agent_ui_ready": true,
+    "all_nine_workloads_ready": true
+  },
+  "topology": {
+    "name": "dps-gb300-4rack",
+    "racks": 4,
+    "computers": 72,
+    "total_entities": 110,
+    "stored_agent_routes": 72,
+    "is_active": false,
+    "policy_bundle": "MaxLPS"
+  },
+  "actual_agent_pod_network_bmc_reads": {
+    "passed_nodes": 72,
+    "total_nodes": 72,
+    "get_requests": 1152,
+    "tls_ca_verified": true,
+    "hardware_writes": false,
+    "checked_at": "2026-10-10T17:28:49.848762+08:00",
+    "dps_core_agent_dispatch_tested": false
+  },
+  "external_postgresql": {
+    "version": "17.11",
+    "public_tables": 25,
+    "tls_sessions": 2,
+    "post_install_backup": "/raid/vince/deploy/dps-install/data/postgresql-backups/dps-20261009T102124Z.dump",
+    "post_ldap_backup": "/raid/vince/deploy/dps-install/data/postgresql-backups/dps-20261010T025312Z.dump",
+    "post_prs_backups": [
+      {
+        "database": "dps",
+        "file": "/raid/vince/deploy/dps-install/data/postgresql-backups/dps-20261010T090629Z.dump",
+        "bytes": 67229,
+        "sha256": "22d651d5299982bd5392fc3a08952d80e315542db9dca18c6a593e7cecc0b1bb",
+        "catalog_validation": "pg_restore --list passed during backup script"
+      },
+      {
+        "database": "dps_prs_config",
+        "file": "/raid/vince/deploy/dps-install/data/postgresql-backups/dps_prs_config-20261010T090629Z.dump",
+        "bytes": 10700,
+        "sha256": "64bcf0dc3c0802d255fa0e24f0c13dbc40f190fe345da00ff2bc41154dc5ef7a",
+        "catalog_validation": "pg_restore --list passed during backup script"
+      },
+      {
+        "database": "dps_prs_config_staged",
+        "file": "/raid/vince/deploy/dps-install/data/postgresql-backups/dps_prs_config_staged-20261010T090629Z.dump",
+        "bytes": 10742,
+        "sha256": "29d80d28005d9e1211255599f535ada2fcb67e21233a47fb7f01b1db60920dfd",
+        "catalog_validation": "pg_restore --list passed during backup script"
+      },
+      {
+        "database": "dps_prs_controller",
+        "file": "/raid/vince/deploy/dps-install/data/postgresql-backups/dps_prs_controller-20261010T090629Z.dump",
+        "bytes": 4320,
+        "sha256": "286347142721bd34bf2654ba7e91d1eb617d757cd176f2960c546a51221498d6",
+        "catalog_validation": "pg_restore --list passed during backup script"
+      }
+    ],
+    "tls_sessions_observation": "Original Core session count is historical; current PRS TLS sessions are in prs-installation.json."
+  },
+  "deferred": {
+    "core_agent_bmc_dispatch": "Requires topology activation in observed DPS 0.9 behavior; not claimed passed",
+    "power_policy_control": "PRS deployed and globally enabled; inactive topology and no resource groups/domains, no BMC power writes or dynamic control verification."
+  },
+  "access": {
+    "ui": "https://ui.dps.lab",
+    "api_grpc": "api.dps.lab:443",
+    "host_ip": "10.6.131.43",
+    "guide": "/raid/vince/deploy/dps-install/dps-access.md",
+    "authentication": "ldap",
+    "credentials_file": "/raid/vince/deploy/dps-install/config/dps-access.json",
+    "username": "dps-lab",
+    "existing_evaluation_sessions_need_relogin": true
+  },
+  "steps": "/raid/vince/deploy/installstep.md",
+  "evidence_files": [
+    "ldap-installation.json",
+    "ldap-backup.json",
+    "dps-ldap-auth.json",
+    "dps-ldap-render.json",
+    "dps-current-state.json",
+    "dps-post-ldap-backup.json",
+    "dps-installation.json (2026-10-09 historical)",
+    "dps-ui-topology.json (2026-10-09 historical)",
+    "topology-agent-routing-stored.json (2026-10-09 historical)",
+    "dps-inactive-topology-limit.json",
+    "prs-installation.json",
+    "prs-databases.json",
+    "prs-render.json",
+    "prs-post-install-backup.json",
+    "bmc-health.json",
+    "bmc-service-health.json",
+    "bmc-dps-health-check.json",
+    "verification-inventory.json",
+    "dps-pod-bmc-connectivity.json"
+  ],
+  "authentication": {
+    "authenticator": "ldap",
+    "openldap_version": "2.6.10",
+    "endpoint": "ldaps://10.6.131.43:1636",
+    "username": "dps-lab",
+    "roles": [
+      "admin"
+    ],
+    "allowed_group": "dcpower-users",
+    "default_role": "",
+    "ldap_component_checks": {
+      "passed": 18,
+      "total": 18
+    },
+    "dps_auth_checks": {
+      "passed": 28,
+      "total": 28
+    },
+    "wrong_password_and_unknown_user_rejected": true,
+    "empty_password_rejected": true,
+    "group_outside_user_protected_api_denied": true,
+    "old_access_and_refresh_token_rejected": true,
+    "browser_visual_verification": false
+  },
+  "historical_verification": {
+    "checked_at": "2026-10-09",
+    "initial_installation": {
+      "passed": 17,
+      "total": 17
+    },
+    "ui_and_stored_topology": {
+      "passed": 8,
+      "total": 8
+    },
+    "agent_pod_bmc_gets": {
+      "passed_nodes": 72,
+      "total_nodes": 72,
+      "get_requests": 1152,
+      "hardware_writes": false
+    },
+    "note": "2026-10-09 initial installation and 2026-10-10 morning LDAP migration results retained; PRS current integration is separately dated.",
+    "ldap_migration": {
+      "checked_at": "2026-10-10T10:52:29.699349+08:00",
+      "ldap": {
+        "passed": 18,
+        "total": 18
+      },
+      "dps_cli_ui_session_api": {
+        "passed": 28,
+        "total": 28
+      },
+      "report": "dps-ldap-auth.json"
+    }
+  },
+  "current_verification": {
+    "checked_at": "2026-10-10T17:05:41.804854+08:00",
+    "prs_deployment_and_actual_pod_integration": {
+      "passed": 35,
+      "total": 35
+    },
+    "report": "prs-installation.json",
+    "scope": "PRS deployment/runtime switch and real Pod integration; empty domain with inactive topology, no BMC or power-policy writes",
+    "ldap_ui_regression_included": true
+  },
+  "external_openldap": {
+    "version": "2.6.10",
+    "health": "healthy",
+    "independent_compose": true,
+    "restart_policy": "unless-stopped",
+    "backup": "/raid/vince/deploy/dps-install/data/ldap-backups/ldap-20261010T023406Z.ldif",
+    "backup_entries": 8,
+    "offline_backup_validation": true
+  },
+  "prs": {
+    "enabled": true,
+    "power_steering_version": "2.1.0",
+    "seaweedfs_version": "4.18",
+    "headroom_percent": -15,
+    "scheduler_seconds": 5,
+    "domain_count": 0,
+    "verification": {
+      "passed": 35,
+      "total": 35
+    },
+    "verified_at": "2026-10-10T17:05:41.804854+08:00",
+    "s3_data_paths": [
+      "/raid/vince/deploy/dps-install/data/kubernetes/storage/pvc-3d542a34-8262-407e-9bf5-f77f4c95e8fe_dps_data-dps-dps-seaweedfs-master-0",
+      "/raid/vince/deploy/dps-install/data/kubernetes/storage/pvc-399686fe-62c5-411a-9299-665af8501b0a_dps_data-filer-dps-seaweedfs-filer-0",
+      "/raid/vince/deploy/dps-install/data/kubernetes/storage/pvc-7e83a904-58e4-46db-930b-eabf9525de26_dps_data1-dps-seaweedfs-volume-0"
+    ],
+    "database_tls": {
+      "sessions": [
+        {
+          "datname": "dps_prs_controller",
+          "client_addr": "172.30.90.1/32",
+          "usename": "dps",
+          "ssl": true,
+          "version": "TLSv1.3"
+        },
+        {
+          "datname": "dps_prs_config",
+          "client_addr": "172.30.90.1/32",
+          "usename": "dps",
+          "ssl": true,
+          "version": "TLSv1.3"
+        },
+        {
+          "datname": "dps_prs_config_staged",
+          "client_addr": "172.30.90.1/32",
+          "usename": "dps",
+          "ssl": true,
+          "version": "TLSv1.3"
+        },
+        {
+          "datname": "dps_prs_config",
+          "client_addr": "172.30.90.1/32",
+          "usename": "dps",
+          "ssl": true,
+          "version": "TLSv1.3"
+        },
+        {
+          "datname": "dps_prs_controller",
+          "client_addr": "172.30.90.1/32",
+          "usename": "dps",
+          "ssl": true,
+          "version": "TLSv1.3"
+        }
+      ],
+      "source_address_note": "Docker bridge SNAT presents 172.30.90.1 to PostgreSQL; direct Pod probes separately verify each Pod configuration."
+    },
+    "dynamic_power_control_verified": false
+  },
+  "bmc_health": {
+    "checked_at": "2026-10-10T17:33:55.589137+08:00",
+    "endpoints_passed": 72,
+    "total_endpoints": 72,
+    "actual_agent_network_passed": true,
+    "service_checks": {
+      "total_checks": 12,
+      "passed_checks": 12,
+      "all_service_checks_passed": true
+    },
+    "report": "/raid/vince/deploy/verification/reports/bmc-health.json",
+    "dps_core_health_dispatch_passed": false,
+    "topology_active": false,
+    "bmc_power_writes": false
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "checked_at": "2026-10-09T18:09:53.022795+08:00",
+  "dps_version": "0.9.0",
+  "scope": "Imported but inactive topology dps-gb300-4rack",
+  "observed_agent_state": {
+    "agent_id": "gb300-lab-agent",
+    "connected": true,
+    "configured": false,
+    "assigned_devices": 0
+  },
+  "observed_failures": {
+    "check_connection": "INVALID_OPERATION: no agent configuration available",
+    "bmc_health_start": "INTERNAL_ERROR: BMC health check could not be started"
+  },
+  "documented_requirement": "DPS 0.9 requires an active topology for both check connection and verify bmc-health start. skip-writes only controls the health task, not topology activation.",
+  "activation_effect": "Activation applies the topology effective policy or invokes unset/idle fallback even without resource groups. The stored topology selects the built-in MaxLPS bundle.",
+  "documentation_discrepancy": "General installation and BMC health pages describe checking an imported inactive topology; more specific DPS 0.9 connection reference, troubleshooting, and Agent API definitions require active topology. Actual observed behavior matches the specific references.",
+  "agent_routing_correction": "Move 72 AgentId values to Topology.Entities. This corrects routing metadata but does not remove the active-topology requirement.",
+  "dps_bmc_integration_passed": false,
+  "non_mutating_evidence_available": "Control-plane checks and independent Pod-to-BMC reads can be retained separately; they do not substitute for DPS-to-Agent-to-BMC integration.",
+  "activation_executed_by_this_investigation": false,
+  "references": [
+    "https://docs.nvidia.com/datacenter/dps/versions/0.9/guides/reference/dpsctl/check/connection.html",
+    "https://docs.nvidia.com/datacenter/dps/versions/0.9/guides/troubleshooting/index.html",
+    "https://docs.nvidia.com/datacenter/dps/versions/0.9/guides/reference/apis/v1/dpsagent.html",
+    "https://docs.nvidia.com/datacenter/dps/versions/0.9/guides/tasks/managing-topologies.html"
+  ]
+}

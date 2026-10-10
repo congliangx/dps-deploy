@@ -1,0 +1,85 @@
+port: 8443
+default_dir: /app/mockups/gb300
+dirs:
+  gb300-r01-0001: /app/mockups/gb300
+  gb300-r01-0002: /app/mockups/gb300
+  gb300-r01-0003: /app/mockups/gb300
+  gb300-r01-0004: /app/mockups/gb300
+  gb300-r01-0005: /app/mockups/gb300
+  gb300-r01-0006: /app/mockups/gb300
+  gb300-r01-0007: /app/mockups/gb300
+  gb300-r01-0008: /app/mockups/gb300
+  gb300-r01-0009: /app/mockups/gb300
+  gb300-r01-0010: /app/mockups/gb300
+  gb300-r01-0011: /app/mockups/gb300
+  gb300-r01-0012: /app/mockups/gb300
+  gb300-r01-0013: /app/mockups/gb300
+  gb300-r01-0014: /app/mockups/gb300
+  gb300-r01-0015: /app/mockups/gb300
+  gb300-r01-0016: /app/mockups/gb300
+  gb300-r01-0017: /app/mockups/gb300
+  gb300-r01-0018: /app/mockups/gb300
+  gb300-r02-0001: /app/mockups/gb300
+  gb300-r02-0002: /app/mockups/gb300
+  gb300-r02-0003: /app/mockups/gb300
+  gb300-r02-0004: /app/mockups/gb300
+  gb300-r02-0005: /app/mockups/gb300
+  gb300-r02-0006: /app/mockups/gb300
+  gb300-r02-0007: /app/mockups/gb300
+  gb300-r02-0008: /app/mockups/gb300
+  gb300-r02-0009: /app/mockups/gb300
+  gb300-r02-0010: /app/mockups/gb300
+  gb300-r02-0011: /app/mockups/gb300
+  gb300-r02-0012: /app/mockups/gb300
+  gb300-r02-0013: /app/mockups/gb300
+  gb300-r02-0014: /app/mockups/gb300
+  gb300-r02-0015: /app/mockups/gb300
+  gb300-r02-0016: /app/mockups/gb300
+  gb300-r02-0017: /app/mockups/gb300
+  gb300-r02-0018: /app/mockups/gb300
+  gb300-r03-0001: /app/mockups/gb300
+  gb300-r03-0002: /app/mockups/gb300
+  gb300-r03-0003: /app/mockups/gb300
+  gb300-r03-0004: /app/mockups/gb300
+  gb300-r03-0005: /app/mockups/gb300
+  gb300-r03-0006: /app/mockups/gb300
+  gb300-r03-0007: /app/mockups/gb300
+  gb300-r03-0008: /app/mockups/gb300
+  gb300-r03-0009: /app/mockups/gb300
+  gb300-r03-0010: /app/mockups/gb300
+  gb300-r03-0011: /app/mockups/gb300
+  gb300-r03-0012: /app/mockups/gb300
+  gb300-r03-0013: /app/mockups/gb300
+  gb300-r03-0014: /app/mockups/gb300
+  gb300-r03-0015: /app/mockups/gb300
+  gb300-r03-0016: /app/mockups/gb300
+  gb300-r03-0017: /app/mockups/gb300
+  gb300-r03-0018: /app/mockups/gb300
+  gb300-r04-0001: /app/mockups/gb300
+  gb300-r04-0002: /app/mockups/gb300
+  gb300-r04-0003: /app/mockups/gb300
+  gb300-r04-0004: /app/mockups/gb300
+  gb300-r04-0005: /app/mockups/gb300
+  gb300-r04-0006: /app/mockups/gb300
+  gb300-r04-0007: /app/mockups/gb300
+  gb300-r04-0008: /app/mockups/gb300
+  gb300-r04-0009: /app/mockups/gb300
+  gb300-r04-0010: /app/mockups/gb300
+  gb300-r04-0011: /app/mockups/gb300
+  gb300-r04-0012: /app/mockups/gb300
+  gb300-r04-0013: /app/mockups/gb300
+  gb300-r04-0014: /app/mockups/gb300
+  gb300-r04-0015: /app/mockups/gb300
+  gb300-r04-0016: /app/mockups/gb300
+  gb300-r04-0017: /app/mockups/gb300
+  gb300-r04-0018: /app/mockups/gb300
+ssl: true
+debug: false
+update_workload_power_profile_delay: 25s
+metrics:
+  plugin: synthetic
+  surrogate:
+    host: localhost
+    port: 50051
+    startup_timeout: 60s
+host: 0.0.0.0

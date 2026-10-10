@@ -1,0 +1,67 @@
+services:
+  simulator:
+    image: nvcr.io/nvidia/dps-bmc-simulator@sha256:3f81152ee055b95e0bda512227cd6ecbb4813f97dad0c654477a4afbf8caff7e
+    container_name: dps-gb300-bmc
+    restart: unless-stopped
+    command:
+    - -c
+    - /app/config.yaml
+    - -d
+    - /app/mockups/gb300
+    - --host
+    - 0.0.0.0
+    - --port
+    - '8443'
+    - --max-active-requests=4096
+    - --power-snapshot-interval=5s
+    volumes:
+    - ./config.yaml:/app/config.yaml:ro
+    - ./tls:/etc/certs:ro
+    networks:
+    - bmc
+    cpus: 4
+    mem_limit: 6g
+    logging:
+      driver: json-file
+      options:
+        max-size: 20m
+        max-file: '3'
+  proxy:
+    image: nginx@sha256:a8b39bd9cf0f83869a2162827a0caf6137ddf759d50a171451b335cecc87d236
+    container_name: dps-gb300-bmc-proxy
+    restart: unless-stopped
+    entrypoint:
+    - nginx
+    - -g
+    - daemon off;
+    depends_on:
+    - simulator
+    volumes:
+    - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    - ./tls:/etc/bmc-tls:ro
+    ports:
+    - 10.6.131.43:18443-18514:18443-18514
+    networks:
+    - bmc
+    cpus: 2
+    mem_limit: 512m
+    healthcheck:
+      test:
+      - CMD
+      - wget
+      - -q
+      - --no-check-certificate
+      - -O
+      - /dev/null
+      - https://127.0.0.1:18443/readyz
+      interval: 15s
+      timeout: 5s
+      retries: 3
+    logging:
+      driver: json-file
+      options:
+        max-size: 20m
+        max-file: '3'
+networks:
+  bmc:
+    name: dps-gb300-bmc-net

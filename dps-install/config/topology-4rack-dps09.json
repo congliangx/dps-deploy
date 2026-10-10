@@ -1,0 +1,2100 @@
+{
+  "Entities": [
+    {
+      "Name": "Utility",
+      "Type": "PowerDomain",
+      "OperatingLimit": {
+        "PowerValue": {
+          "Value": 750000,
+          "Type": "W"
+        }
+      },
+      "Redfish": {
+        "URL": ""
+      }
+    },
+    {
+      "Name": "Switchboard",
+      "Type": "PowerDomain",
+      "OperatingLimit": {
+        "PowerValue": {
+          "Value": 1600000,
+          "Type": "W"
+        }
+      },
+      "Redfish": {
+        "URL": ""
+      }
+    },
+    {
+      "Name": "FloorPDU-1",
+      "Type": "PowerDistribution",
+      "Model": "FloorPDU95",
+      "OperatingLimit": {
+        "PowerValue": {
+          "Value": 450000,
+          "Type": "W"
+        }
+      },
+      "Redfish": {
+        "URL": ""
+      }
+    },
+    {
+      "Name": "FloorPDU-2",
+      "Type": "PowerDistribution",
+      "Model": "FloorPDU95",
+      "OperatingLimit": {
+        "PowerValue": {
+          "Value": 450000,
+          "Type": "W"
+        }
+      },
+      "Redfish": {
+        "URL": ""
+      }
+    },
+    {
+      "Name": "FloorPDU-3",
+      "Type": "PowerDistribution",
+      "Model": "FloorPDU95",
+      "OperatingLimit": {
+        "PowerValue": {
+          "Value": 450000,
+          "Type": "W"
+        }
+      },
+      "Redfish": {
+        "URL": ""
+      }
+    },
+    {
+      "Name": "FloorPDU-4",
+      "Type": "PowerDistribution",
+      "Model": "FloorPDU95",
+      "OperatingLimit": {
+        "PowerValue": {
+          "Value": 450000,
+          "Type": "W"
+        }
+      },
+      "Redfish": {
+        "URL": ""
+      }
+    },
+    {
+      "Name": "PSU-R01-1",
+      "Type": "PowerSupply",
+      "Model": "PowerSupply95_33000W",
+      "Redfish": {
+        "URL": ""
+      }
+    },
+    {
+      "Name": "PSU-R01-2",
+      "Type": "PowerSupply",
+      "Model": "PowerSupply95_33000W",
+      "Redfish": {
+        "URL": ""
+      }
+    },
+    {
+      "Name": "PSU-R01-3",
+      "Type": "PowerSupply",
+      "Model": "PowerSupply95_33000W",
+      "Redfish": {
+        "URL": ""
+      }
+    },
+    {
+      "Name": "PSU-R01-4",
+      "Type": "PowerSupply",
+      "Model": "PowerSupply95_33000W",
+      "Redfish": {
+        "URL": ""
+      }
+    },
+    {
+      "Name": "PSU-R01-5",
+      "Type": "PowerSupply",
+      "Model": "PowerSupply95_33000W",
+      "Redfish": {
+        "URL": ""
+      }
+    },
+    {
+      "Name": "PSU-R01-6",
+      "Type": "PowerSupply",
+      "Model": "PowerSupply95_33000W",
+      "Redfish": {
+        "URL": ""
+      }
+    },
+    {
+      "Name": "PSU-R01-7",
+      "Type": "PowerSupply",
+      "Model": "PowerSupply95_33000W",
+      "Redfish": {
+        "URL": ""
+      }
+    },
+    {
+      "Name": "PSU-R01-8",
+      "Type": "PowerSupply",
+      "Model": "PowerSupply95_33000W",
+      "Redfish": {
+        "URL": ""
+      }
+    },
+    {
+      "Name": "PSU-R02-1",
+      "Type": "PowerSupply",
+      "Model": "PowerSupply95_33000W",
+      "Redfish": {
+        "URL": ""
+      }
+    },
+    {
+      "Name": "PSU-R02-2",
+      "Type": "PowerSupply",
+      "Model": "PowerSupply95_33000W",
+      "Redfish": {
+        "URL": ""
+      }
+    },
+    {
+      "Name": "PSU-R02-3",
+      "Type": "PowerSupply",
+      "Model": "PowerSupply95_33000W",
+      "Redfish": {
+        "URL": ""
+      }
+    },
+    {
+      "Name": "PSU-R02-4",
+      "Type": "PowerSupply",
+      "Model": "PowerSupply95_33000W",
+      "Redfish": {
+        "URL": ""
+      }
+    },
+    {
+      "Name": "PSU-R02-5",
+      "Type": "PowerSupply",
+      "Model": "PowerSupply95_33000W",
+      "Redfish": {
+        "URL": ""
+      }
+    },
+    {
+      "Name": "PSU-R02-6",
+      "Type": "PowerSupply",
+      "Model": "PowerSupply95_33000W",
+      "Redfish": {
+        "URL": ""
+      }
+    },
+    {
+      "Name": "PSU-R02-7",
+      "Type": "PowerSupply",
+      "Model": "PowerSupply95_33000W",
+      "Redfish": {
+        "URL": ""
+      }
+    },
+    {
+      "Name": "PSU-R02-8",
+      "Type": "PowerSupply",
+      "Model": "PowerSupply95_33000W",
+      "Redfish": {
+        "URL": ""
+      }
+    },
+    {
+      "Name": "PSU-R03-1",
+      "Type": "PowerSupply",
+      "Model": "PowerSupply95_33000W",
+      "Redfish": {
+        "URL": ""
+      }
+    },
+    {
+      "Name": "PSU-R03-2",
+      "Type": "PowerSupply",
+      "Model": "PowerSupply95_33000W",
+      "Redfish": {
+        "URL": ""
+      }
+    },
+    {
+      "Name": "PSU-R03-3",
+      "Type": "PowerSupply",
+      "Model": "PowerSupply95_33000W",
+      "Redfish": {
+        "URL": ""
+      }
+    },
+    {
+      "Name": "PSU-R03-4",
+      "Type": "PowerSupply",
+      "Model": "PowerSupply95_33000W",
+      "Redfish": {
+        "URL": ""
+      }
+    },
+    {
+      "Name": "PSU-R03-5",
+      "Type": "PowerSupply",
+      "Model": "PowerSupply95_33000W",
+      "Redfish": {
+        "URL": ""
+      }
+    },
+    {
+      "Name": "PSU-R03-6",
+      "Type": "PowerSupply",
+      "Model": "PowerSupply95_33000W",
+      "Redfish": {
+        "URL": ""
+      }
+    },
+    {
+      "Name": "PSU-R03-7",
+      "Type": "PowerSupply",
+      "Model": "PowerSupply95_33000W",
+      "Redfish": {
+        "URL": ""
+      }
+    },
+    {
+      "Name": "PSU-R03-8",
+      "Type": "PowerSupply",
+      "Model": "PowerSupply95_33000W",
+      "Redfish": {
+        "URL": ""
+      }
+    },
+    {
+      "Name": "PSU-R04-1",
+      "Type": "PowerSupply",
+      "Model": "PowerSupply95_33000W",
+      "Redfish": {
+        "URL": ""
+      }
+    },
+    {
+      "Name": "PSU-R04-2",
+      "Type": "PowerSupply",
+      "Model": "PowerSupply95_33000W",
+      "Redfish": {
+        "URL": ""
+      }
+    },
+    {
+      "Name": "PSU-R04-3",
+      "Type": "PowerSupply",
+      "Model": "PowerSupply95_33000W",
+      "Redfish": {
+        "URL": ""
+      }
+    },
+    {
+      "Name": "PSU-R04-4",
+      "Type": "PowerSupply",
+      "Model": "PowerSupply95_33000W",
+      "Redfish": {
+        "URL": ""
+      }
+    },
+    {
+      "Name": "PSU-R04-5",
+      "Type": "PowerSupply",
+      "Model": "PowerSupply95_33000W",
+      "Redfish": {
+        "URL": ""
+      }
+    },
+    {
+      "Name": "PSU-R04-6",
+      "Type": "PowerSupply",
+      "Model": "PowerSupply95_33000W",
+      "Redfish": {
+        "URL": ""
+      }
+    },
+    {
+      "Name": "PSU-R04-7",
+      "Type": "PowerSupply",
+      "Model": "PowerSupply95_33000W",
+      "Redfish": {
+        "URL": ""
+      }
+    },
+    {
+      "Name": "PSU-R04-8",
+      "Type": "PowerSupply",
+      "Model": "PowerSupply95_33000W",
+      "Redfish": {
+        "URL": ""
+      }
+    },
+    {
+      "Type": "ComputerSystem",
+      "Model": "DGX_GB300",
+      "Name": "gb300-r01-0001",
+      "Redfish": {
+        "URL": "https://10.6.131.43:18443",
+        "SecretName": "bmc-shared-secret"
+      }
+    },
+    {
+      "Type": "ComputerSystem",
+      "Model": "DGX_GB300",
+      "Name": "gb300-r01-0002",
+      "Redfish": {
+        "URL": "https://10.6.131.43:18444",
+        "SecretName": "bmc-shared-secret"
+      }
+    },
+    {
+      "Type": "ComputerSystem",
+      "Model": "DGX_GB300",
+      "Name": "gb300-r01-0003",
+      "Redfish": {
+        "URL": "https://10.6.131.43:18445",
+        "SecretName": "bmc-shared-secret"
+      }
+    },
+    {
+      "Type": "ComputerSystem",
+      "Model": "DGX_GB300",
+      "Name": "gb300-r01-0004",
+      "Redfish": {
+        "URL": "https://10.6.131.43:18446",
+        "SecretName": "bmc-shared-secret"
+      }
+    },
+    {
+      "Type": "ComputerSystem",
+      "Model": "DGX_GB300",
+      "Name": "gb300-r01-0005",
+      "Redfish": {
+        "URL": "https://10.6.131.43:18447",
+        "SecretName": "bmc-shared-secret"
+      }
+    },
+    {
+      "Type": "ComputerSystem",
+      "Model": "DGX_GB300",
+      "Name": "gb300-r01-0006",
+      "Redfish": {
+        "URL": "https://10.6.131.43:18448",
+        "SecretName": "bmc-shared-secret"
+      }
+    },
+    {
+      "Type": "ComputerSystem",
+      "Model": "DGX_GB300",
+      "Name": "gb300-r01-0007",
+      "Redfish": {
+        "URL": "https://10.6.131.43:18449",
+        "SecretName": "bmc-shared-secret"
+      }
+    },
+    {
+      "Type": "ComputerSystem",
+      "Model": "DGX_GB300",
+      "Name": "gb300-r01-0008",
+      "Redfish": {
+        "URL": "https://10.6.131.43:18450",
+        "SecretName": "bmc-shared-secret"
+      }
+    },
+    {
+      "Type": "ComputerSystem",
+      "Model": "DGX_GB300",
+      "Name": "gb300-r01-0009",
+      "Redfish": {
+        "URL": "https://10.6.131.43:18451",
+        "SecretName": "bmc-shared-secret"
+      }
+    },
+    {
+      "Type": "ComputerSystem",
+      "Model": "DGX_GB300",
+      "Name": "gb300-r01-0010",
+      "Redfish": {
+        "URL": "https://10.6.131.43:18452",
+        "SecretName": "bmc-shared-secret"
+      }
+    },
+    {
+      "Type": "ComputerSystem",
+      "Model": "DGX_GB300",
+      "Name": "gb300-r01-0011",
+      "Redfish": {
+        "URL": "https://10.6.131.43:18453",
+        "SecretName": "bmc-shared-secret"
+      }
+    },
+    {
+      "Type": "ComputerSystem",
+      "Model": "DGX_GB300",
+      "Name": "gb300-r01-0012",
+      "Redfish": {
+        "URL": "https://10.6.131.43:18454",
+        "SecretName": "bmc-shared-secret"
+      }
+    },
+    {
+      "Type": "ComputerSystem",
+      "Model": "DGX_GB300",
+      "Name": "gb300-r01-0013",
+      "Redfish": {
+        "URL": "https://10.6.131.43:18455",
+        "SecretName": "bmc-shared-secret"
+      }
+    },
+    {
+      "Type": "ComputerSystem",
+      "Model": "DGX_GB300",
+      "Name": "gb300-r01-0014",
+      "Redfish": {
+        "URL": "https://10.6.131.43:18456",
+        "SecretName": "bmc-shared-secret"
+      }
+    },
+    {
+      "Type": "ComputerSystem",
+      "Model": "DGX_GB300",
+      "Name": "gb300-r01-0015",
+      "Redfish": {
+        "URL": "https://10.6.131.43:18457",
+        "SecretName": "bmc-shared-secret"
+      }
+    },
+    {
+      "Type": "ComputerSystem",
+      "Model": "DGX_GB300",
+      "Name": "gb300-r01-0016",
+      "Redfish": {
+        "URL": "https://10.6.131.43:18458",
+        "SecretName": "bmc-shared-secret"
+      }
+    },
+    {
+      "Type": "ComputerSystem",
+      "Model": "DGX_GB300",
+      "Name": "gb300-r01-0017",
+      "Redfish": {
+        "URL": "https://10.6.131.43:18459",
+        "SecretName": "bmc-shared-secret"
+      }
+    },
+    {
+      "Type": "ComputerSystem",
+      "Model": "DGX_GB300",
+      "Name": "gb300-r01-0018",
+      "Redfish": {
+        "URL": "https://10.6.131.43:18460",
+        "SecretName": "bmc-shared-secret"
+      }
+    },
+    {
+      "Type": "ComputerSystem",
+      "Model": "DGX_GB300",
+      "Name": "gb300-r02-0001",
+      "Redfish": {
+        "URL": "https://10.6.131.43:18461",
+        "SecretName": "bmc-shared-secret"
+      }
+    },
+    {
+      "Type": "ComputerSystem",
+      "Model": "DGX_GB300",
+      "Name": "gb300-r02-0002",
+      "Redfish": {
+        "URL": "https://10.6.131.43:18462",
+        "SecretName": "bmc-shared-secret"
+      }
+    },
+    {
+      "Type": "ComputerSystem",
+      "Model": "DGX_GB300",
+      "Name": "gb300-r02-0003",
+      "Redfish": {
+        "URL": "https://10.6.131.43:18463",
+        "SecretName": "bmc-shared-secret"
+      }
+    },
+    {
+      "Type": "ComputerSystem",
+      "Model": "DGX_GB300",
+      "Name": "gb300-r02-0004",
+      "Redfish": {
+        "URL": "https://10.6.131.43:18464",
+        "SecretName": "bmc-shared-secret"
+      }
+    },
+    {
+      "Type": "ComputerSystem",
+      "Model": "DGX_GB300",
+      "Name": "gb300-r02-0005",
+      "Redfish": {
+        "URL": "https://10.6.131.43:18465",
+        "SecretName": "bmc-shared-secret"
+      }
+    },
+    {
+      "Type": "ComputerSystem",
+      "Model": "DGX_GB300",
+      "Name": "gb300-r02-0006",
+      "Redfish": {
+        "URL": "https://10.6.131.43:18466",
+        "SecretName": "bmc-shared-secret"
+      }
+    },
+    {
+      "Type": "ComputerSystem",
+      "Model": "DGX_GB300",
+      "Name": "gb300-r02-0007",
+      "Redfish": {
+        "URL": "https://10.6.131.43:18467",
+        "SecretName": "bmc-shared-secret"
+      }
+    },
+    {
+      "Type": "ComputerSystem",
+      "Model": "DGX_GB300",
+      "Name": "gb300-r02-0008",
+      "Redfish": {
+        "URL": "https://10.6.131.43:18468",
+        "SecretName": "bmc-shared-secret"
+      }
+    },
+    {
+      "Type": "ComputerSystem",
+      "Model": "DGX_GB300",
+      "Name": "gb300-r02-0009",
+      "Redfish": {
+        "URL": "https://10.6.131.43:18469",
+        "SecretName": "bmc-shared-secret"
+      }
+    },
+    {
+      "Type": "ComputerSystem",
+      "Model": "DGX_GB300",
+      "Name": "gb300-r02-0010",
+      "Redfish": {
+        "URL": "https://10.6.131.43:18470",
+        "SecretName": "bmc-shared-secret"
+      }
+    },
+    {
+      "Type": "ComputerSystem",
+      "Model": "DGX_GB300",
+      "Name": "gb300-r02-0011",
+      "Redfish": {
+        "URL": "https://10.6.131.43:18471",
+        "SecretName": "bmc-shared-secret"
+      }
+    },
+    {
+      "Type": "ComputerSystem",
+      "Model": "DGX_GB300",
+      "Name": "gb300-r02-0012",
+      "Redfish": {
+        "URL": "https://10.6.131.43:18472",
+        "SecretName": "bmc-shared-secret"
+      }
+    },
+    {
+      "Type": "ComputerSystem",
+      "Model": "DGX_GB300",
+      "Name": "gb300-r02-0013",
+      "Redfish": {
+        "URL": "https://10.6.131.43:18473",
+        "SecretName": "bmc-shared-secret"
+      }
+    },
+    {
+      "Type": "ComputerSystem",
+      "Model": "DGX_GB300",
+      "Name": "gb300-r02-0014",
+      "Redfish": {
+        "URL": "https://10.6.131.43:18474",
+        "SecretName": "bmc-shared-secret"
+      }
+    },
+    {
+      "Type": "ComputerSystem",
+      "Model": "DGX_GB300",
+      "Name": "gb300-r02-0015",
+      "Redfish": {
+        "URL": "https://10.6.131.43:18475",
+        "SecretName": "bmc-shared-secret"
+      }
+    },
+    {
+      "Type": "ComputerSystem",
+      "Model": "DGX_GB300",
+      "Name": "gb300-r02-0016",
+      "Redfish": {
+        "URL": "https://10.6.131.43:18476",
+        "SecretName": "bmc-shared-secret"
+      }
+    },
+    {
+      "Type": "ComputerSystem",
+      "Model": "DGX_GB300",
+      "Name": "gb300-r02-0017",
+      "Redfish": {
+        "URL": "https://10.6.131.43:18477",
+        "SecretName": "bmc-shared-secret"
+      }
+    },
+    {
+      "Type": "ComputerSystem",
+      "Model": "DGX_GB300",
+      "Name": "gb300-r02-0018",
+      "Redfish": {
+        "URL": "https://10.6.131.43:18478",
+        "SecretName": "bmc-shared-secret"
+      }
+    },
+    {
+      "Type": "ComputerSystem",
+      "Model": "DGX_GB300",
+      "Name": "gb300-r03-0001",
+      "Redfish": {
+        "URL": "https://10.6.131.43:18479",
+        "SecretName": "bmc-shared-secret"
+      }
+    },
+    {
+      "Type": "ComputerSystem",
+      "Model": "DGX_GB300",
+      "Name": "gb300-r03-0002",
+      "Redfish": {
+        "URL": "https://10.6.131.43:18480",
+        "SecretName": "bmc-shared-secret"
+      }
+    },
+    {
+      "Type": "ComputerSystem",
+      "Model": "DGX_GB300",
+      "Name": "gb300-r03-0003",
+      "Redfish": {
+        "URL": "https://10.6.131.43:18481",
+        "SecretName": "bmc-shared-secret"
+      }
+    },
+    {
+      "Type": "ComputerSystem",
+      "Model": "DGX_GB300",
+      "Name": "gb300-r03-0004",
+      "Redfish": {
+        "URL": "https://10.6.131.43:18482",
+        "SecretName": "bmc-shared-secret"
+      }
+    },
+    {
+      "Type": "ComputerSystem",
+      "Model": "DGX_GB300",
+      "Name": "gb300-r03-0005",
+      "Redfish": {
+        "URL": "https://10.6.131.43:18483",
+        "SecretName": "bmc-shared-secret"
+      }
+    },
+    {
+      "Type": "ComputerSystem",
+      "Model": "DGX_GB300",
+      "Name": "gb300-r03-0006",
+      "Redfish": {
+        "URL": "https://10.6.131.43:18484",
+        "SecretName": "bmc-shared-secret"
+      }
+    },
+    {
+      "Type": "ComputerSystem",
+      "Model": "DGX_GB300",
+      "Name": "gb300-r03-0007",
+      "Redfish": {
+        "URL": "https://10.6.131.43:18485",
+        "SecretName": "bmc-shared-secret"
+      }
+    },
+    {
+      "Type": "ComputerSystem",
+      "Model": "DGX_GB300",
+      "Name": "gb300-r03-0008",
+      "Redfish": {
+        "URL": "https://10.6.131.43:18486",
+        "SecretName": "bmc-shared-secret"
+      }
+    },
+    {
+      "Type": "ComputerSystem",
+      "Model": "DGX_GB300",
+      "Name": "gb300-r03-0009",
+      "Redfish": {
+        "URL": "https://10.6.131.43:18487",
+        "SecretName": "bmc-shared-secret"
+      }
+    },
+    {
+      "Type": "ComputerSystem",
+      "Model": "DGX_GB300",
+      "Name": "gb300-r03-0010",
+      "Redfish": {
+        "URL": "https://10.6.131.43:18488",
+        "SecretName": "bmc-shared-secret"
+      }
+    },
+    {
+      "Type": "ComputerSystem",
+      "Model": "DGX_GB300",
+      "Name": "gb300-r03-0011",
+      "Redfish": {
+        "URL": "https://10.6.131.43:18489",
+        "SecretName": "bmc-shared-secret"
+      }
+    },
+    {
+      "Type": "ComputerSystem",
+      "Model": "DGX_GB300",
+      "Name": "gb300-r03-0012",
+      "Redfish": {
+        "URL": "https://10.6.131.43:18490",
+        "SecretName": "bmc-shared-secret"
+      }
+    },
+    {
+      "Type": "ComputerSystem",
+      "Model": "DGX_GB300",
+      "Name": "gb300-r03-0013",
+      "Redfish": {
+        "URL": "https://10.6.131.43:18491",
+        "SecretName": "bmc-shared-secret"
+      }
+    },
+    {
+      "Type": "ComputerSystem",
+      "Model": "DGX_GB300",
+      "Name": "gb300-r03-0014",
+      "Redfish": {
+        "URL": "https://10.6.131.43:18492",
+        "SecretName": "bmc-shared-secret"
+      }
+    },
+    {
+      "Type": "ComputerSystem",
+      "Model": "DGX_GB300",
+      "Name": "gb300-r03-0015",
+      "Redfish": {
+        "URL": "https://10.6.131.43:18493",
+        "SecretName": "bmc-shared-secret"
+      }
+    },
+    {
+      "Type": "ComputerSystem",
+      "Model": "DGX_GB300",
+      "Name": "gb300-r03-0016",
+      "Redfish": {
+        "URL": "https://10.6.131.43:18494",
+        "SecretName": "bmc-shared-secret"
+      }
+    },
+    {
+      "Type": "ComputerSystem",
+      "Model": "DGX_GB300",
+      "Name": "gb300-r03-0017",
+      "Redfish": {
+        "URL": "https://10.6.131.43:18495",
+        "SecretName": "bmc-shared-secret"
+      }
+    },
+    {
+      "Type": "ComputerSystem",
+      "Model": "DGX_GB300",
+      "Name": "gb300-r03-0018",
+      "Redfish": {
+        "URL": "https://10.6.131.43:18496",
+        "SecretName": "bmc-shared-secret"
+      }
+    },
+    {
+      "Type": "ComputerSystem",
+      "Model": "DGX_GB300",
+      "Name": "gb300-r04-0001",
+      "Redfish": {
+        "URL": "https://10.6.131.43:18497",
+        "SecretName": "bmc-shared-secret"
+      }
+    },
+    {
+      "Type": "ComputerSystem",
+      "Model": "DGX_GB300",
+      "Name": "gb300-r04-0002",
+      "Redfish": {
+        "URL": "https://10.6.131.43:18498",
+        "SecretName": "bmc-shared-secret"
+      }
+    },
+    {
+      "Type": "ComputerSystem",
+      "Model": "DGX_GB300",
+      "Name": "gb300-r04-0003",
+      "Redfish": {
+        "URL": "https://10.6.131.43:18499",
+        "SecretName": "bmc-shared-secret"
+      }
+    },
+    {
+      "Type": "ComputerSystem",
+      "Model": "DGX_GB300",
+      "Name": "gb300-r04-0004",
+      "Redfish": {
+        "URL": "https://10.6.131.43:18500",
+        "SecretName": "bmc-shared-secret"
+      }
+    },
+    {
+      "Type": "ComputerSystem",
+      "Model": "DGX_GB300",
+      "Name": "gb300-r04-0005",
+      "Redfish": {
+        "URL": "https://10.6.131.43:18501",
+        "SecretName": "bmc-shared-secret"
+      }
+    },
+    {
+      "Type": "ComputerSystem",
+      "Model": "DGX_GB300",
+      "Name": "gb300-r04-0006",
+      "Redfish": {
+        "URL": "https://10.6.131.43:18502",
+        "SecretName": "bmc-shared-secret"
+      }
+    },
+    {
+      "Type": "ComputerSystem",
+      "Model": "DGX_GB300",
+      "Name": "gb300-r04-0007",
+      "Redfish": {
+        "URL": "https://10.6.131.43:18503",
+        "SecretName": "bmc-shared-secret"
+      }
+    },
+    {
+      "Type": "ComputerSystem",
+      "Model": "DGX_GB300",
+      "Name": "gb300-r04-0008",
+      "Redfish": {
+        "URL": "https://10.6.131.43:18504",
+        "SecretName": "bmc-shared-secret"
+      }
+    },
+    {
+      "Type": "ComputerSystem",
+      "Model": "DGX_GB300",
+      "Name": "gb300-r04-0009",
+      "Redfish": {
+        "URL": "https://10.6.131.43:18505",
+        "SecretName": "bmc-shared-secret"
+      }
+    },
+    {
+      "Type": "ComputerSystem",
+      "Model": "DGX_GB300",
+      "Name": "gb300-r04-0010",
+      "Redfish": {
+        "URL": "https://10.6.131.43:18506",
+        "SecretName": "bmc-shared-secret"
+      }
+    },
+    {
+      "Type": "ComputerSystem",
+      "Model": "DGX_GB300",
+      "Name": "gb300-r04-0011",
+      "Redfish": {
+        "URL": "https://10.6.131.43:18507",
+        "SecretName": "bmc-shared-secret"
+      }
+    },
+    {
+      "Type": "ComputerSystem",
+      "Model": "DGX_GB300",
+      "Name": "gb300-r04-0012",
+      "Redfish": {
+        "URL": "https://10.6.131.43:18508",
+        "SecretName": "bmc-shared-secret"
+      }
+    },
+    {
+      "Type": "ComputerSystem",
+      "Model": "DGX_GB300",
+      "Name": "gb300-r04-0013",
+      "Redfish": {
+        "URL": "https://10.6.131.43:18509",
+        "SecretName": "bmc-shared-secret"
+      }
+    },
+    {
+      "Type": "ComputerSystem",
+      "Model": "DGX_GB300",
+      "Name": "gb300-r04-0014",
+      "Redfish": {
+        "URL": "https://10.6.131.43:18510",
+        "SecretName": "bmc-shared-secret"
+      }
+    },
+    {
+      "Type": "ComputerSystem",
+      "Model": "DGX_GB300",
+      "Name": "gb300-r04-0015",
+      "Redfish": {
+        "URL": "https://10.6.131.43:18511",
+        "SecretName": "bmc-shared-secret"
+      }
+    },
+    {
+      "Type": "ComputerSystem",
+      "Model": "DGX_GB300",
+      "Name": "gb300-r04-0016",
+      "Redfish": {
+        "URL": "https://10.6.131.43:18512",
+        "SecretName": "bmc-shared-secret"
+      }
+    },
+    {
+      "Type": "ComputerSystem",
+      "Model": "DGX_GB300",
+      "Name": "gb300-r04-0017",
+      "Redfish": {
+        "URL": "https://10.6.131.43:18513",
+        "SecretName": "bmc-shared-secret"
+      }
+    },
+    {
+      "Type": "ComputerSystem",
+      "Model": "DGX_GB300",
+      "Name": "gb300-r04-0018",
+      "Redfish": {
+        "URL": "https://10.6.131.43:18514",
+        "SecretName": "bmc-shared-secret"
+      }
+    }
+  ],
+  "Topology": {
+    "Name": "dps-gb300-4rack",
+    "Entities": [
+      {
+        "Name": "Utility",
+        "FeedTag": "Utility",
+        "OperatingLimit": {
+          "PowerValue": {
+            "Value": 750000,
+            "Type": "W"
+          }
+        },
+        "Children": [
+          "Switchboard"
+        ]
+      },
+      {
+        "Name": "Switchboard",
+        "FeedTag": "Switchboard",
+        "OperatingLimit": {
+          "PowerValue": {
+            "Value": 1600000,
+            "Type": "W"
+          }
+        },
+        "Children": [
+          "FloorPDU-1",
+          "FloorPDU-2",
+          "FloorPDU-3",
+          "FloorPDU-4"
+        ]
+      },
+      {
+        "Name": "FloorPDU-1",
+        "Children": [
+          "PSU-R01-1",
+          "PSU-R01-2",
+          "PSU-R01-3",
+          "PSU-R01-4",
+          "PSU-R01-5",
+          "PSU-R01-6",
+          "PSU-R01-7",
+          "PSU-R01-8"
+        ]
+      },
+      {
+        "Name": "FloorPDU-2",
+        "Children": [
+          "PSU-R02-1",
+          "PSU-R02-2",
+          "PSU-R02-3",
+          "PSU-R02-4",
+          "PSU-R02-5",
+          "PSU-R02-6",
+          "PSU-R02-7",
+          "PSU-R02-8"
+        ]
+      },
+      {
+        "Name": "FloorPDU-3",
+        "Children": [
+          "PSU-R03-1",
+          "PSU-R03-2",
+          "PSU-R03-3",
+          "PSU-R03-4",
+          "PSU-R03-5",
+          "PSU-R03-6",
+          "PSU-R03-7",
+          "PSU-R03-8"
+        ]
+      },
+      {
+        "Name": "FloorPDU-4",
+        "Children": [
+          "PSU-R04-1",
+          "PSU-R04-2",
+          "PSU-R04-3",
+          "PSU-R04-4",
+          "PSU-R04-5",
+          "PSU-R04-6",
+          "PSU-R04-7",
+          "PSU-R04-8"
+        ]
+      },
+      {
+        "Name": "PSU-R01-1",
+        "Children": [
+          "gb300-r01-0001",
+          "gb300-r01-0002",
+          "gb300-r01-0003",
+          "gb300-r01-0004",
+          "gb300-r01-0005",
+          "gb300-r01-0006",
+          "gb300-r01-0007",
+          "gb300-r01-0008",
+          "gb300-r01-0009",
+          "gb300-r01-0010",
+          "gb300-r01-0011",
+          "gb300-r01-0012",
+          "gb300-r01-0013",
+          "gb300-r01-0014",
+          "gb300-r01-0015",
+          "gb300-r01-0016",
+          "gb300-r01-0017",
+          "gb300-r01-0018"
+        ]
+      },
+      {
+        "Name": "PSU-R01-2",
+        "Children": [
+          "gb300-r01-0001",
+          "gb300-r01-0002",
+          "gb300-r01-0003",
+          "gb300-r01-0004",
+          "gb300-r01-0005",
+          "gb300-r01-0006",
+          "gb300-r01-0007",
+          "gb300-r01-0008",
+          "gb300-r01-0009",
+          "gb300-r01-0010",
+          "gb300-r01-0011",
+          "gb300-r01-0012",
+          "gb300-r01-0013",
+          "gb300-r01-0014",
+          "gb300-r01-0015",
+          "gb300-r01-0016",
+          "gb300-r01-0017",
+          "gb300-r01-0018"
+        ]
+      },
+      {
+        "Name": "PSU-R01-3",
+        "Children": [
+          "gb300-r01-0001",
+          "gb300-r01-0002",
+          "gb300-r01-0003",
+          "gb300-r01-0004",
+          "gb300-r01-0005",
+          "gb300-r01-0006",
+          "gb300-r01-0007",
+          "gb300-r01-0008",
+          "gb300-r01-0009",
+          "gb300-r01-0010",
+          "gb300-r01-0011",
+          "gb300-r01-0012",
+          "gb300-r01-0013",
+          "gb300-r01-0014",
+          "gb300-r01-0015",
+          "gb300-r01-0016",
+          "gb300-r01-0017",
+          "gb300-r01-0018"
+        ]
+      },
+      {
+        "Name": "PSU-R01-4",
+        "Children": [
+          "gb300-r01-0001",
+          "gb300-r01-0002",
+          "gb300-r01-0003",
+          "gb300-r01-0004",
+          "gb300-r01-0005",
+          "gb300-r01-0006",
+          "gb300-r01-0007",
+          "gb300-r01-0008",
+          "gb300-r01-0009",
+          "gb300-r01-0010",
+          "gb300-r01-0011",
+          "gb300-r01-0012",
+          "gb300-r01-0013",
+          "gb300-r01-0014",
+          "gb300-r01-0015",
+          "gb300-r01-0016",
+          "gb300-r01-0017",
+          "gb300-r01-0018"
+        ]
+      },
+      {
+        "Name": "PSU-R01-5",
+        "Children": [
+          "gb300-r01-0001",
+          "gb300-r01-0002",
+          "gb300-r01-0003",
+          "gb300-r01-0004",
+          "gb300-r01-0005",
+          "gb300-r01-0006",
+          "gb300-r01-0007",
+          "gb300-r01-0008",
+          "gb300-r01-0009",
+          "gb300-r01-0010",
+          "gb300-r01-0011",
+          "gb300-r01-0012",
+          "gb300-r01-0013",
+          "gb300-r01-0014",
+          "gb300-r01-0015",
+          "gb300-r01-0016",
+          "gb300-r01-0017",
+          "gb300-r01-0018"
+        ]
+      },
+      {
+        "Name": "PSU-R01-6",
+        "Children": [
+          "gb300-r01-0001",
+          "gb300-r01-0002",
+          "gb300-r01-0003",
+          "gb300-r01-0004",
+          "gb300-r01-0005",
+          "gb300-r01-0006",
+          "gb300-r01-0007",
+          "gb300-r01-0008",
+          "gb300-r01-0009",
+          "gb300-r01-0010",
+          "gb300-r01-0011",
+          "gb300-r01-0012",
+          "gb300-r01-0013",
+          "gb300-r01-0014",
+          "gb300-r01-0015",
+          "gb300-r01-0016",
+          "gb300-r01-0017",
+          "gb300-r01-0018"
+        ]
+      },
+      {
+        "Name": "PSU-R01-7",
+        "Children": [
+          "gb300-r01-0001",
+          "gb300-r01-0002",
+          "gb300-r01-0003",
+          "gb300-r01-0004",
+          "gb300-r01-0005",
+          "gb300-r01-0006",
+          "gb300-r01-0007",
+          "gb300-r01-0008",
+          "gb300-r01-0009",
+          "gb300-r01-0010",
+          "gb300-r01-0011",
+          "gb300-r01-0012",
+          "gb300-r01-0013",
+          "gb300-r01-0014",
+          "gb300-r01-0015",
+          "gb300-r01-0016",
+          "gb300-r01-0017",
+          "gb300-r01-0018"
+        ]
+      },
+      {
+        "Name": "PSU-R01-8",
+        "Children": [
+          "gb300-r01-0001",
+          "gb300-r01-0002",
+          "gb300-r01-0003",
+          "gb300-r01-0004",
+          "gb300-r01-0005",
+          "gb300-r01-0006",
+          "gb300-r01-0007",
+          "gb300-r01-0008",
+          "gb300-r01-0009",
+          "gb300-r01-0010",
+          "gb300-r01-0011",
+          "gb300-r01-0012",
+          "gb300-r01-0013",
+          "gb300-r01-0014",
+          "gb300-r01-0015",
+          "gb300-r01-0016",
+          "gb300-r01-0017",
+          "gb300-r01-0018"
+        ]
+      },
+      {
+        "Name": "PSU-R02-1",
+        "Children": [
+          "gb300-r02-0001",
+          "gb300-r02-0002",
+          "gb300-r02-0003",
+          "gb300-r02-0004",
+          "gb300-r02-0005",
+          "gb300-r02-0006",
+          "gb300-r02-0007",
+          "gb300-r02-0008",
+          "gb300-r02-0009",
+          "gb300-r02-0010",
+          "gb300-r02-0011",
+          "gb300-r02-0012",
+          "gb300-r02-0013",
+          "gb300-r02-0014",
+          "gb300-r02-0015",
+          "gb300-r02-0016",
+          "gb300-r02-0017",
+          "gb300-r02-0018"
+        ]
+      },
+      {
+        "Name": "PSU-R02-2",
+        "Children": [
+          "gb300-r02-0001",
+          "gb300-r02-0002",
+          "gb300-r02-0003",
+          "gb300-r02-0004",
+          "gb300-r02-0005",
+          "gb300-r02-0006",
+          "gb300-r02-0007",
+          "gb300-r02-0008",
+          "gb300-r02-0009",
+          "gb300-r02-0010",
+          "gb300-r02-0011",
+          "gb300-r02-0012",
+          "gb300-r02-0013",
+          "gb300-r02-0014",
+          "gb300-r02-0015",
+          "gb300-r02-0016",
+          "gb300-r02-0017",
+          "gb300-r02-0018"
+        ]
+      },
+      {
+        "Name": "PSU-R02-3",
+        "Children": [
+          "gb300-r02-0001",
+          "gb300-r02-0002",
+          "gb300-r02-0003",
+          "gb300-r02-0004",
+          "gb300-r02-0005",
+          "gb300-r02-0006",
+          "gb300-r02-0007",
+          "gb300-r02-0008",
+          "gb300-r02-0009",
+          "gb300-r02-0010",
+          "gb300-r02-0011",
+          "gb300-r02-0012",
+          "gb300-r02-0013",
+          "gb300-r02-0014",
+          "gb300-r02-0015",
+          "gb300-r02-0016",
+          "gb300-r02-0017",
+          "gb300-r02-0018"
+        ]
+      },
+      {
+        "Name": "PSU-R02-4",
+        "Children": [
+          "gb300-r02-0001",
+          "gb300-r02-0002",
+          "gb300-r02-0003",
+          "gb300-r02-0004",
+          "gb300-r02-0005",
+          "gb300-r02-0006",
+          "gb300-r02-0007",
+          "gb300-r02-0008",
+          "gb300-r02-0009",
+          "gb300-r02-0010",
+          "gb300-r02-0011",
+          "gb300-r02-0012",
+          "gb300-r02-0013",
+          "gb300-r02-0014",
+          "gb300-r02-0015",
+          "gb300-r02-0016",
+          "gb300-r02-0017",
+          "gb300-r02-0018"
+        ]
+      },
+      {
+        "Name": "PSU-R02-5",
+        "Children": [
+          "gb300-r02-0001",
+          "gb300-r02-0002",
+          "gb300-r02-0003",
+          "gb300-r02-0004",
+          "gb300-r02-0005",
+          "gb300-r02-0006",
+          "gb300-r02-0007",
+          "gb300-r02-0008",
+          "gb300-r02-0009",
+          "gb300-r02-0010",
+          "gb300-r02-0011",
+          "gb300-r02-0012",
+          "gb300-r02-0013",
+          "gb300-r02-0014",
+          "gb300-r02-0015",
+          "gb300-r02-0016",
+          "gb300-r02-0017",
+          "gb300-r02-0018"
+        ]
+      },
+      {
+        "Name": "PSU-R02-6",
+        "Children": [
+          "gb300-r02-0001",
+          "gb300-r02-0002",
+          "gb300-r02-0003",
+          "gb300-r02-0004",
+          "gb300-r02-0005",
+          "gb300-r02-0006",
+          "gb300-r02-0007",
+          "gb300-r02-0008",
+          "gb300-r02-0009",
+          "gb300-r02-0010",
+          "gb300-r02-0011",
+          "gb300-r02-0012",
+          "gb300-r02-0013",
+          "gb300-r02-0014",
+          "gb300-r02-0015",
+          "gb300-r02-0016",
+          "gb300-r02-0017",
+          "gb300-r02-0018"
+        ]
+      },
+      {
+        "Name": "PSU-R02-7",
+        "Children": [
+          "gb300-r02-0001",
+          "gb300-r02-0002",
+          "gb300-r02-0003",
+          "gb300-r02-0004",
+          "gb300-r02-0005",
+          "gb300-r02-0006",
+          "gb300-r02-0007",
+          "gb300-r02-0008",
+          "gb300-r02-0009",
+          "gb300-r02-0010",
+          "gb300-r02-0011",
+          "gb300-r02-0012",
+          "gb300-r02-0013",
+          "gb300-r02-0014",
+          "gb300-r02-0015",
+          "gb300-r02-0016",
+          "gb300-r02-0017",
+          "gb300-r02-0018"
+        ]
+      },
+      {
+        "Name": "PSU-R02-8",
+        "Children": [
+          "gb300-r02-0001",
+          "gb300-r02-0002",
+          "gb300-r02-0003",
+          "gb300-r02-0004",
+          "gb300-r02-0005",
+          "gb300-r02-0006",
+          "gb300-r02-0007",
+          "gb300-r02-0008",
+          "gb300-r02-0009",
+          "gb300-r02-0010",
+          "gb300-r02-0011",
+          "gb300-r02-0012",
+          "gb300-r02-0013",
+          "gb300-r02-0014",
+          "gb300-r02-0015",
+          "gb300-r02-0016",
+          "gb300-r02-0017",
+          "gb300-r02-0018"
+        ]
+      },
+      {
+        "Name": "PSU-R03-1",
+        "Children": [
+          "gb300-r03-0001",
+          "gb300-r03-0002",
+          "gb300-r03-0003",
+          "gb300-r03-0004",
+          "gb300-r03-0005",
+          "gb300-r03-0006",
+          "gb300-r03-0007",
+          "gb300-r03-0008",
+          "gb300-r03-0009",
+          "gb300-r03-0010",
+          "gb300-r03-0011",
+          "gb300-r03-0012",
+          "gb300-r03-0013",
+          "gb300-r03-0014",
+          "gb300-r03-0015",
+          "gb300-r03-0016",
+          "gb300-r03-0017",
+          "gb300-r03-0018"
+        ]
+      },
+      {
+        "Name": "PSU-R03-2",
+        "Children": [
+          "gb300-r03-0001",
+          "gb300-r03-0002",
+          "gb300-r03-0003",
+          "gb300-r03-0004",
+          "gb300-r03-0005",
+          "gb300-r03-0006",
+          "gb300-r03-0007",
+          "gb300-r03-0008",
+          "gb300-r03-0009",
+          "gb300-r03-0010",
+          "gb300-r03-0011",
+          "gb300-r03-0012",
+          "gb300-r03-0013",
+          "gb300-r03-0014",
+          "gb300-r03-0015",
+          "gb300-r03-0016",
+          "gb300-r03-0017",
+          "gb300-r03-0018"
+        ]
+      },
+      {
+        "Name": "PSU-R03-3",
+        "Children": [
+          "gb300-r03-0001",
+          "gb300-r03-0002",
+          "gb300-r03-0003",
+          "gb300-r03-0004",
+          "gb300-r03-0005",
+          "gb300-r03-0006",
+          "gb300-r03-0007",
+          "gb300-r03-0008",
+          "gb300-r03-0009",
+          "gb300-r03-0010",
+          "gb300-r03-0011",
+          "gb300-r03-0012",
+          "gb300-r03-0013",
+          "gb300-r03-0014",
+          "gb300-r03-0015",
+          "gb300-r03-0016",
+          "gb300-r03-0017",
+          "gb300-r03-0018"
+        ]
+      },
+      {
+        "Name": "PSU-R03-4",
+        "Children": [
+          "gb300-r03-0001",
+          "gb300-r03-0002",
+          "gb300-r03-0003",
+          "gb300-r03-0004",
+          "gb300-r03-0005",
+          "gb300-r03-0006",
+          "gb300-r03-0007",
+          "gb300-r03-0008",
+          "gb300-r03-0009",
+          "gb300-r03-0010",
+          "gb300-r03-0011",
+          "gb300-r03-0012",
+          "gb300-r03-0013",
+          "gb300-r03-0014",
+          "gb300-r03-0015",
+          "gb300-r03-0016",
+          "gb300-r03-0017",
+          "gb300-r03-0018"
+        ]
+      },
+      {
+        "Name": "PSU-R03-5",
+        "Children": [
+          "gb300-r03-0001",
+          "gb300-r03-0002",
+          "gb300-r03-0003",
+          "gb300-r03-0004",
+          "gb300-r03-0005",
+          "gb300-r03-0006",
+          "gb300-r03-0007",
+          "gb300-r03-0008",
+          "gb300-r03-0009",
+          "gb300-r03-0010",
+          "gb300-r03-0011",
+          "gb300-r03-0012",
+          "gb300-r03-0013",
+          "gb300-r03-0014",
+          "gb300-r03-0015",
+          "gb300-r03-0016",
+          "gb300-r03-0017",
+          "gb300-r03-0018"
+        ]
+      },
+      {
+        "Name": "PSU-R03-6",
+        "Children": [
+          "gb300-r03-0001",
+          "gb300-r03-0002",
+          "gb300-r03-0003",
+          "gb300-r03-0004",
+          "gb300-r03-0005",
+          "gb300-r03-0006",
+          "gb300-r03-0007",
+          "gb300-r03-0008",
+          "gb300-r03-0009",
+          "gb300-r03-0010",
+          "gb300-r03-0011",
+          "gb300-r03-0012",
+          "gb300-r03-0013",
+          "gb300-r03-0014",
+          "gb300-r03-0015",
+          "gb300-r03-0016",
+          "gb300-r03-0017",
+          "gb300-r03-0018"
+        ]
+      },
+      {
+        "Name": "PSU-R03-7",
+        "Children": [
+          "gb300-r03-0001",
+          "gb300-r03-0002",
+          "gb300-r03-0003",
+          "gb300-r03-0004",
+          "gb300-r03-0005",
+          "gb300-r03-0006",
+          "gb300-r03-0007",
+          "gb300-r03-0008",
+          "gb300-r03-0009",
+          "gb300-r03-0010",
+          "gb300-r03-0011",
+          "gb300-r03-0012",
+          "gb300-r03-0013",
+          "gb300-r03-0014",
+          "gb300-r03-0015",
+          "gb300-r03-0016",
+          "gb300-r03-0017",
+          "gb300-r03-0018"
+        ]
+      },
+      {
+        "Name": "PSU-R03-8",
+        "Children": [
+          "gb300-r03-0001",
+          "gb300-r03-0002",
+          "gb300-r03-0003",
+          "gb300-r03-0004",
+          "gb300-r03-0005",
+          "gb300-r03-0006",
+          "gb300-r03-0007",
+          "gb300-r03-0008",
+          "gb300-r03-0009",
+          "gb300-r03-0010",
+          "gb300-r03-0011",
+          "gb300-r03-0012",
+          "gb300-r03-0013",
+          "gb300-r03-0014",
+          "gb300-r03-0015",
+          "gb300-r03-0016",
+          "gb300-r03-0017",
+          "gb300-r03-0018"
+        ]
+      },
+      {
+        "Name": "PSU-R04-1",
+        "Children": [
+          "gb300-r04-0001",
+          "gb300-r04-0002",
+          "gb300-r04-0003",
+          "gb300-r04-0004",
+          "gb300-r04-0005",
+          "gb300-r04-0006",
+          "gb300-r04-0007",
+          "gb300-r04-0008",
+          "gb300-r04-0009",
+          "gb300-r04-0010",
+          "gb300-r04-0011",
+          "gb300-r04-0012",
+          "gb300-r04-0013",
+          "gb300-r04-0014",
+          "gb300-r04-0015",
+          "gb300-r04-0016",
+          "gb300-r04-0017",
+          "gb300-r04-0018"
+        ]
+      },
+      {
+        "Name": "PSU-R04-2",
+        "Children": [
+          "gb300-r04-0001",
+          "gb300-r04-0002",
+          "gb300-r04-0003",
+          "gb300-r04-0004",
+          "gb300-r04-0005",
+          "gb300-r04-0006",
+          "gb300-r04-0007",
+          "gb300-r04-0008",
+          "gb300-r04-0009",
+          "gb300-r04-0010",
+          "gb300-r04-0011",
+          "gb300-r04-0012",
+          "gb300-r04-0013",
+          "gb300-r04-0014",
+          "gb300-r04-0015",
+          "gb300-r04-0016",
+          "gb300-r04-0017",
+          "gb300-r04-0018"
+        ]
+      },
+      {
+        "Name": "PSU-R04-3",
+        "Children": [
+          "gb300-r04-0001",
+          "gb300-r04-0002",
+          "gb300-r04-0003",
+          "gb300-r04-0004",
+          "gb300-r04-0005",
+          "gb300-r04-0006",
+          "gb300-r04-0007",
+          "gb300-r04-0008",
+          "gb300-r04-0009",
+          "gb300-r04-0010",
+          "gb300-r04-0011",
+          "gb300-r04-0012",
+          "gb300-r04-0013",
+          "gb300-r04-0014",
+          "gb300-r04-0015",
+          "gb300-r04-0016",
+          "gb300-r04-0017",
+          "gb300-r04-0018"
+        ]
+      },
+      {
+        "Name": "PSU-R04-4",
+        "Children": [
+          "gb300-r04-0001",
+          "gb300-r04-0002",
+          "gb300-r04-0003",
+          "gb300-r04-0004",
+          "gb300-r04-0005",
+          "gb300-r04-0006",
+          "gb300-r04-0007",
+          "gb300-r04-0008",
+          "gb300-r04-0009",
+          "gb300-r04-0010",
+          "gb300-r04-0011",
+          "gb300-r04-0012",
+          "gb300-r04-0013",
+          "gb300-r04-0014",
+          "gb300-r04-0015",
+          "gb300-r04-0016",
+          "gb300-r04-0017",
+          "gb300-r04-0018"
+        ]
+      },
+      {
+        "Name": "PSU-R04-5",
+        "Children": [
+          "gb300-r04-0001",
+          "gb300-r04-0002",
+          "gb300-r04-0003",
+          "gb300-r04-0004",
+          "gb300-r04-0005",
+          "gb300-r04-0006",
+          "gb300-r04-0007",
+          "gb300-r04-0008",
+          "gb300-r04-0009",
+          "gb300-r04-0010",
+          "gb300-r04-0011",
+          "gb300-r04-0012",
+          "gb300-r04-0013",
+          "gb300-r04-0014",
+          "gb300-r04-0015",
+          "gb300-r04-0016",
+          "gb300-r04-0017",
+          "gb300-r04-0018"
+        ]
+      },
+      {
+        "Name": "PSU-R04-6",
+        "Children": [
+          "gb300-r04-0001",
+          "gb300-r04-0002",
+          "gb300-r04-0003",
+          "gb300-r04-0004",
+          "gb300-r04-0005",
+          "gb300-r04-0006",
+          "gb300-r04-0007",
+          "gb300-r04-0008",
+          "gb300-r04-0009",
+          "gb300-r04-0010",
+          "gb300-r04-0011",
+          "gb300-r04-0012",
+          "gb300-r04-0013",
+          "gb300-r04-0014",
+          "gb300-r04-0015",
+          "gb300-r04-0016",
+          "gb300-r04-0017",
+          "gb300-r04-0018"
+        ]
+      },
+      {
+        "Name": "PSU-R04-7",
+        "Children": [
+          "gb300-r04-0001",
+          "gb300-r04-0002",
+          "gb300-r04-0003",
+          "gb300-r04-0004",
+          "gb300-r04-0005",
+          "gb300-r04-0006",
+          "gb300-r04-0007",
+          "gb300-r04-0008",
+          "gb300-r04-0009",
+          "gb300-r04-0010",
+          "gb300-r04-0011",
+          "gb300-r04-0012",
+          "gb300-r04-0013",
+          "gb300-r04-0014",
+          "gb300-r04-0015",
+          "gb300-r04-0016",
+          "gb300-r04-0017",
+          "gb300-r04-0018"
+        ]
+      },
+      {
+        "Name": "PSU-R04-8",
+        "Children": [
+          "gb300-r04-0001",
+          "gb300-r04-0002",
+          "gb300-r04-0003",
+          "gb300-r04-0004",
+          "gb300-r04-0005",
+          "gb300-r04-0006",
+          "gb300-r04-0007",
+          "gb300-r04-0008",
+          "gb300-r04-0009",
+          "gb300-r04-0010",
+          "gb300-r04-0011",
+          "gb300-r04-0012",
+          "gb300-r04-0013",
+          "gb300-r04-0014",
+          "gb300-r04-0015",
+          "gb300-r04-0016",
+          "gb300-r04-0017",
+          "gb300-r04-0018"
+        ]
+      },
+      {
+        "Name": "gb300-r01-0001",
+        "AgentId": "gb300-lab-agent"
+      },
+      {
+        "Name": "gb300-r01-0002",
+        "AgentId": "gb300-lab-agent"
+      },
+      {
+        "Name": "gb300-r01-0003",
+        "AgentId": "gb300-lab-agent"
+      },
+      {
+        "Name": "gb300-r01-0004",
+        "AgentId": "gb300-lab-agent"
+      },
+      {
+        "Name": "gb300-r01-0005",
+        "AgentId": "gb300-lab-agent"
+      },
+      {
+        "Name": "gb300-r01-0006",
+        "AgentId": "gb300-lab-agent"
+      },
+      {
+        "Name": "gb300-r01-0007",
+        "AgentId": "gb300-lab-agent"
+      },
+      {
+        "Name": "gb300-r01-0008",
+        "AgentId": "gb300-lab-agent"
+      },
+      {
+        "Name": "gb300-r01-0009",
+        "AgentId": "gb300-lab-agent"
+      },
+      {
+        "Name": "gb300-r01-0010",
+        "AgentId": "gb300-lab-agent"
+      },
+      {
+        "Name": "gb300-r01-0011",
+        "AgentId": "gb300-lab-agent"
+      },
+      {
+        "Name": "gb300-r01-0012",
+        "AgentId": "gb300-lab-agent"
+      },
+      {
+        "Name": "gb300-r01-0013",
+        "AgentId": "gb300-lab-agent"
+      },
+      {
+        "Name": "gb300-r01-0014",
+        "AgentId": "gb300-lab-agent"
+      },
+      {
+        "Name": "gb300-r01-0015",
+        "AgentId": "gb300-lab-agent"
+      },
+      {
+        "Name": "gb300-r01-0016",
+        "AgentId": "gb300-lab-agent"
+      },
+      {
+        "Name": "gb300-r01-0017",
+        "AgentId": "gb300-lab-agent"
+      },
+      {
+        "Name": "gb300-r01-0018",
+        "AgentId": "gb300-lab-agent"
+      },
+      {
+        "Name": "gb300-r02-0001",
+        "AgentId": "gb300-lab-agent"
+      },
+      {
+        "Name": "gb300-r02-0002",
+        "AgentId": "gb300-lab-agent"
+      },
+      {
+        "Name": "gb300-r02-0003",
+        "AgentId": "gb300-lab-agent"
+      },
+      {
+        "Name": "gb300-r02-0004",
+        "AgentId": "gb300-lab-agent"
+      },
+      {
+        "Name": "gb300-r02-0005",
+        "AgentId": "gb300-lab-agent"
+      },
+      {
+        "Name": "gb300-r02-0006",
+        "AgentId": "gb300-lab-agent"
+      },
+      {
+        "Name": "gb300-r02-0007",
+        "AgentId": "gb300-lab-agent"
+      },
+      {
+        "Name": "gb300-r02-0008",
+        "AgentId": "gb300-lab-agent"
+      },
+      {
+        "Name": "gb300-r02-0009",
+        "AgentId": "gb300-lab-agent"
+      },
+      {
+        "Name": "gb300-r02-0010",
+        "AgentId": "gb300-lab-agent"
+      },
+      {
+        "Name": "gb300-r02-0011",
+        "AgentId": "gb300-lab-agent"
+      },
+      {
+        "Name": "gb300-r02-0012",
+        "AgentId": "gb300-lab-agent"
+      },
+      {
+        "Name": "gb300-r02-0013",
+        "AgentId": "gb300-lab-agent"
+      },
+      {
+        "Name": "gb300-r02-0014",
+        "AgentId": "gb300-lab-agent"
+      },
+      {
+        "Name": "gb300-r02-0015",
+        "AgentId": "gb300-lab-agent"
+      },
+      {
+        "Name": "gb300-r02-0016",
+        "AgentId": "gb300-lab-agent"
+      },
+      {
+        "Name": "gb300-r02-0017",
+        "AgentId": "gb300-lab-agent"
+      },
+      {
+        "Name": "gb300-r02-0018",
+        "AgentId": "gb300-lab-agent"
+      },
+      {
+        "Name": "gb300-r03-0001",
+        "AgentId": "gb300-lab-agent"
+      },
+      {
+        "Name": "gb300-r03-0002",
+        "AgentId": "gb300-lab-agent"
+      },
+      {
+        "Name": "gb300-r03-0003",
+        "AgentId": "gb300-lab-agent"
+      },
+      {
+        "Name": "gb300-r03-0004",
+        "AgentId": "gb300-lab-agent"
+      },
+      {
+        "Name": "gb300-r03-0005",
+        "AgentId": "gb300-lab-agent"
+      },
+      {
+        "Name": "gb300-r03-0006",
+        "AgentId": "gb300-lab-agent"
+      },
+      {
+        "Name": "gb300-r03-0007",
+        "AgentId": "gb300-lab-agent"
+      },
+      {
+        "Name": "gb300-r03-0008",
+        "AgentId": "gb300-lab-agent"
+      },
+      {
+        "Name": "gb300-r03-0009",
+        "AgentId": "gb300-lab-agent"
+      },
+      {
+        "Name": "gb300-r03-0010",
+        "AgentId": "gb300-lab-agent"
+      },
+      {
+        "Name": "gb300-r03-0011",
+        "AgentId": "gb300-lab-agent"
+      },
+      {
+        "Name": "gb300-r03-0012",
+        "AgentId": "gb300-lab-agent"
+      },
+      {
+        "Name": "gb300-r03-0013",
+        "AgentId": "gb300-lab-agent"
+      },
+      {
+        "Name": "gb300-r03-0014",
+        "AgentId": "gb300-lab-agent"
+      },
+      {
+        "Name": "gb300-r03-0015",
+        "AgentId": "gb300-lab-agent"
+      },
+      {
+        "Name": "gb300-r03-0016",
+        "AgentId": "gb300-lab-agent"
+      },
+      {
+        "Name": "gb300-r03-0017",
+        "AgentId": "gb300-lab-agent"
+      },
+      {
+        "Name": "gb300-r03-0018",
+        "AgentId": "gb300-lab-agent"
+      },
+      {
+        "Name": "gb300-r04-0001",
+        "AgentId": "gb300-lab-agent"
+      },
+      {
+        "Name": "gb300-r04-0002",
+        "AgentId": "gb300-lab-agent"
+      },
+      {
+        "Name": "gb300-r04-0003",
+        "AgentId": "gb300-lab-agent"
+      },
+      {
+        "Name": "gb300-r04-0004",
+        "AgentId": "gb300-lab-agent"
+      },
+      {
+        "Name": "gb300-r04-0005",
+        "AgentId": "gb300-lab-agent"
+      },
+      {
+        "Name": "gb300-r04-0006",
+        "AgentId": "gb300-lab-agent"
+      },
+      {
+        "Name": "gb300-r04-0007",
+        "AgentId": "gb300-lab-agent"
+      },
+      {
+        "Name": "gb300-r04-0008",
+        "AgentId": "gb300-lab-agent"
+      },
+      {
+        "Name": "gb300-r04-0009",
+        "AgentId": "gb300-lab-agent"
+      },
+      {
+        "Name": "gb300-r04-0010",
+        "AgentId": "gb300-lab-agent"
+      },
+      {
+        "Name": "gb300-r04-0011",
+        "AgentId": "gb300-lab-agent"
+      },
+      {
+        "Name": "gb300-r04-0012",
+        "AgentId": "gb300-lab-agent"
+      },
+      {
+        "Name": "gb300-r04-0013",
+        "AgentId": "gb300-lab-agent"
+      },
+      {
+        "Name": "gb300-r04-0014",
+        "AgentId": "gb300-lab-agent"
+      },
+      {
+        "Name": "gb300-r04-0015",
+        "AgentId": "gb300-lab-agent"
+      },
+      {
+        "Name": "gb300-r04-0016",
+        "AgentId": "gb300-lab-agent"
+      },
+      {
+        "Name": "gb300-r04-0017",
+        "AgentId": "gb300-lab-agent"
+      },
+      {
+        "Name": "gb300-r04-0018",
+        "AgentId": "gb300-lab-agent"
+      }
+    ]
+  }
+}

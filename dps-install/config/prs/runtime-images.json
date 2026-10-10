@@ -1,0 +1,31 @@
+{
+  "images": [
+    {
+      "tag": "nvcr.io/nvidia/power-config:2.1.0",
+      "digest": "nvcr.io/nvidia/power-config@sha256:2824790b955776a0383c22e3cffd31f98793f80b6517d98074fd55ce75cb37e5",
+      "image_id": "sha256:8c960346c0a0ae3f325fe617a2d1edca33c831418cdf9c5eaa398f37d5857f5f"
+    },
+    {
+      "tag": "nvcr.io/nvidia/power-controller:2.1.0",
+      "digest": "nvcr.io/nvidia/power-controller@sha256:4ce39dccc4e51083bc4c4ee64e9d382f1353301db50b1347ef1e03fb963bce4d",
+      "image_id": "sha256:df96ccb1ea3e747f1e2f6096ab116445cb73e3aa0bb8e0389da11fe03a1ac534"
+    },
+    {
+      "tag": "busybox:1.37-glibc",
+      "digest": "busybox@sha256:42a9ff19af33811ee466b24c66384461d37c32dcc28d1d27d49b8aca816bd5ee",
+      "image_id": "sha256:30ecbe1509090b38ef3260f3609d64d8261230464eaa4d235901db496e9647fb"
+    },
+    {
+      "tag": "chrislusf/seaweedfs:4.18",
+      "digest": "chrislusf/seaweedfs@sha256:37ff8b1c2aff48edc2ac4439d0c5b0b73a9ee100e0ab93c68e6bceb00d1cba28",
+      "image_id": "sha256:3125832cebfd724e97898c41d4c7197cc7f31b0f113a30a2c85022e838a1e295"
+    },
+    {
+      "tag": "otel/opentelemetry-collector-contrib:0.110.0",
+      "digest": "otel/opentelemetry-collector-contrib@sha256:0ed3688bbb02dabc0429ef648ebe3e9c53aca5e7c5a6b1a4a61b9f583b823e36",
+      "image_id": "sha256:42c4dcd8cb8c352397093267a8ffb4c1a53ca7f7f0e1185bcf092aa394970f44"
+    }
+  ],
+  "archive": "/raid/vince/deploy/dps-install/packages/prs/prs-2.1.0-runtime.tar",
+  "archive_sha256": "73ee28a53f40dac5f307e06d91aac6787a388e8ecb1ecd97d485797d3665e885"
+}

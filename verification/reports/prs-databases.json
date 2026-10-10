@@ -1,0 +1,180 @@
+{
+  "timestamp": "2026-10-10T16:50:30.167064+08:00",
+  "passed": true,
+  "passed_count": 18,
+  "total_count": 18,
+  "database_names": [
+    "dps_prs_config",
+    "dps_prs_config_staged",
+    "dps_prs_controller"
+  ],
+  "client_tls_environment": {
+    "PGSSLMODE": "verify-full",
+    "PGSSLROOTCERT": "/secrets/postgresql/ca.crt"
+  },
+  "checks": [
+    {
+      "name": "config-engine-dps_prs_config",
+      "passed": true,
+      "detail": {
+        "database": "dps_prs_config",
+        "username": "dps",
+        "tls": true,
+        "tls_protocol": "TLSv1.3",
+        "transactional_ddl_insert_rollback": true
+      }
+    },
+    {
+      "name": "config-engine-dps_prs_config_staged",
+      "passed": true,
+      "detail": {
+        "database": "dps_prs_config_staged",
+        "username": "dps",
+        "tls": true,
+        "tls_protocol": "TLSv1.3",
+        "transactional_ddl_insert_rollback": true
+      }
+    },
+    {
+      "name": "config-engine-dps_prs_controller",
+      "passed": true,
+      "detail": {
+        "database": "dps_prs_controller",
+        "username": "dps",
+        "tls": true,
+        "tls_protocol": "TLSv1.3",
+        "transactional_ddl_insert_rollback": true
+      }
+    },
+    {
+      "name": "untrusted-ca",
+      "passed": true,
+      "detail": {
+        "failure_category": "untrusted-ca",
+        "exception_type": "OperationalError"
+      }
+    },
+    {
+      "name": "incorrect-server-name",
+      "passed": true,
+      "detail": {
+        "failure_category": "incorrect-server-name",
+        "exception_type": "OperationalError"
+      }
+    },
+    {
+      "name": "plaintext-rejected",
+      "passed": true,
+      "detail": {
+        "failure_category": "plaintext-rejected",
+        "exception_type": "OperationalError"
+      }
+    },
+    {
+      "name": "wrong-password-rejected",
+      "passed": true,
+      "detail": {
+        "failure_category": "wrong-password-rejected",
+        "exception_type": "OperationalError"
+      }
+    },
+    {
+      "name": "controller-engine-tls",
+      "passed": true,
+      "detail": {
+        "database": "dps_prs_controller",
+        "username": "dps",
+        "tls": true,
+        "tls_protocol": "TLSv1.3",
+        "driver_version": "2.9.11 (dt dec pq3 ext lo64)",
+        "database_setting_fields": [
+          "url_override",
+          "host",
+          "port",
+          "user",
+          "password",
+          "name"
+        ]
+      }
+    },
+    {
+      "name": "owner-and-migration-privileges-dps_prs_config",
+      "passed": true,
+      "detail": {
+        "database": "dps_prs_config",
+        "owner_and_connect": "dps|t",
+        "schema_migration_privileges": "t"
+      }
+    },
+    {
+      "name": "probe-rollback-dps_prs_config",
+      "passed": true,
+      "detail": {
+        "leftover_tables": 0
+      }
+    },
+    {
+      "name": "owner-and-migration-privileges-dps_prs_config_staged",
+      "passed": true,
+      "detail": {
+        "database": "dps_prs_config_staged",
+        "owner_and_connect": "dps|t",
+        "schema_migration_privileges": "t"
+      }
+    },
+    {
+      "name": "probe-rollback-dps_prs_config_staged",
+      "passed": true,
+      "detail": {
+        "leftover_tables": 0
+      }
+    },
+    {
+      "name": "owner-and-migration-privileges-dps_prs_controller",
+      "passed": true,
+      "detail": {
+        "database": "dps_prs_controller",
+        "owner_and_connect": "dps|t",
+        "schema_migration_privileges": "t"
+      }
+    },
+    {
+      "name": "probe-rollback-dps_prs_controller",
+      "passed": true,
+      "detail": {
+        "leftover_tables": 0
+      }
+    },
+    {
+      "name": "non-superuser-scram-role",
+      "passed": true,
+      "detail": {
+        "superuser_createdb_createrole_scram_flags": "f|f|f|t"
+      }
+    },
+    {
+      "name": "hba-rules-valid",
+      "passed": true,
+      "detail": {
+        "errors": 0
+      }
+    },
+    {
+      "name": "three-trusted-network-prs-rules",
+      "passed": true,
+      "detail": {
+        "scoped_hostssl_rules": 3
+      }
+    },
+    {
+      "name": "existing-dps-database-present",
+      "passed": true,
+      "detail": {
+        "public_table_count": 25
+      }
+    }
+  ],
+  "limitations": [
+    "Client probes run in independent application image containers using host networking. Live Pod sessions are verified after Helm deployment."
+  ]
+}

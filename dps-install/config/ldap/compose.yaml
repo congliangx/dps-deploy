@@ -1,0 +1,38 @@
+services:
+  openldap:
+    image: sha256:68b0ec36cc46324ce44dd357ec634dcd3264a5c078e3ff97e4878db7206a7eab
+    container_name: dps-openldap
+    restart: unless-stopped
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - FOWNER
+      - SETUID
+      - SETGID
+      - DAC_OVERRIDE
+    ports:
+      - "10.6.131.43:1636:1636"
+    volumes:
+      - /raid/vince/deploy/dps-install/config/ldap:/ldap/config:ro
+      - /raid/vince/deploy/dps-install/data/ldap:/var/lib/ldap
+    tmpfs:
+      - /run:rw,nosuid,nodev,mode=755
+      - /tmp:rw,nosuid,nodev,mode=1777
+    environment:
+      LDAPTLS_CACERT: /ldap/config/tls/ca.crt
+      LDAPTLS_REQCERT: demand
+    healthcheck:
+      test: ["CMD", "ldapwhoami", "-x", "-H", "ldaps://127.0.0.1:1636", "-D", "uid=dps-bind,ou=services,dc=dps,dc=lab", "-y", "/ldap/config/bind.password"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"

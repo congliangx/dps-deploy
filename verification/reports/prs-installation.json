@@ -1,0 +1,421 @@
+{
+  "checked_at": "2026-10-10T17:05:41.804854+08:00",
+  "scope": "PRS deployment/runtime switch and real Pod integration; empty domain with inactive topology, no BMC or power-policy writes",
+  "passed": true,
+  "counts": {
+    "passed": 35,
+    "total": 35
+  },
+  "checks": [
+    {
+      "name": "prs-both-chart-switches-enabled",
+      "passed": true,
+      "details": {
+        "dps_prs": true,
+        "power_steering": true
+      }
+    },
+    {
+      "name": "helm-dps-deployed",
+      "passed": true,
+      "details": [
+        {
+          "name": "dps",
+          "revision": "5",
+          "status": "deployed",
+          "chart": "dps-0.9.0"
+        }
+      ]
+    },
+    {
+      "name": "core-agent-ui-prs-seaweedfs-ready",
+      "passed": true,
+      "details": [
+        {
+          "name": "dps-power-config-5f6cb4ccd4-5d6rg",
+          "phase": "Running",
+          "ready": true,
+          "restarts": 6
+        },
+        {
+          "name": "dps-power-controller-85886794b5-dnk4k",
+          "phase": "Running",
+          "ready": true,
+          "restarts": 0
+        },
+        {
+          "name": "dps-seaweedfs-filer-0",
+          "phase": "Running",
+          "ready": true,
+          "restarts": 0
+        },
+        {
+          "name": "dps-seaweedfs-master-0",
+          "phase": "Running",
+          "ready": true,
+          "restarts": 0
+        },
+        {
+          "name": "dps-seaweedfs-s3-79b44fd95b-vhwvq",
+          "phase": "Running",
+          "ready": true,
+          "restarts": 0
+        },
+        {
+          "name": "dps-seaweedfs-volume-0",
+          "phase": "Running",
+          "ready": true,
+          "restarts": 0
+        },
+        {
+          "name": "dps-server-0",
+          "phase": "Running",
+          "ready": true,
+          "restarts": 0
+        },
+        {
+          "name": "dps-server-agent-fff897b75-gkclg",
+          "phase": "Running",
+          "ready": true,
+          "restarts": 0
+        },
+        {
+          "name": "dps-ui-55f7cdc7c-gmg95",
+          "phase": "Running",
+          "ready": true,
+          "restarts": 0
+        }
+      ]
+    },
+    {
+      "name": "no-bundled-postgresql",
+      "passed": true,
+      "details": {
+        "external_postgresql": true
+      }
+    },
+    {
+      "name": "three-seaweedfs-pvc-bound",
+      "passed": true,
+      "details": [
+        {
+          "name": "data-dps-dps-seaweedfs-master-0",
+          "phase": "Bound",
+          "size": "1Gi"
+        },
+        {
+          "name": "data-filer-dps-seaweedfs-filer-0",
+          "phase": "Bound",
+          "size": "1Gi"
+        },
+        {
+          "name": "data1-dps-seaweedfs-volume-0",
+          "phase": "Bound",
+          "size": "10Gi"
+        }
+      ]
+    },
+    {
+      "name": "s3-persistent-data-under-project",
+      "passed": true,
+      "details": [
+        "/raid/vince/deploy/dps-install/data/kubernetes/storage/pvc-3d542a34-8262-407e-9bf5-f77f4c95e8fe_dps_data-dps-dps-seaweedfs-master-0",
+        "/raid/vince/deploy/dps-install/data/kubernetes/storage/pvc-399686fe-62c5-411a-9299-665af8501b0a_dps_data-filer-dps-seaweedfs-filer-0",
+        "/raid/vince/deploy/dps-install/data/kubernetes/storage/pvc-7e83a904-58e4-46db-930b-eabf9525de26_dps_data1-dps-seaweedfs-volume-0"
+      ]
+    },
+    {
+      "name": "seaweedfs-no-unmanaged-hostpaths",
+      "passed": true,
+      "details": {
+        "hostpaths": []
+      }
+    },
+    {
+      "name": "persisted-global-prs-enabled",
+      "passed": true,
+      "details": {
+        "global_policy_bundle": "MaxLPS",
+        "metrics_interval_seconds": "30",
+        "prs_enabled": "true",
+        "prs_headroom_percent": "-15",
+        "prs_history_window_size": "0",
+        "prs_predictor_safety_gap_watts": "0",
+        "prs_scheduler_interval_seconds": "5"
+      }
+    },
+    {
+      "name": "headroom-and-scheduler-effective",
+      "passed": true,
+      "details": {
+        "headroom_percent": "-15",
+        "scheduler_seconds": "5"
+      }
+    },
+    {
+      "name": "four-rack-topology-inactive",
+      "passed": true,
+      "details": {
+        "topology": "dps-gb300-4rack",
+        "active": false,
+        "computers": 72
+      }
+    },
+    {
+      "name": "no-resource-groups-or-power-domains-assigned",
+      "passed": true,
+      "details": {
+        "resource_groups": 0
+      }
+    },
+    {
+      "name": "config-health-startup",
+      "passed": true,
+      "details": {
+        "http_status": 200
+      }
+    },
+    {
+      "name": "config-health-live",
+      "passed": true,
+      "details": {
+        "http_status": 200
+      }
+    },
+    {
+      "name": "config-health-ready",
+      "passed": true,
+      "details": {
+        "http_status": 200
+      }
+    },
+    {
+      "name": "config-metrics-readable",
+      "passed": true,
+      "details": {
+        "http_status": 200,
+        "bytes": 74698
+      }
+    },
+    {
+      "name": "controller-health-startup",
+      "passed": true,
+      "details": {
+        "http_status": 200
+      }
+    },
+    {
+      "name": "controller-health-live",
+      "passed": true,
+      "details": {
+        "http_status": 200
+      }
+    },
+    {
+      "name": "controller-health-ready",
+      "passed": true,
+      "details": {
+        "http_status": 200
+      }
+    },
+    {
+      "name": "controller-metrics-readable",
+      "passed": true,
+      "details": {
+        "http_status": 200,
+        "bytes": 82934
+      }
+    },
+    {
+      "name": "prs-config-domain-list-empty",
+      "passed": true,
+      "details": {
+        "http_status": 200,
+        "domain_count": 0
+      }
+    },
+    {
+      "name": "prs-controller-scheduler-healthy",
+      "passed": true,
+      "details": {
+        "http_status": 200,
+        "status": "idle",
+        "iteration_count": 90,
+        "next_run_at": "2026-10-10T09:05:39.090985Z",
+        "last_run_at": "2026-10-10T09:05:34.136718Z",
+        "last_error": null
+      }
+    },
+    {
+      "name": "actual-controller-ldap-tls-dps-read",
+      "passed": true,
+      "details": {
+        "controller_dps_auth": "passed",
+        "topology_count": 1
+      }
+    },
+    {
+      "name": "actual-prs-application-postgresql-tls",
+      "passed": true,
+      "details": {
+        "sessions": [
+          {
+            "datname": "dps_prs_controller",
+            "client_addr": "172.30.90.1/32",
+            "usename": "dps",
+            "ssl": true,
+            "version": "TLSv1.3"
+          },
+          {
+            "datname": "dps_prs_config",
+            "client_addr": "172.30.90.1/32",
+            "usename": "dps",
+            "ssl": true,
+            "version": "TLSv1.3"
+          },
+          {
+            "datname": "dps_prs_config_staged",
+            "client_addr": "172.30.90.1/32",
+            "usename": "dps",
+            "ssl": true,
+            "version": "TLSv1.3"
+          },
+          {
+            "datname": "dps_prs_config",
+            "client_addr": "172.30.90.1/32",
+            "usename": "dps",
+            "ssl": true,
+            "version": "TLSv1.3"
+          },
+          {
+            "datname": "dps_prs_controller",
+            "client_addr": "172.30.90.1/32",
+            "usename": "dps",
+            "ssl": true,
+            "version": "TLSv1.3"
+          }
+        ],
+        "source_address_note": "Docker bridge SNAT presents 172.30.90.1 to PostgreSQL; direct Pod probes separately verify each Pod configuration."
+      }
+    },
+    {
+      "name": "three-prs-database-schema-migrations",
+      "passed": true,
+      "details": {
+        "dps_prs_config": 5,
+        "dps_prs_config_staged": 5,
+        "dps_prs_controller": 3
+      }
+    },
+    {
+      "name": "actual-config-pod-postgresql-verify-full",
+      "passed": true,
+      "details": {
+        "databases": [
+          {
+            "database": "dps_prs_config",
+            "ssl": true,
+            "tls_version": "TLSv1.3",
+            "sslmode": "verify-full"
+          },
+          {
+            "database": "dps_prs_config_staged",
+            "ssl": true,
+            "tls_version": "TLSv1.3",
+            "sslmode": "verify-full"
+          }
+        ],
+        "all_verify_full": true
+      }
+    },
+    {
+      "name": "actual-controller-pod-postgresql-verify-full",
+      "passed": true,
+      "details": {
+        "databases": [
+          {
+            "database": "dps_prs_controller",
+            "ssl": true,
+            "tls_version": "TLSv1.3",
+            "sslmode": "verify-full"
+          }
+        ],
+        "all_verify_full": true
+      }
+    },
+    {
+      "name": "s3-authenticated-put-get-delete",
+      "passed": true,
+      "details": {
+        "bucket": "dps-prs",
+        "put_get_delete": true,
+        "anonymous_http_status": 403,
+        "temporary_object_deleted": true
+      }
+    },
+    {
+      "name": "s3-anonymous-object-read-denied",
+      "passed": true,
+      "details": {
+        "http_status": 403
+      }
+    },
+    {
+      "name": "controller-secret-rbac",
+      "passed": true,
+      "details": {
+        "service_account": "dps",
+        "can_get_own_ldap_secret": "yes"
+      }
+    },
+    {
+      "name": "production-ldap-login-after-prs-upgrade",
+      "passed": true,
+      "details": {
+        "username": "dps-lab"
+      }
+    },
+    {
+      "name": "dps-server-database-auth-health",
+      "passed": true,
+      "details": {
+        "auth": true,
+        "database": true,
+        "dps_server": true
+      }
+    },
+    {
+      "name": "agent-mtls-still-connected",
+      "passed": true,
+      "details": {
+        "agent": "gb300-lab-agent"
+      }
+    },
+    {
+      "name": "ui-real-ldap-login-after-prs",
+      "passed": true,
+      "details": {
+        "http_status": 200,
+        "session_cookie_present": true
+      }
+    },
+    {
+      "name": "ui-test-session-logout",
+      "passed": true,
+      "details": {
+        "http_status": 204
+      }
+    },
+    {
+      "name": "ui-wrong-ldap-password-still-rejected",
+      "passed": true,
+      "details": {
+        "http_status": 401
+      }
+    }
+  ],
+  "topology_active": false,
+  "resource_groups": 0,
+  "bmc_writes": false,
+  "dynamic_power_control_verified": false
+}

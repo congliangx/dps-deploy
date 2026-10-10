@@ -1,0 +1,4 @@
+subjectAltName=IP:10.6.131.43,DNS:L20-12,DNS:l20-12
+basicConstraints=critical,CA:FALSE
+keyUsage=critical,digitalSignature,keyEncipherment
+extendedKeyUsage=serverAuth
