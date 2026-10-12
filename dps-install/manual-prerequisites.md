@@ -8,7 +8,7 @@
 
 | 脚本/阶段 | 实际动作 | 对应正文 |
 | --- | --- | --- |
-| install-from-zero.sh → install-host-dependencies.sh | 检查 root/amd64、Python/YAML、OpenSSL/curl/git/ss、Docker/Compose；缺少时安装 OS 依赖与 Docker，已有匹配安装复用 | 本页执行准备及第 1 节 |
+| install-from-zero.sh → install-host-dependencies.sh | 检查 root/amd64、Python/YAML、OpenSSL/curl/git/ss/jq/LDAP 客户端、Docker/Compose；缺少时安装 OS 依赖与 Docker，已有匹配安装复用 | 本页执行准备及第 1 节 |
 | download-artifacts.py --component all | 校验/下载固定 chart、11 个镜像、17 个 Debian 包和 LDAP base/配方；构建或核对 LDAP 镜像并记录本次 image ID | 第 3–4 节 |
 | install-tools.py / install-dpsctl.sh | 完整模式中安装缺少的 Helm/kubectl/dpsctl，并核对已有工具版本；下载/准备暂停模式还不执行此阶段 | 第 2 节，dpsctl 见 [DPS 手册](manual-install.md) |
 | install-kubernetes.sh / refresh-kubeconfig.py | 默认完整模式下载固定 K3s binary/installer/airgap 包，配置 systemd、runtime 数据目录与 kubeconfig，等待物理节点 Ready | 第 5 节 |
@@ -17,6 +17,12 @@
 --download-only 停在下载/LDAP 构建之后；--prepare-only 在此基础上继续四个配置/身份生产者后暂停。Shell 入口两种模式都先检查/补装宿主机依赖；下载阶段若构建 LDAP 镜像会产生构建容器；准备模式生成配置和身份，不启动业务服务，不能称为只读 dry run。业务 Compose、K3s 安装、namespace Secret apply 与 Helm 部署在完整模式中执行。
 
 --kubeconfig 只跳过 K3s 初始化，复用的仍须是本机可使用 k3s ctr 的原生 K3s，并具备所需 Traefik/StorageClass 与权限；它不是任意发行版已有集群的通用选项。客户复用 PG/LDAP/真实 BMC 或自选 Kubernetes 时按 [已有环境对接](existing-infrastructure.md)，不运行完整 Lab 链。
+
+## 只安装一个独立组件时怎么用脚本
+
+先选择根 [installstep.md 第 0 节](../installstep.md) 的配置与环境，再只准备本页第 1 节的主机依赖；脚本方式为 bash dps-install/scripts/install-host-dependencies.sh。独立组件脚本使用 Compose up --wait，要求 Compose ≥ 2.18；已有 Docker 可保留，缺少符合要求的 Compose 插件时先按现有安装方式补齐。随后从 [BMC](../hardware-sim/manual-install.md)、[PostgreSQL](manual-postgresql.md) 或 [LDAP](manual-ldap.md) 手册顶部选择对应一键入口。组件脚本会取得自己的固定镜像/LDAP 构建包并生成配置、启动服务，无需先执行整份前置手册。
+
+独立 BMC/PG/LDAP 不依赖 Helm、kubectl 或 K3s，也不用先下载 chart 与完整 11 镜像；只有继续安装 DPS 时才补相应工具、chart、集群与实际启用组件的镜像。LDAP 脚本自行构建固定镜像，手工 LDAP 路线才需要先执行本页第 4 节构建。下面的完整 Lab 手工细节和脚本动作表是可选路线的展开，不能全部再执行一遍。
 
 ## 安装 DPS 前需要准备什么
 

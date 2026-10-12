@@ -1,6 +1,28 @@
-# 手工启动 4 rack GB300 BMC 模拟器
+# 安装 4 rack GB300 BMC 模拟器（脚本或手工）
 
-SDK 仅提供 BMC 模拟，不安装 DPS。使用固定 0.9 simulator 镜像和公开节点/拓扑模板，无需 SDK checkout 或 vendor。先按 [主机/下载步骤](../dps-install/manual-prerequisites.md) 准备 Docker、镜像和环境变量。以下是新实例原生命令；已有 TLS、凭据、runtime 配置时直接使用，不重新生成。
+SDK 仅提供 BMC 模拟，不安装 DPS。使用固定 0.9 simulator 镜像和公开节点/拓扑模板，无需 SDK checkout 或 vendor。先按 [主机准备](../dps-install/manual-prerequisites.md) 配置 Docker 和环境变量；组件脚本自动获取镜像，手工路线自行下载。以下是新实例原生命令；已有 TLS、凭据、runtime 配置时直接使用，不重新生成。
+
+## 独立组件一键安装，或手工安装：二选一
+
+先完成根 [installstep.md 第 0 节](../installstep.md) 的配置与环境选择，以及 [主机依赖](../dps-install/manual-prerequisites.md) 中 Docker/Compose、Python/YAML 和 OpenSSL 的准备；单独模拟 BMC 不需要 Kubernetes、PostgreSQL、LDAP 或 DPS。deployment.yaml 应填写本次主机、端口、容器/Compose project 和运行目录，首次安装不能使用其他实例已有的身份或配置。
+
+在源码根执行：
+
+~~~bash
+bash hardware-sim/scripts/install-bmc.sh \
+  --config "$DPS_SOURCE_ROOT/deployment.yaml"
+~~~
+
+这条入口完成 BMC 两个固定镜像的下载/校验、密码与 CA/leaf 生成、72 个 URL/拓扑/路由/Compose 和 Secret YAML 生成、服务启动及基本只读自检。它只安装模拟器与代理；Secret YAML 尚未应用到 Kubernetes，DPS 安装、设备注册和拓扑导入需在后续流程完成。URL/凭据位于 runtime/dps-install/config/bmc-endpoints.csv，受信 CA 位于同目录 simulator-ca.crt；获取方式见 [bmc-access.md](bmc-access.md)。
+
+进入后文检查前，在当前 Bash 会话准备下面的路径变量；组件脚本在子进程中运行，不会替父会话定义这些变量：
+
+~~~bash
+sim="$DPS_RUNTIME_ROOT/hardware-sim/runtime"
+config="$DPS_RUNTIME_ROOT/dps-install/config"
+~~~
+
+**脚本成功后跳过本页第 1–4 节的首次生成和启动，按第 5 节检查/接入即可。** 选择手工路线则按第 1–4 节完整执行，不运行上述脚本。本节后续的脚本动作表用于说明实现，不是额外要执行的步骤。同一脚本管理的实例可保留身份重入；手工/历史实例继续使用原配置和维护入口。独立组件路线后续接手工 DPS/已有环境对接流程，不再调用整套 install-from-zero 重新初始化。
 
 ## 脚本路线在本页做什么
 

@@ -1,6 +1,6 @@
 # 手工安装 DPS 0.9、LDAP 认证与 PRS
 
-先完成 [物理 Kubernetes/下载](manual-prerequisites.md)、[4 rack BMC](../hardware-sim/manual-install.md)、[独立 PG](manual-postgresql.md)、[独立 LDAP](manual-ldap.md)。本页安装新的 namespace/release；已有实例使用原身份、原 values 和数据，不能重播“首次生成”。
+先准备 [Kubernetes/工具与包](manual-prerequisites.md)，按需要用脚本或手工方式部署 [4 rack BMC](../hardware-sim/manual-install.md)、[独立 PG](manual-postgresql.md)、[独立 LDAP](manual-ldap.md)；已有服务直接对接。本页安装新的 namespace/release；已有实例使用原身份、原 values 和数据，不能重播“首次生成”。
 
 配置依据是实际 0.9 chart 与 [NVIDIA 部署文档](https://docs.nvidia.com/datacenter/dps/versions/0.9/guides/installation/deploy-guide.html)。DPS 由下面明确的 Helm 命令安装，SDK 不参与部署。
 
@@ -19,6 +19,12 @@
 整套脚本固定启用 PRS 和独立 Lab PG/LDAP/模拟器。prepare-only 生成输入，尚未 apply Secret 或执行 Helm；安装脚本本身不会自动运行 verification 全栈验收。install-dps.sh 不创建密码/证书/namespace Secret，不安装 PG、LDAP 或 BMC，也不执行后续登录/拓扑/PRS 开关；它仍按本机原生 K3s + LDAP + Lab PRS 库名校验，不能作为任意客户环境的通用 Helm 包装。
 
 重复执行只有在同一 bootstrap 配置、路径和归属保持一致时复用身份/数据；手工创建或其他安装归属的 namespace/身份不由 fresh 链接管。客户使用真实硬件、自选 PG/IdP 或 Kubernetes 方案时，使用 [已有基础设施对接](existing-infrastructure.md) 的原生 Helm 和条件性 Secret。整套脚本保持拓扑 inactive，不创建 ResourceGroup 或执行 BMC 功率 PATCH；动态闭环与额外验收另行选择。
+
+## 分组件安装后如何进入本页
+
+如果 BMC/PG/LDAP 已通过各自一键入口或完整手工步骤安装完成，保留它们的既有密码、CA、证书与数据，直接使用 runtime 中已有的连接输入和 Secret YAML；不要回到这些组件的手册重新生成身份。若其中某项是客户已有服务，则按 [对接指南](existing-infrastructure.md) 使用其真实连接信息。
+
+本页第 1–2 节只准备尚缺的 DPS 自身 TLS/JWT 与所选 PRS 输入；第 3–4 节负责目标 namespace 内 Secret 和 values。组件脚本的 Secret YAML 只是落盘文件，须核对 namespace、名称/key、CA/凭据与实际 values 一致，再创建/应用或引用已有 Secret。完成后第 5 节的 Helm 原生命令和 install-dps.sh 二选一，第 6–8 节完成客户端登录与实际所需登记。使用全量 install-from-zero 且已经成功时这些安装动作都完成，直接进入根 [installstep.md 第 9 节](../installstep.md) 的只读检查。
 
 ## 1. 新建 DPS CA、server/agent/ingress 证书和 JWT
 

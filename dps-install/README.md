@@ -1,4 +1,4 @@
-# DPS 0.9 手工安装与基础设施对接
+# DPS 0.9 安装入口与基础设施对接
 
 先读根 [README 的组件选择表](../README.md)，按已有基础设施选择安装范围。已有 Kubernetes、数据库、LDAP 和真实 BMC 的客户从 [已有基础设施对接指南](existing-infrastructure.md) 开始，只准备 DPS 的 values、权限、证书与 Secret 后执行 Helm，无需安装 K3s、模拟器或另一套数据库/目录服务。
 
@@ -20,7 +20,7 @@ Git 跟踪 dps-install 的公开 config 模板、artifact-sources.json、LDAP �
 
 ## 1. Lab 示例：下载与物理集群
 
-[完整下载命令](manual-prerequisites.md) 用 curl/SHA 获取 chart 0.9.0、工具和 K3s；用 docker pull 固定 digest，Docker save / k3s ctr import 供 chart 使用；OpenLDAP 从固定 Debian base + 17 deb docker build。必要原生检查：
+[完整下载命令](manual-prerequisites.md) 用 curl/SHA 获取 chart 0.9.0、工具和 K3s；用 docker pull 固定 digest，Docker save / k3s ctr import 供 chart 使用；OpenLDAP 从固定 Debian base + 17 deb docker build。完成相应脚本或手工安装后，执行以下只读检查；这些检查不会下载包或初始化集群：
 
 ~~~bash
 helm show chart "$DPS_RUNTIME_ROOT/dps-install/packages/dps-0.9.0.tgz"
@@ -34,20 +34,39 @@ kubectl get storageclass
 
 ## 2. 可选：独立 PostgreSQL 与 OpenLDAP
 
-需要新建对应服务时分别按 [PG 手册](manual-postgresql.md)、[LDAP 手册](manual-ldap.md) 执行 openssl CA/leaf、随机密码、CREATE ROLE/DATABASE、slappasswd/LDIF/ACL、Compose 明确配置。下面是启动与检查入口，不能替代首次配置步骤：
+只新建缺少的对应服务即可。先配置 deployment.yaml 并完成根 installstep 的第 0 节与第 1 节主机依赖；随后在以下两种方式中选择一种：
+
+**脚本安装：** 每条命令都自行完成对应组件的下载/构建、密码/CA/配置与 Secret YAML、Compose 启动及基本只读自检，无需先执行完整手册生成 Compose。
+
+~~~bash
+# 只运行需要新建的服务；已有服务直接对接。
+bash dps-install/scripts/install-postgresql.sh --config "$DPS_SOURCE_ROOT/deployment.yaml"
+bash dps-install/scripts/install-ldap.sh --config "$DPS_SOURCE_ROOT/deployment.yaml"
+~~~
+
+**手工安装：** 改为完整执行 [PG 手册第 1–4 节](manual-postgresql.md) 或 [LDAP 手册第 1–4 节](manual-ldap.md)；LDAP 手工路径先构建固定镜像。两份手册第 4 节都已启动服务。无论选择哪条路线，完成后不要再生成身份或重复启动。下面分别检查本 Lab 的两个服务，只执行自己新建或已有的本地 Lab 组件对应代码块；客户远端服务使用对接指南检查其实际地址：
+
+**安装了本 Lab PostgreSQL 时：**
 
 ~~~bash
 docker compose -p "$DPS_PG_PROJECT" \
-  -f "$DPS_RUNTIME_ROOT/dps-install/config/postgresql/compose.yaml" up -d --wait
+  -f "$DPS_RUNTIME_ROOT/dps-install/config/postgresql/compose.yaml" ps
 docker exec -u postgres "$DPS_PG_CONTAINER" psql -d postgres -Atc \
   "select datname,pg_get_userbyid(datdba) from pg_database where datname like 'dps%';"
+~~~
+
+**安装了本 Lab LDAP 时：**
+
+~~~bash
 docker compose -p "$DPS_LDAP_PROJECT" \
-  -f "$DPS_RUNTIME_ROOT/dps-install/config/ldap/compose.yaml" up -d --wait
+  -f "$DPS_RUNTIME_ROOT/dps-install/config/ldap/compose.yaml" ps
 LDAPTLS_CACERT="$DPS_RUNTIME_ROOT/dps-install/config/ldap/tls/ca.crt" LDAPTLS_REQCERT=demand \
   ldapwhoami -x -H "ldaps://$DPS_HOST_IP:$DPS_LDAP_PORT" \
   -D "uid=dps-lab,ou=users,dc=dps,dc=lab" \
   -y "$DPS_RUNTIME_ROOT/dps-install/config/ldap/user.password"
 ~~~
+
+组件脚本不创建集群 Secret、不装 K3s/DPS；后续按 DPS 手册或 [对接指南](existing-infrastructure.md) 使用已生成的真实凭据/CA，准备 namespace 内 Secret 与 values。独立组件先启动后不能接续整套 install-from-zero 初始化，选择本节组件路线就按后续分步流程完成 DPS。
 
 本 Lab 预期 PG17.11 四库 Owner dps/非 superuser，TLS verify-full/SCRAM；LDAP2.6.10 真实用户/授权组、只读 bind、仅 LDAPS。Core/PowerSteering 两层内建 PostgreSQL 关闭。LDAP 用户与 BMC 凭据分开；组外身份可登录取得无角色 token，但受保护接口拒绝。
 
@@ -55,16 +74,19 @@ LDAPTLS_CACERT="$DPS_RUNTIME_ROOT/dps-install/config/ldap/tls/ca.crt" LDAPTLS_RE
 
 [DPS 手册](manual-install.md) 完整列出本 Lab 的 13 个 kubectl create secret --from-file 命令与每个键，CA/Agent mTLS/JWT/S3，以及 source values.example.yaml 的显式参数渲染。复用外部服务时也要在目标 namespace 创建或引用对应凭据与证书 Secret，具体取舍见 [对接指南](existing-infrastructure.md)。密码不入 values、argv 或日志。
 
+本节安装按 [DPS 手册第 1–5 节](manual-install.md) 完成证书/身份、namespace Secret、values 与原生 Helm。前置条件及 Secret 已全部准备好时，第 5 节的 Helm 安装动作也可替换为下面脚本；不用再重复运行手册的 Helm 命令：
+
+~~~bash
+bash dps-install/scripts/install-dps.sh --config "$DPS_SOURCE_ROOT/deployment.yaml"
+~~~
+
+仅安装 DPS 的脚本针对本机原生 K3s + Lab LDAP/PRS values，不替代前面的身份、配置和 Secret 准备。组件脚本已经生成的 PG/LDAP/BMC 密码和 CA 继续保留，按手册/对接指南创建或引用相应 Secret；不能再次执行手工章节中的初始密码生成。客户自己的基础设施组合继续使用对接指南的原生 Helm。
+
+**安装后只读检查：**
+
 ~~~bash
 kubectl -n "$DPS_NAMESPACE" get secret
-helm lint "$DPS_RUNTIME_ROOT/dps-install/packages/dps-0.9.0.tgz" \
-  -f "$DPS_RUNTIME_ROOT/dps-install/config/values.yaml"
-helm template "$DPS_RELEASE" "$DPS_RUNTIME_ROOT/dps-install/packages/dps-0.9.0.tgz" \
-  -n "$DPS_NAMESPACE" -f "$DPS_RUNTIME_ROOT/dps-install/config/values.yaml" \
-  > "$DPS_RUNTIME_ROOT/verification/logs/dps-rendered.yaml"
-helm upgrade --install "$DPS_RELEASE" "$DPS_RUNTIME_ROOT/dps-install/packages/dps-0.9.0.tgz" \
-  --kube-context "$DPS_KUBE_CONTEXT" -n "$DPS_NAMESPACE" \
-  -f "$DPS_RUNTIME_ROOT/dps-install/config/values.yaml" --wait --timeout 20m --history-max 10
+helm --kube-context "$DPS_KUBE_CONTEXT" -n "$DPS_NAMESPACE" status "$DPS_RELEASE"
 kubectl -n "$DPS_NAMESPACE" get pods,pvc
 ~~~
 
@@ -72,18 +94,13 @@ kubectl -n "$DPS_NAMESPACE" get pods,pvc
 
 ## 4. 本 Lab 示例：登录、模拟拓扑与 PRS
 
+整套 Lab 脚本成功时已经完成登录、设备登记、inactive 拓扑导入和 PRS 参数设置，直接检查即可。分组件/手工路线在 Helm 就绪后按 [DPS 手册第 6–8 节](manual-install.md) 安装/配置 CLI 与 DNS/CA、真实 LDAP 登录、登记设备/拓扑并设置所选 PRS 参数。这些都是相应安装阶段，不是验收命令；已完成则不重复导入或更新。
+
+**完成登录和登记后的只读检查：**
+
 ~~~bash
-dpsctl --output json login --username dps-lab --password-stdin \
-  < "$DPS_RUNTIME_ROOT/dps-install/config/ldap/user.password" \
-  > "$DPS_RUNTIME_ROOT/verification/logs/dps-login.json"
-jq '.status' "$DPS_RUNTIME_ROOT/verification/logs/dps-login.json"
 dpsctl server-version
 dpsctl agent list
-dpsctl device upsert "$DPS_SOURCE_ROOT/dps-install/config/gb300-power-shelf-devices.yaml"
-dpsctl topology validate "$DPS_RUNTIME_ROOT/dps-install/config/topology-4rack-dps09.json"
-dpsctl topology import "$DPS_RUNTIME_ROOT/dps-install/config/topology-4rack-dps09.json"
-dpsctl settings update --set prs_enabled=true \
-  --set prs_headroom_percent=-15 --set prs_scheduler_interval_seconds=5
 dpsctl topology list
 dpsctl settings list
 ~~~

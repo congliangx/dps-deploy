@@ -1,6 +1,27 @@
-# 手工部署独立 PostgreSQL 17.11
+# 安装独立 PostgreSQL 17.11（脚本或手工）
 
-先读取源码 deployment.yaml 导出的环境，完成 [下载镜像与工具](manual-prerequisites.md)。此步骤仅创建新的空数据目录；已有 PGDATA、证书或密码时跳过“生成/初始化”，先核对原配置，不能给已有数据库换密码或重新运行初始化 SQL。
+先读取源码 deployment.yaml 导出的环境，完成 [主机依赖](manual-prerequisites.md)；镜像按所选脚本或手工路线获取。此步骤仅创建新的空数据目录；已有 PGDATA、证书或密码时跳过“生成/初始化”，先核对原配置，不能给已有数据库换密码或重新运行初始化 SQL。
+
+## 独立组件一键安装，或手工安装：二选一
+
+先完成根 [installstep.md 第 0 节](../installstep.md) 的配置与环境选择，以及 [主机依赖](manual-prerequisites.md) 中 Docker/Compose、Python/YAML 和 OpenSSL 的准备。独立 PostgreSQL 不要求先有 Kubernetes、BMC 或 LDAP。deployment.yaml 中设置本次 host、pg_port、pg_subnet、容器/Compose project 和运行目录；已有数据库应复用，不能通过本入口重建。
+
+在源码根执行：
+
+~~~bash
+bash dps-install/scripts/install-postgresql.sh \
+  --config "$DPS_SOURCE_ROOT/deployment.yaml"
+~~~
+
+这条入口只校验/下载固定 PostgreSQL 镜像，生成独立管理员/应用密码、CA/server 证书、SCRAM/HBA、四库初始化 SQL、Compose 和密码/CA Secret YAML，启动 PostgreSQL 并进行基本只读自检。本 Lab 会创建 Core 与三个 PRS 库；已有客户数据库或需要不同库名/权限时按 [对接指南](existing-infrastructure.md) 配置。生成连接输入位于 runtime/dps-install/config/postgresql，持久数据位于 runtime/dps-install/data/postgresql；Secret YAML 只是文件，不会自动应用到 Kubernetes。
+
+进入后文检查前，在当前 Bash 会话准备下面的路径变量；组件脚本在子进程中运行，不会替父会话定义这些变量：
+
+~~~bash
+pg_cfg="$DPS_RUNTIME_ROOT/dps-install/config/postgresql"
+~~~
+
+**脚本成功后跳过本页第 1–4 节的首次生成和启动，再按第 5 节进行严格 TLS 检查或备份。** 选择手工路线则按第 1–4 节完整执行，不运行上述脚本。下方动作表用于说明实现，不是额外步骤。同一脚本管理的实例重入保留原密码/CA/data；手工或历史数据库继续使用原配置与维护入口。独立组件启动后按手工 DPS/已有环境对接流程继续，不调用整套 install-from-zero 接管现有数据。
 
 ## 脚本路线在本页做什么
 

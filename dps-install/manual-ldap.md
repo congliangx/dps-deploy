@@ -1,6 +1,21 @@
-# 手工部署独立 OpenLDAP 与真实 DPS 用户
+# 安装独立 OpenLDAP 与真实 DPS 用户（脚本或手工）
 
-先完成 [OpenLDAP 固定镜像构建](manual-prerequisites.md)。本节初始化新的空 LDAP data；已有 data.mdb、用户密码或 CA 时只检查/维护，不覆盖重新生成。DPS 使用 LDAP，不连接公司目录，OIDC 关闭。
+手工路线先完成 [OpenLDAP 固定镜像构建](manual-prerequisites.md)，独立组件脚本会自动构建。本节初始化新的空 LDAP data；已有 data.mdb、用户密码或 CA 时只检查/维护，不覆盖重新生成。DPS 使用 LDAP，不连接公司目录，OIDC 关闭。
+
+## 独立组件一键安装，或手工安装：二选一
+
+先完成根 [installstep.md 第 0 节](../installstep.md) 的配置与环境选择，以及 [主机依赖](manual-prerequisites.md) 中 Docker/Compose、Python/YAML 和 OpenSSL 的准备。独立 LDAP 不要求先有 Kubernetes、BMC 或 PostgreSQL；脚本会自行构建本页所需的固定 LDAP 镜像，无需先手工执行整个 LDAP 构建章节。deployment.yaml 中选择本次 host、ldap_port、容器/Compose project 和运行目录，保留已有客户目录服务。
+
+在源码根执行：
+
+~~~bash
+bash dps-install/scripts/install-ldap.sh \
+  --config "$DPS_SOURCE_ROOT/deployment.yaml"
+~~~
+
+这条入口下载/校验固定 Debian base、17 个包与公开构建配方，构建并记录本次 LDAP 镜像；生成独立 admin/bind/user/noaccess 密码与哈希、LDAPS CA/server/client 证书、用户/组/ACL/LDIF、Compose 和 LDAP Secret YAML，启动目录服务并进行基本只读自检。凭据/证书/Compose 在 runtime/dps-install/config/ldap，持久数据在 runtime/dps-install/data/ldap，DPS 用户访问输入在 runtime/dps-install/config/dps-access.json。Secret 尚未应用到 Kubernetes，DPS 的 LDAP values 和认证接入仍需后续安装流程。
+
+**脚本成功后跳过本页第 1–4 节，直接执行根 [installstep.md 第 5 节“安装后检查”](../installstep.md) 的独立只读代码块；再按本页第 5 节备份/接入。** 本页第 4 节将 Compose 写入、启动和检查放在同一手工安装代码块，脚本安装后不要复制该整块重做。 手工路线则先手工构建固定镜像，再完整执行本页第 1–4 节，不运行上述脚本。下方动作表仅解释实现。同一脚本管理的实例重入保留密码、CA 和数据；手工/历史目录使用原配置与维护入口。独立组件路线后续接手工 DPS/已有环境对接，不再运行整套 install-from-zero 初始化。
 
 ## 脚本路线在本页做什么
 

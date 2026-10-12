@@ -8,7 +8,9 @@
 
 先在本机连接远端，登录后再进入自己的实际 clone 目录。下面 /raid/vince/deploy 仅为 L20-12 当前示例，可以不同；后续从该 Git 工作区自动推导源码位置，Lab 主机/运行目录从 deployment.yaml 读取；客户应用对接使用自己的 values 和 Secret。
 
-## 0. Lab 统一参数、源码/运行目录和已有状态
+## 0. 先选择路线，再准备会话和参数
+
+### 0.1 所有 Lab 路线：连接、进入源码目录、确认配置
 
 在本机执行连接命令：
 
@@ -16,7 +18,7 @@
 ssh root@L20-12
 ~~~
 
-登录远端后执行下列命令，先将 cd 路径换成自己的实际 clone 目录；不要在默认 /root 下执行 git rev-parse。
+登录后进入 Bash，将 cd 路径换成自己的实际 clone 目录；不要在默认 /root 下执行 git rev-parse：
 
 ~~~bash
 bash
@@ -24,19 +26,36 @@ cd /raid/vince/deploy
 set -euo pipefail
 umask 077
 DPS_SOURCE_ROOT=$(git rev-parse --show-toplevel)
-# 空白 OS 先安装配置解析器依赖；已有可用版本可跳过。
-apt-get update
-apt-get install -y python3 python3-yaml
-# Lab 脚本参数集中在此；客户已有服务另按对接指南准备自己的 Helm values。
-cat deployment.yaml
-source "$DPS_SOURCE_ROOT/dps-install/scripts/deployment-env.sh"
-python3 - <<'PY'
+cat "$DPS_SOURCE_ROOT/deployment.yaml"
+~~~
+
+先编辑 deployment.yaml，确认目标主机/IP、网卡、runtime_root、名称、端口和子网。首次新建使用没有已有身份或数据的运行位置；不要用当前 L20-12 实例配置重装这套已运行环境。源码根从实际 clone 推导，运行目录由用户选择：可以为绝对路径（如 /srv/dps-lab）、相对配置文件的路径（如 .runtime），或 . 表示与源码同根；也可以位于源码上级目录。公开模板与生成配置使用不同文件，生成物不提交 Git。CLI --runtime-root 的相对路径按执行目录解析。L20-12 当前源码/运行目录分别为 /raid/vince/deploy 和 /raid/vince/deployed-test，只是本实例的布局。
+
+**新建整套 Lab：** 完成此小节并确认现状后，执行下面 A 或 B 的完整脚本即可；脚本自行安装缺少的解析器/主机依赖并读取配置，不要求先执行第 1–8 节。成功后加载 0.2 的环境，再到第 9 节检查。
+
+**逐个组件安装或手工安装：** 继续完成 0.2，然后按第 1–8 节选择所需组件。每节的脚本路线与手工路线二选一，安装完成后才执行该节的检查。读取手册了解实现不等于还要执行一遍手册命令。
+
+**已有实例维护：** 继续使用原配置、原 runtime 与身份，完成 0.2 的清点后到第 10 节；跳过新建身份/初始化。改变 runtime_root 只改变路径选择，不会迁移已有服务或数据库。
+
+### 0.2 组件/手工路线及安装后检查：在同一 Bash 会话加载环境
+
+下面只补齐配置解析依赖、加载统一变量并清点现状；不安装 BMC/PG/LDAP/Kubernetes/DPS。完整脚本成功后也使用此段加载检查命令所需变量；依赖已存在时不会重复 apt 安装：
+
+~~~bash
+# 沿用 0.1 的源码目录；新终端须先完成 0.1。
+if ! python3 -c 'import yaml' >/dev/null 2>&1; then
+  apt-get update
+  apt-get install -y python3 python3-yaml
+fi
+source "$DPS_SOURCE_ROOT/dps-install/scripts/deployment-env.sh" \
+  --config "$DPS_SOURCE_ROOT/deployment.yaml"
+python3 - <<'PYENV'
 import os
 from pathlib import Path
 source=Path(os.environ["DPS_SOURCE_ROOT"]).resolve()
 runtime=Path(os.environ["DPS_RUNTIME_ROOT"]).resolve()
 print("source:",source,"runtime:",runtime)
-PY
+PYENV
 mkdir -p "$DPS_RUNTIME_ROOT"
 hostname
 ip -4 address show dev "$DPS_INTERFACE"
@@ -46,13 +65,13 @@ systemctl is-active k3s || true
 ss -ltn
 ~~~
 
-源码根从实际 clone 位置推导；runtime_root 由用户在 deployment.yaml 选择。可以填写绝对路径（如 /srv/dps-lab），也可以填写相对 deployment.yaml 所在目录的路径（如 .runtime）；填写 . 表示与源码同根。运行目录也可以在源码的上级目录。公开模板与生成配置使用不同文件，不因选择同根而覆盖模板，生成物始终由 .gitignore 排除。可选 CLI --runtime-root 的相对路径按执行目录解析。L20-12 当前的 /raid/vince/deploy 与 /raid/vince/deployed-test 是本实例布局，后续步骤只使用 DPS_SOURCE_ROOT/DPS_RUNTIME_ROOT，无需改其他文档的源码绝对路径。主机/网卡/命名/端口等也只改这一份配置。Compose project 读取 DPS_BMC_PROJECT、DPS_PG_PROJECT、DPS_LDAP_PROJECT。
+后文所有 DPS_*、KUBECONFIG、dpsctl 路径变量都来自这次加载；不能脱离此会话单独复制检查代码块。改动 deployment.yaml 后重新加载，再确认目标。Compose project 来自 DPS_BMC_PROJECT、DPS_PG_PROJECT、DPS_LDAP_PROJECT。
 
-检查 runtime 中已有 PGDATA、LDAP data.mdb、证书/密码、kubeconfig 与 Helm release。已有部署进入“维护”分支，保留原身份和数据库，跳过所有首次生成/初始化。不能复制本文直接覆盖 L20-12 的现有数据。Git 跟踪公开模板与配方；下载、生成配置、data、日志、报告、archive 进入所选 runtime_root，不提交 Git。改变 runtime_root 只是选择路径，不会自动迁移已有服务或数据库；已有实例须继续使用原目录，另行安排迁移时保留原身份与数据。
+清点运行目录中的 PGDATA、LDAP data.mdb、证书/密码、kubeconfig、Helm release 和监听端口。存在已有部署时进入维护分支，保留原身份和数据库；不能删除状态文件绕过归属检查。Git 跟踪公开模板与配方；下载、生成配置、data、日志、报告和 archive 放入 runtime_root，不提交 Git。
 
-## 脚本安装入口（与第 1–9 节手工路径二选一）
+## 整套脚本入口（与第 1–8 节逐组件安装二选一）
 
-第 0 节完成环境选择和参数确认后，可以执行下面的自动化入口，也可以继续第 1–9 节的原生命令。完整脚本已经执行这些安装动作，不要安装完成后再从第 1 节重做密码、证书、数据库或 Secret 初始化。若复用客户已有 BMC / PostgreSQL / LDAP 或任意企业 Kubernetes，请使用 [已有基础设施对接指南](dps-install/existing-infrastructure.md)；完整 Lab 脚本不会按组件选择跳过这些独立服务。
+完成第 0.1 节后选择下面 A 或 B，或者完成第 0.2 节后按第 1–8 节逐个安装。A/B 完整脚本成功后已完成第 1–8 节的安装与 Lab 登记设置，下一步只需加载第 0.2 节环境并执行第 9 节检查/备份及可选 verification；不用再执行各节安装脚本或手册初始化命令。C 只覆盖第 7 节的 Helm 安装，其前置与后续须另外完成。若复用客户已有 BMC / PostgreSQL / LDAP 或任意企业 Kubernetes，请使用 [已有基础设施对接指南](dps-install/existing-infrastructure.md)；完整 Lab 脚本不会按组件选择跳过这些独立服务。
 
 ### A. 新建完整 Lab：一条脚本运行
 
@@ -83,7 +102,7 @@ bash dps-install/scripts/install-from-zero.sh \
 
 仅当本机已有可用的原生 K3s 时，可显式传入其外部管理员 kubeconfig，跳过 K3s 服务初始化。该入口仍通过本机 k3s ctr 导入镜像，仍依赖 Traefik CRD/Ingress 与合适的 StorageClass；管理员 kubeconfig 必须指向这台物理机的集群，当前 context 必须正确，并具备 namespace、Secret、Ingress 和 Helm 安装权限。这不是复用任意远程企业集群的通用入口。
 
-先在 deployment.yaml 选择独立的新 namespace/release、instance_prefix、Compose project、AgentId、API/UI 域名、端口、子网和空运行目录，核对不会占用现有实例，再执行：
+先读取外部 kubeconfig 的 current-context，并将 deployment.yaml 的 kube_context 设置成该相同名称，确保安装后第 0.2 节重新加载的环境与实际集群一致。再在配置中选择独立的新 namespace/release、instance_prefix、Compose project、AgentId、API/UI 域名、端口、子网和空运行目录，核对不会占用现有实例，再执行：
 
 ~~~bash
 # 替换为现有管理员 kubeconfig 的真实路径；不能填写本次 runtime 内的目标副本。
@@ -100,7 +119,7 @@ bash dps-install/scripts/install-from-zero.sh \
 
 ### C. 前置条件、配置和 Secret 已准备好：仅安装/升级 Lab DPS
 
-如果第 1–6 节已完成，或同一 Lab 实例已有可用的原生 K3s、独立 PG/LDAP/BMC、固定 chart/镜像、values、证书和 namespace 内 Secret，可直接运行：
+完成第 0.2 节环境加载后，如果第 1–6 节已完成，或同一 Lab 实例已有可用的原生 K3s、独立 PG/LDAP/BMC、固定 chart/镜像、values、证书和 namespace 内 Secret，可直接运行（与第 7 节脚本是同一入口，只执行一次）：
 
 ~~~bash
 bash dps-install/scripts/install-dps.sh \
@@ -109,145 +128,271 @@ bash dps-install/scripts/install-dps.sh \
 
 此入口检查本机原生 K3s 和目标节点、chart 校验值、Lab LDAP/外部数据库及 PRS/TLS 配置，然后执行 Helm 安装/升级。它不创建基础服务，不生成或应用 Secret，也不完成登录、拓扑登记或 PRS 设置；新实例还需按 [DPS 手册](dps-install/manual-install.md) 完成对应后续步骤。它针对本仓库的 Lab values 约束，客户自有认证、数据库或集群组合按对接指南执行原生 Helm 命令。
 
+## 逐组件路线的执行规则
+
+以下第 1–8 节用于按需安装。每节先说明前置条件，再选“脚本安装”或“手工安装”，最后执行标为“安装后检查”的代码块。手工路线是跳到链接手册完整执行所指章节；下方检查是验收该阶段，不要求先手工安装后再执行同一组件脚本。已做完的启动、Secret apply、Helm、登录、拓扑导入或设置更新均不再重复。
+
+独立 BMC/PG/LDAP 脚本只新建自己的 Lab 组件。**不要在这些组件已初始化后接续 A/B 的整套 install-from-zero.sh**：完整入口要求自己的统一 bootstrap 状态，会拒绝接管这样已有的数据/身份。需要继续安装 DPS 时，保持同一配置和原身份，补齐所缺第 1/2 节，再按第 6 节准备/应用 Secret 与 values、第 7 节的 DPS-only 或手工 Helm，以及第 8 节的登记设置继续。若希望整套一条脚本完成，应从一开始选择 A/B。
+
 ## 1. Lab 主机依赖、Helm/kubectl 与固定包下载
 
-完整 Lab 逐项执行 [manual-prerequisites.md 第 1–4 节](dps-install/manual-prerequisites.md)：Docker 官方 apt 仓库 + Compose v2、curl/SHA 下载工具、NGC chart、11 个固定镜像、17 个 Debian .deb 和独立 LDAP 构建。
+**安装入口（二选一）：**
 
-必要原生命令及预期结果：
+- 脚本路线：先执行下面的主机依赖脚本。只安装独立 BMC/PG/LDAP 时，此步完成后直接到对应第 3/4/5 节，各组件入口只下载自己需要的固定材料；无需先下载完整 Lab 的 chart/全部镜像，也无需 Helm/Kubernetes。
+- 手工路线：按 [manual-prerequisites.md 的执行准备及第 1 节](dps-install/manual-prerequisites.md) 安装 OS/Docker/Compose，按实际需要继续其第 2–4 节的工具/包/LDAP 构建。完整 Lab 执行全部；已有符合要求的工具先检查并复用，不重复安装。
+
+~~~bash
+bash dps-install/scripts/install-host-dependencies.sh
+~~~
+
+逐组件搭建完整 Lab 还需下面两条，下载/校验完整固定包并构建 LDAP 镜像，然后安装固定 Helm/kubectl。它们不安装业务服务；工具安装器不会覆盖无归属的系统二进制，已有可用工具按手册复用：
+
+~~~bash
+python3 dps-install/scripts/download-artifacts.py \
+  --config "$DPS_SOURCE_ROOT/deployment.yaml" --component all
+python3 dps-install/scripts/install-tools.py \
+  --config "$DPS_SOURCE_ROOT/deployment.yaml"
+~~~
+
+客户复用已有基础设施时只准备实际启用组件的工具/镜像，不必下载完整 Lab 清单，按 [对接指南](dps-install/existing-infrastructure.md) 执行。
+
+**主机依赖安装后检查（仅安装 BMC/PG/LDAP 也可执行）：**
 
 ~~~bash
 docker version
 docker compose version
+~~~
+
+**完整 Lab 工具/包准备后检查（仅在已执行下载与工具安装后运行）：**
+
+~~~bash
 helm version --short
 kubectl version --client=true -o json
 helm show chart "$DPS_RUNTIME_ROOT/dps-install/packages/dps-0.9.0.tgz"
 docker image ls --digests
 ~~~
 
-预期工具 Helm 3.22.0/kubectl 1.34.12，DPS chart 0.9.0 SHA 2fc7b6e098b17085bf9aaf010d86dfeaf62677fd0f80bb4c2702e91b0b3fd6ef，镜像 digest 与 artifact-sources.json 完全匹配，LDAP 2.6.10 从本次固定配方构建。下载或 cache 校验冲突时停在此步，不覆盖冲突包/已有镜像标签。
+只安装独立组件时跳过第二个检查块，直接到第 3/4/5 节。完整 Lab 预期 Helm 3.22.0/kubectl 1.34.12、DPS chart 0.9.0，chart SHA 为 2fc7b6e098b17085bf9aaf010d86dfeaf62677fd0f80bb4c2702e91b0b3fd6ef；镜像 digest 与 artifact-sources.json 匹配。LDAP 2.6.10 来自固定配方。发现缓存校验冲突时停在此步，保留原包/镜像排查。
 
 ## 2. 可选：物理机原生 K3s 与 containerd 镜像
 
-空白主机执行 [manual-prerequisites.md 第 5–6 节](dps-install/manual-prerequisites.md)：下载并校验固定 K3s binary/官方 installer/airgap images，显式写 k3s.yaml、systemd mount 依赖、kubeconfig/context，将 chart tags 从 Docker save 导入 K3s containerd。
+仅在缺少 Kubernetes 且选择本 Lab 原生 K3s 时安装。第 1 节的 Docker、下载工具和 kubectl/Helm 应已可用；第 0.2 节已加载环境。
 
-已有 Kubernetes 发行版时复用其 kubeconfig/context、Ingress 和 StorageClass，跳过此处 K3s 服务初始化及 k3s ctr 命令；镜像由目标集群自己的镜像拉取/离线导入机制提供。确认目标 namespace/release/API/UI 不占用其他安装。
+**安装入口（二选一）：**
+
+- 脚本路线：在没有其他 K3s 安装的空白主机执行下面三条；依次安装/启动物理机原生 K3s、将 Core/Agent/UI 镜像导入其 containerd、再导入 PRS 相关镜像。K3s 脚本校验固定包、配置 systemd 和运行目录、生成 kubeconfig 并等待节点 Ready；不会安装 DPS。
+- 手工路线：按 [manual-prerequisites.md 第 5–6 节](dps-install/manual-prerequisites.md) 完成 K3s、kubeconfig/context 和镜像导入，完成后直接运行本节检查。
+
+~~~bash
+bash dps-install/scripts/install-kubernetes.sh \
+  --config "$DPS_SOURCE_ROOT/deployment.yaml"
+python3 dps-install/scripts/stage-runtime-images.py \
+  --config "$DPS_SOURCE_ROOT/deployment.yaml"
+python3 dps-install/scripts/stage-prs-images.py \
+  --config "$DPS_SOURCE_ROOT/deployment.yaml"
+~~~
+
+已有 Kubernetes 时跳过上面的安装与 k3s ctr 导入，使用自己的 kubeconfig/context、Ingress、StorageClass 和镜像提供机制。已有 K3s 也先核对其归属，不能通过新运行目录接管其他安装。任意客户集群按对接指南执行；整套脚本 B 的复用范围仅为本机原生 K3s。
+
+**安装后检查（本 Lab K3s；只查询状态）：**
 
 ~~~bash
 systemctl is-active k3s
 kubectl --context "$DPS_KUBE_CONTEXT" get nodes -o wide
-kubectl get storageclass
-kubectl -n kube-system get deployment traefik
+kubectl --context "$DPS_KUBE_CONTEXT" get storageclass
+kubectl --context "$DPS_KUBE_CONTEXT" -n kube-system get deployment traefik
 k3s ctr --namespace k8s.io images list
 ~~~
 
-预期实际节点 l20-12（或配置中的小写 host_name）Ready、local-path/Traefik 就绪。没有 Docker Kubernetes 节点模拟。K3s containerd/kubelet/local-path 数据在 runtime/dps-install/data/kubernetes；维护时不要停止独立 Docker 服务。
+预期配置中的实际物理节点 Ready、local-path/Traefik 就绪。K3s containerd/kubelet/local-path 数据在 runtime/dps-install/data/kubernetes；维护时不要停止独立 Docker 服务。
 
 ## 3. 可选：4 rack / 72 GB300 BMC 模拟器
 
-没有真实硬件且选择模拟时才执行 [hardware-sim/manual-install.md](hardware-sim/manual-install.md)：随机密码、BMC CA/72 外部 HTTPS leaf、公开 nodes/topology 渲染、GB300 synthetic config、nginx 72 Host 路由、固定镜像 Compose。
+有真实 BMC 时跳过本节，直接使用真实 URL/密码/CA 和设备拓扑。没有硬件且选择模拟时，先完成第 0.2 节与第 1 节的主机依赖；独立脚本负责本组件的固定镜像、配置生成和启动。
+
+**安装入口（二选一）：**
+
+- 脚本路线：首次新建此 Lab BMC 模拟器执行下面一条；会生成随机密码、BMC CA 与 72 个外部 HTTPS 入口共用的 leaf、nodes/topology、GB300 synthetic config、nginx 路由及 Compose，并启动本组件。它不安装 PostgreSQL/LDAP/Kubernetes/DPS。
+- 手工路线：按 [hardware-sim/manual-install.md](hardware-sim/manual-install.md) 从执行准备开始，完整执行配置/证书生成、镜像、Compose 启动和该手册检查。完成后本节只做检查，**不用再执行一次 docker compose up**。
+
+~~~bash
+bash hardware-sim/scripts/install-bmc.sh \
+  --config "$DPS_SOURCE_ROOT/deployment.yaml"
+~~~
+
+具体生成步骤、产物与维护方式见上述手册；prepare-bmc-fresh.py 只生成输入，单独执行它不等于完成安装。维护已有实例使用既有身份与 Compose；不要重新做 fresh 初始化。
+
+**安装后检查（启动已由所选路线完成；下面不再启动容器）：**
 
 ~~~bash
 docker compose -p "$DPS_BMC_PROJECT" \
-  -f "$DPS_RUNTIME_ROOT/hardware-sim/runtime/compose.yaml" up -d --wait
+  -f "$DPS_RUNTIME_ROOT/hardware-sim/runtime/compose.yaml" ps
 docker exec "$DPS_PROXY_CONTAINER" nginx -t
 curl -fSs --cacert "$DPS_RUNTIME_ROOT/dps-install/config/simulator-ca.crt" \
   "https://$DPS_HOST_IP:$DPS_BMC_START_PORT/readyz"
 ~~~
 
-预期 4 rack×18 计算节点、72 唯一 URL；默认端口 18443–18514；每节点 4 GPU/2 CPU。模拟器不强制认证，私有 backend 自动证书与外部 strict CA 分开。必要凭据清单 runtime/dps-install/config/bmc-endpoints.csv 为 600，不入 Git。
+预期 4 rack×18 计算节点、72 唯一 URL；默认端口 18443–18514，每节点 4 GPU/2 CPU。模拟器不强制认证，私有 backend 自动证书与外部 strict CA 分开。DPS 对接用私密 runtime/dps-install/config/bmc-endpoints.csv 和 simulator-ca.crt；凭据清单为 600，不入 Git。
 
 ## 4. 可选：独立 PostgreSQL 17.11 Lab 服务
 
-没有可用数据库且选择本 Lab 服务时才执行 [manual-postgresql.md](dps-install/manual-postgresql.md)：独立 admin/dps 密码、PG CA/server SAN、限定 host/Pod/bridge HBA、首次初始化角色/四库/public 权限、Compose 持久化、verify-full 连接和备份。
+已有可用数据库时跳过服务新建，按对接指南准备 DPS 所需库/权限、真实密码、CA 和 namespace Secret。选择独立 Lab PG 时先完成第 0.2 节与第 1 节的主机依赖；不要求先安装 BMC、LDAP 或 Kubernetes。
+
+**安装入口（二选一）：**
+
+- 脚本路线：首次新建此 Lab 数据库执行下面一条；准备固定镜像、随机 admin/dps 密码、PG CA/server SAN、HBA/TLS/SCRAM、四库初始化输入和 Compose，启动独立 PostgreSQL 并等待健康。它不部署其他组件；生成的 Secret YAML 尚未应用到 Kubernetes。
+- 手工路线：按 [manual-postgresql.md](dps-install/manual-postgresql.md) 完整执行凭据/证书、初始化 SQL、Compose 启动及严格 TLS 连接检查。完成后本节只做检查，**不用再执行一次 docker compose up**。手册的备份是安装后的独立动作，见第 9 节。
+
+~~~bash
+bash dps-install/scripts/install-postgresql.sh \
+  --config "$DPS_SOURCE_ROOT/deployment.yaml"
+~~~
+
+首次建库由 PostgreSQL 官方镜像在空 PGDATA 初始化时执行；已有 PGDATA 不重跑 CREATE ROLE/CREATE DATABASE。prepare-postgresql.py 只生成输入，不启动数据库，不可当作一键安装。密码、CA 和初始化产物的位置及内容见手册。
+
+**安装后检查（查询现有容器和库归属）：**
 
 ~~~bash
 docker compose -p "$DPS_PG_PROJECT" \
-  -f "$DPS_RUNTIME_ROOT/dps-install/config/postgresql/compose.yaml" up -d --wait
+  -f "$DPS_RUNTIME_ROOT/dps-install/config/postgresql/compose.yaml" ps
 docker exec -u postgres "$DPS_PG_CONTAINER" psql -d postgres -Atc \
   "select datname,pg_get_userbyid(datdba) from pg_database where datname like 'dps%';"
 ~~~
 
-预期 dps、dps_prs_config、dps_prs_config_staged、dps_prs_controller 均 Owner dps。应用非 superuser；严格 verify-full；不能启用 Core/Power Steering chart 的内建 PostgreSQL。已有 PGDATA 时不再运行 CREATE ROLE/CREATE DATABASE。
+完整 Lab 预期 dps、dps_prs_config、dps_prs_config_staged、dps_prs_controller 均 Owner dps；应用非 superuser，严格 verify-full，不启用 Core/Power Steering chart 的内建 PostgreSQL。库数量取决于是否启 PRS，客户配置不以本 Lab 固定四库验收。
 
 ## 5. 可选：独立 OpenLDAP Lab 服务
 
-没有可用目录且选择本 Lab 服务时才执行 [manual-ldap.md](dps-install/manual-ldap.md)：独立随机 admin/bind/user/noaccess 密码、SSHA、LDAPS CA/server/client cert、8 条 LDIF、groupOfNames、ACL、Compose、strict TLS bind/组查询与备份。
+已有 LDAP/IdP 时跳过服务新建，复用真实目录身份与信任链并按对接指南配置认证。选择独立 Lab LDAP 时先完成第 0.2 节与第 1 节的主机依赖；不要求先安装 BMC、PG 或 Kubernetes。
+
+**安装入口（二选一）：**
+
+- 脚本路线：首次新建此 Lab 目录执行下面一条；下载固定 Debian 包并构建 OpenLDAP 镜像，生成随机 admin/bind/user/noaccess 密码、SSHA、LDAPS CA/server/client cert、LDIF/组/ACL 和 Compose，启动独立目录并等待健康。它不安装其他组件，也不会把 DPS 切换为 LDAP 或应用 Secret。
+- 手工路线：先按 [manual-prerequisites.md 第 4 节](dps-install/manual-prerequisites.md) 构建镜像，再按 [manual-ldap.md](dps-install/manual-ldap.md) 完整执行身份/证书、LDIF、Compose 启动及严格 TLS bind/组查询。完成后本节只做检查，**不用再执行一次 docker compose up**。备份见第 9 节。
+
+~~~bash
+bash dps-install/scripts/install-ldap.sh \
+  --config "$DPS_SOURCE_ROOT/deployment.yaml"
+~~~
+
+新目录条目只在空 LDAP 数据目录首次初始化时导入；已有 data.mdb 不重新导入或轮换密码。prepare-ldap-fresh.py 只生成输入，单独执行它不等于完成安装。DPS 所需 CA/client cert/key、只读 bind 和 Secret 输入见手册。
+
+**安装后检查（查询容器状态和严格 TLS 用户 bind）：**
 
 ~~~bash
 docker compose -p "$DPS_LDAP_PROJECT" \
-  -f "$DPS_RUNTIME_ROOT/dps-install/config/ldap/compose.yaml" up -d --wait
+  -f "$DPS_RUNTIME_ROOT/dps-install/config/ldap/compose.yaml" ps
 LDAPTLS_CACERT="$DPS_RUNTIME_ROOT/dps-install/config/ldap/tls/ca.crt" LDAPTLS_REQCERT=demand \
   ldapwhoami -x -H "ldaps://$DPS_HOST_IP:$DPS_LDAP_PORT" \
   -D "uid=dps-lab,ou=users,dc=dps,dc=lab" \
   -y "$DPS_RUNTIME_ROOT/dps-install/config/ldap/user.password"
 ~~~
 
-预期真实用户 DN；dcpower-users member 包含 dps-lab，readonly bind 只读。DPS 0.9 Core 要求 CA/client cert/key；用户仍由密码认证。本次直接 LDAP，OIDC 关闭；不重放旧 permissive→LDAP JWT 迁移。
+预期真实用户 DN，dcpower-users 组包含 dps-lab，readonly bind 只读。DPS 0.9 Core 要求 CA/client cert/key；用户仍通过密码认证。本 Lab 使用 LDAP，OIDC 关闭。
 
-## 6. DPS 配置、证书与 Secret（本 Lab 为 13 个）
+## 6. DPS 配置、证书与 Secret
 
-执行 [manual-install.md 第 1–4 节](dps-install/manual-install.md)：新 DPS CA/server/Agent/ingress、持续 JWT RSA、S3 keys、Controller LDAP JSON，原生 kubectl create secret --from-file，公开 values 模板渲染为 runtime values。
+在 Kubernetes、PG、LDAP 和 BMC 输入均就绪后执行。本 Lab 为 13 个外部 Secret；客户按实际功能供给，不以固定数量验收。
+
+**准备与应用入口：**
+
+- 整套 A/B 已完成本节：生成 DPS/Agent/Ingress TLS、持久 JWT、S3/Controller 输入与 values，创建归属 namespace，并应用本 Lab Secret。直接执行本节检查。
+- 逐组件路线：沿用第 3–5 节已经生成的真实密码、CA/客户端证书和 Secret YAML；先按 [对接指南的 Secret/连接配置说明](dps-install/existing-infrastructure.md) 核对目标 namespace、Secret 名称/key 与实际连接参数。只为尚未具备的 DPS 自身 TLS/JWT/S3 身份执行 [manual-install.md 第 1–2 节](dps-install/manual-install.md)，已有对应身份则保留并跳过生成；再按该手册第 3–4 节核对/应用已有 Secret YAML，并渲染 values。不要重新运行 PG/LDAP/BMC 手册的身份生成。这里仍需明确执行所缺 openssl、namespace/Secret apply 和 values 准备；尚不执行手册第 5–8 节的 Helm/登录/登记。
+
+逐组件路线进入 DPS 手册前，在当前 Bash 会话设置其章节共用变量；这是会话/输出目录准备，不生成身份或应用 Secret：
 
 ~~~bash
-kubectl -n "$DPS_NAMESPACE" get secret
+config="$DPS_RUNTIME_ROOT/dps-install/config"
+tls="$config/tls"
+mkdir -p "$DPS_RUNTIME_ROOT/verification/logs"
+~~~
+
+独立 PG/LDAP/BMC 入口会保存 Secret 文件，但不会在集群创建它们；本节把同一真实凭据和信任材料供给目标 namespace。已有服务密码/CA 不重新随机生成，已有 Secret 仅核对或按实际配置应用。prepare-dps-fresh.py 只生成输入，既不创建 namespace/应用 Secret，也不安装 Helm；已经运行过该生产者的实例保留其身份，不能再执行手册的首次生成段落。
+
+**准备后检查（不创建或应用 Secret）：**
+
+~~~bash
+kubectl --context "$DPS_KUBE_CONTEXT" -n "$DPS_NAMESPACE" get secret
 openssl verify -CAfile "$DPS_RUNTIME_ROOT/dps-install/config/tls/ca.crt" \
   -verify_hostname "$DPS_API_NAME" "$DPS_RUNTIME_ROOT/dps-install/config/tls/server.crt"
 ~~~
 
-当前完整 Lab 预期 13 个 external Secret；客户配置按实际功能准备，不能用固定数量验收。password/database-password 均取 dps 应用密码；只读 LDAP bind 与 CA/client projected 挂载完整；两个内建 PG disabled、BMC strict TLS、Agent mTLS、Controller真实 LDAP/TLS、PRS两层 enabled。values 没有密码/私钥。
+完整 Lab 的 password/database-password 使用同一 dps 应用密码，LDAP bind 与 CA/client 挂载就绪，内建 PG disabled，BMC strict TLS、Agent mTLS、Controller LDAP/TLS 和 PRS 两层配置匹配。values 不存放密码或私钥。
 
-## 7. 手动 Helm 安装与真实 LDAP 登录
+## 7. Helm 安装 DPS，再准备 dpsctl 登录
 
-执行 [manual-install.md 第 5–6 节](dps-install/manual-install.md)：先原生清点 Ingress/Traefik 域名归属、lint/template，再安装。
+第 1–6 节所选前置服务、chart/镜像、values、namespace/Secret 都应就绪。整套 A/B 已完成 Helm 与登录，直接到检查；C 与本节脚本是同一入口，只执行一次。
+
+**Helm 安装入口（二选一）：**
+
+- 脚本路线：执行下面一条，仅检查并安装/升级 Lab DPS；脚本不会生成/apply Secret，不安装基础服务，也不登录或登记拓扑。
+- 手工路线：按 [manual-install.md 第 5 节](dps-install/manual-install.md) 完整执行域名归属检查、lint/template 和 Helm 安装，完成后跳过下面同一 Helm 脚本。
 
 ~~~bash
-helm upgrade --install "$DPS_RELEASE" "$DPS_RUNTIME_ROOT/dps-install/packages/dps-0.9.0.tgz" \
-  --kube-context "$DPS_KUBE_CONTEXT" --namespace "$DPS_NAMESPACE" \
-  --values "$DPS_RUNTIME_ROOT/dps-install/config/values.yaml" \
-  --wait --timeout 20m --history-max 10
-helm -n "$DPS_NAMESPACE" status "$DPS_RELEASE"
-kubectl -n "$DPS_NAMESPACE" get pods,pvc
-dpsctl --output json login --username dps-lab --password-stdin \
-  < "$DPS_RUNTIME_ROOT/dps-install/config/ldap/user.password" \
-  > "$DPS_RUNTIME_ROOT/verification/logs/dps-login.json"
-jq '.status' "$DPS_RUNTIME_ROOT/verification/logs/dps-login.json"
+bash dps-install/scripts/install-dps.sh \
+  --config "$DPS_SOURCE_ROOT/deployment.yaml"
+~~~
+
+**Helm 完成后的下一步：** 两条逐组件 Helm 路线都继续 [manual-install.md 第 6 节](dps-install/manual-install.md)，安装匹配 dpsctl、确认 API/UI DNS/hosts、通过真实 LDAP 登录并保存私密 credential。该小节不重新安装 Helm，也不重新生成身份。整套 A/B 已做这些动作，不重复登录初始化。
+
+**安装并登录后检查（不执行 Helm、login 或配置写入）：**
+
+~~~bash
+helm --kube-context "$DPS_KUBE_CONTEXT" -n "$DPS_NAMESPACE" status "$DPS_RELEASE"
+kubectl --context "$DPS_KUBE_CONTEXT" -n "$DPS_NAMESPACE" get pods,pvc
+dpsctl --version
 dpsctl server-version
 dpsctl agent list
 ~~~
 
-当前完整 Lab 预期 deployed、9 工作负载 Ready、4 PVC Bound、0.9.0 客户端/服务端、LDAP admin 与 Agent connected。login JSON/CLI credential/token 均 600，不展示原文。外部访问 API/UI 需要 DNS/hosts 指向 host_ip，并信任 runtime/dps-install/config/tls/ca.crt。
+本 Lab 预期 release deployed、9 个工作负载 Ready、4 PVC Bound、客户端/服务端 0.9.0、Agent connected。CLI credential/token/login JSON 保持 600，不展示原文。API/UI 访问需正确 DNS/hosts 并信任 runtime/dps-install/config/tls/ca.crt。
 
-## 8. 本 Lab 的电源类型/拓扑与可选 PRS 开关
+## 8. 登记本 Lab 电源类型/拓扑，再选择 PRS 设置
 
-完整 Lab 执行 [manual-install.md 第 7–8 节](dps-install/manual-install.md) 的原生命令：
+这是安装后的 DPS 配置写入阶段，包含 device upsert、拓扑首次 import/必要关系更新和 settings update；不是只读健康检查。需先完成第 7 节登录。
+
+**配置入口：**
+
+- 整套 A/B 已登记模拟电源、导入 inactive 四 rack 拓扑并设置 Lab PRS=true/-15%/5 秒，不重跑 import 或开关设置。
+- 逐组件 Lab 路线：先按 [manual-install.md 第 7 节](dps-install/manual-install.md) 登记、验证、首次导入并通过官方 GetTopologyModel 回读 AgentId；再按该手册第 8 节明确设置所需 PRS 开关。只执行尚未完成的动作；已有同名拓扑不再次 import，不删除重建。
+- 真实 BMC/客户环境：使用自己的设备模型、拓扑和 AgentId，按对接指南选择 PRS；跳过本 Lab 模拟蓝图和固定参数。
+
+**配置后检查（仅查询）：**
 
 ~~~bash
-dpsctl device upsert "$DPS_SOURCE_ROOT/dps-install/config/gb300-power-shelf-devices.yaml"
-dpsctl topology validate "$DPS_RUNTIME_ROOT/dps-install/config/topology-4rack-dps09.json"
-dpsctl topology import "$DPS_RUNTIME_ROOT/dps-install/config/topology-4rack-dps09.json"
+dpsctl device list
 dpsctl topology list
-dpsctl settings update --set prs_enabled=true \
-  --set prs_headroom_percent=-15 --set prs_scheduler_interval_seconds=5
 dpsctl settings list
+dpsctl resource-group list
 ~~~
 
-本 Lab 预期 110 实体、4 rack/72计算节点、inactive、72 条 AgentId 位于 Topology.Entities。用官方 GetTopologyModel 原始回读验证 AgentId；0.9 CLI export 省掉字段不能当作验证。缺少路由才执行 manual-install 中 current hash、forceUpdate=false 的官方 API update；禁止 CLI delete/reimport/force。
+本 Lab 预期 110 实体、4 rack/72 计算节点、inactive，官方原始回读包含 72 条 Topology.Entities 的 AgentId。0.9 CLI export 会省略 AgentId，不能单靠其结果验收。缺少路由时按手册 current hash、forceUpdate=false 的 API 更新流程执行；不是默认再更新一次。
 
-本 Lab 默认不激活拓扑、不创建资源组、不写 BMC 功率。PRS=true / headroom=-15% / scheduler=5 秒是本 Lab 的部署状态，客户按业务选择是否启用 PRS 及其参数。真实 BMC 使用自己的设备模型、拓扑和 AgentId 关系，不导入此处模拟节点蓝图；动态功率控制还需要后续单独验证。
+本 Lab 不激活拓扑、不创建资源组、不写 BMC 功率。PRS=true / headroom=-15% / scheduler=5 秒是 Lab 选择；动态功率控制需要后续独立授权和验证。
 
-## 9. 原生只读检查与安装后备份
+## 9. 安装完成：只读检查、备份与可选验证
+
+整套 A/B 成功后直接到此处；逐组件/手工路线完成所选第 1–8 节后也到此处。先确认第 0.2 节环境已经加载，并具备第 7 节登录 credential。
+
+**只读检查（可直接执行，不再启动容器或安装 Helm）：**
 
 ~~~bash
-kubectl get nodes -o wide
-kubectl -n "$DPS_NAMESPACE" get pods,pvc
-helm -n "$DPS_NAMESPACE" status "$DPS_RELEASE"
+kubectl --context "$DPS_KUBE_CONTEXT" get nodes -o wide
+kubectl --context "$DPS_KUBE_CONTEXT" -n "$DPS_NAMESPACE" get pods,pvc
+helm --kube-context "$DPS_KUBE_CONTEXT" -n "$DPS_NAMESPACE" status "$DPS_RELEASE"
 dpsctl agent list
 dpsctl topology list
 dpsctl settings list
 ~~~
 
-按 PG/LDAP 手册重新备份到 runtime/dps-install/data 下，并校验 dump catalog/LDAP 条目。可选进一步验收放 [verification](verification/README.md)，结果只写 runtime/verification。宿主机/Agent Pod GET 与 Core→Agent 的 active-topology 派发分别报告；不把 inactive 的 INVALID_OPERATION/SERVER_NOT_STARTED 标为已通过 DPS 集成。
+**备份（单独的安装后动作，会写备份文件）：** 按 [PG 手册](dps-install/manual-postgresql.md) 与 [LDAP 手册](dps-install/manual-ldap.md) 的备份小节执行一次并核对 dump catalog/LDAP 条目；无需为备份重跑它们的初始化或启动章节。备份进入 runtime/dps-install/data，日志/报告进入 runtime/verification。
 
-## 10. 已有实例维护分支
+**进一步验证（按需选择）：** 见 [verification/README.md](verification/README.md)；整套安装脚本不会自动执行这些验收，验收报告也不是安装依赖。宿主机/Agent Pod 的 BMC GET 与 Core→Agent active-topology 派发分别报告；inactive 返回 INVALID_OPERATION/SERVER_NOT_STARTED 不代表 DPS 集成已通过。
 
-只读取同一 deployment.yaml 和已有 runtime values/identity/data，执行需要的 docker compose ps、kubectl/helm status、dpsctl 查询。更改明确的非秘密配置后，先 helm template 审阅再 upgrade。证书/密码/用户/JWT、PGDATA/LDAP data.mdb 与 PVC 不重新生成或删除。旧 LDAP 迁移、PRS 第一次启用、容器节点退役与路径迁移都在 operation-history 中，不是每日复现步骤。
+## 10. 已有实例维护：使用既有身份和数据
+
+先完成第 0.1–0.2 节，确认同一配置、runtime、context 和 release；不用再执行第 1–8 节的新建流程。容器状态用对应 compose ps，Kubernetes/Helm/dpsctl 查询可直接沿用第 9 节，只运行与本实例实际启用组件相符的检查。
+
+需要启停已有独立服务时使用 [BMC 维护说明](hardware-sim/manual-install.md)、[PG 手册](dps-install/manual-postgresql.md)、[LDAP 手册](dps-install/manual-ldap.md) 对应维护命令；启停属于明确服务动作，不是检查。更改非秘密配置后先人工审阅 values 和 helm template，再执行明确的 Helm upgrade。
+
+保留原证书/密码/用户/JWT、PGDATA/LDAP data.mdb 与 PVC，不重新生成或删除。旧 LDAP 迁移、PRS 第一次启用、容器节点退役与路径迁移记录在 [operation-history](docs/operation-history.md)，不属于日常安装/维护命令。

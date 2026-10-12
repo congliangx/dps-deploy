@@ -41,12 +41,24 @@
 ## 三种常见安装路径
 
 1. **已有 Kubernetes、PostgreSQL、LDAP 和真实 BMC。** 从 [已有基础设施对接指南](dps-install/existing-infrastructure.md) 开始，跳过 K3s、数据库、目录服务和模拟器安装。确认所需数据库/权限，准备目标 namespace 内的 Secret，填写客户自己的 DPS values，审阅 Helm 渲染结果后安装 DPS，最后按实际启用的组件验证。
-2. **已有 Kubernetes 和真实 BMC，缺少数据库或身份服务。** 保留已有集群与 BMC，只选择缺少部分的 [PostgreSQL](dps-install/manual-postgresql.md) / [OpenLDAP](dps-install/manual-ldap.md) 手工步骤；再按 [对接指南](dps-install/existing-infrastructure.md) 汇总连接参数和 Secret，并安装 DPS。可以只新装其中一个服务。
+2. **已有 Kubernetes 和真实 BMC，缺少数据库或身份服务。** 保留已有集群与 BMC，只选择缺少部分的 [PostgreSQL](dps-install/manual-postgresql.md) / [OpenLDAP](dps-install/manual-ldap.md) 脚本或手工步骤；再按 [对接指南](dps-install/existing-infrastructure.md) 汇总连接参数和 Secret，并安装 DPS。可以只新装其中一个服务。
 3. **没有硬件和基础设施的完整 Lab。** 按 [installstep.md](installstep.md) 的顺序部署原生 K3s、4 rack 模拟器、独立 PostgreSQL/OpenLDAP、DPS 和可选 PRS，再使用 [验证说明](verification/README.md)。这条路径复现本仓库当前验证环境。
 
 完整 Lab 的一条脚本执行和分阶段入口在 [installstep.md](installstep.md)，动作与产物展开在对应 manual。[install-from-zero](dps-install/from-zero.md) 是完整 Lab 的便捷自动化，具有其现有环境检查与复用边界；它不是按客户任意现成基础设施自由选择组件的安装器。已有企业环境应使用手工对接、Secret 与 Helm 流程，不要通过改一项地址后直接执行全套 Lab 脚本。
 
 [installstep.md](installstep.md) 只包含可重复安装步骤。完整历史实录、失败修复与带日期验收位于 [docs/operation-history.md](docs/operation-history.md)，不能把其中一次性迁移命令当成当前安装流程。
+
+## 按组件一键安装
+
+只新建缺少的 Lab 组件时，不必运行整套 install-from-zero。先完成 [installstep.md 第 0 节](installstep.md) 的主机/参数/源码目录选择，以及其第 1 节的主机依赖准备；填写本次 deployment.yaml 后，在源码根只选择需要的入口：
+
+| 需要新建的组件 | 一键安装命令 | 动作、产物与手工替代步骤 |
+| --- | --- | --- |
+| 4 rack BMC 模拟器 | bash hardware-sim/scripts/install-bmc.sh --config deployment.yaml | [BMC 手册](hardware-sim/manual-install.md) |
+| 独立 PostgreSQL | bash dps-install/scripts/install-postgresql.sh --config deployment.yaml | [PostgreSQL 手册](dps-install/manual-postgresql.md) |
+| 独立 OpenLDAP | bash dps-install/scripts/install-ldap.sh --config deployment.yaml | [LDAP 手册](dps-install/manual-ldap.md) |
+
+每个入口只下载、配置并启动该组件，生成密码/证书/Secret YAML；不安装其他组件，不将 Secret 应用到 Kubernetes，也不安装 DPS。脚本管理的同一实例可保留身份重入；客户已有或手工创建的服务使用原配置维护。组件安装成功后不重复相应手册的生成/启动步骤，只执行检查；再按 DPS 手册或已有环境对接指南配置 Secret/values 并安装 DPS。独立组件先启动后不再接续整套 install-from-zero，避免重新初始化已有数据。
 
 ## Lab 统一参数与 DPS 应用配置
 

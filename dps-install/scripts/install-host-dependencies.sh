@@ -4,11 +4,11 @@ set -euo pipefail
 [ "$(id -u)" -eq 0 ] || { echo 'Run as root.' >&2; exit 1; }
 [ "$(uname -m)" = x86_64 ] || { echo 'This deployment pins amd64 artifacts.' >&2; exit 1; }
 need=0
-for bin in python3 openssl curl git ss; do command -v "$bin" >/dev/null || need=1; done
+for bin in python3 openssl curl git ss jq ldapwhoami; do command -v "$bin" >/dev/null || need=1; done
 python3 -c 'import yaml' >/dev/null 2>&1 || need=1
 if [ "$need" = 1 ]; then
   apt-get update
-  DEBIAN_FRONTEND=noninteractive apt-get install -y python3 python3-yaml openssl curl git ca-certificates iproute2
+  DEBIAN_FRONTEND=noninteractive apt-get install -y python3 python3-yaml openssl curl git ca-certificates iproute2 jq ldap-utils
 fi
 if ! command -v docker >/dev/null; then
   . /etc/os-release

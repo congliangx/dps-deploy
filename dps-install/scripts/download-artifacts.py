@@ -345,7 +345,7 @@ def main():
     default_root = ctx.runtime_root
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, default=default_root)
-    parser.add_argument("--component", choices=("chart", "images", "ldap", "all"), default="all")
+    parser.add_argument("--component", choices=("chart", "images", "bmc", "postgresql", "ldap", "all"), default="all")
     parser.add_argument("--chart-file", help="Validate and cache an existing pinned DPS 0.9.0 chart")
     args = parser.parse_args()
     root = args.root.expanduser().resolve()
@@ -358,10 +358,17 @@ def main():
               "component": args.component, "root": str(root)}
     if args.component in ("chart", "all"):
         result["chart"] = chart(root, spec["chart"], args.chart_file)
-    if args.component in ("images", "ldap", "all") and not shutil.which("docker"):
+    if args.component in ("images", "bmc", "postgresql", "ldap", "all") and not shutil.which("docker"):
         raise ArtifactError("Docker is required for pinned image acquisition/LDAP build")
-    if args.component in ("images", "all"):
-        result["images"] = image_set(spec["images"])
+    if args.component in ("images", "bmc", "postgresql", "all"):
+        selected = spec["images"]
+        if args.component in ("bmc", "postgresql"):
+            names = ({"bmc-simulator", "nginx-proxy"} if args.component == "bmc"
+                     else {"postgresql-server-and-migration-client"})
+            selected = [item for item in selected if item["name"] in names]
+            if {item["name"] for item in selected} != names:
+                raise ArtifactError("Pinned component image set is incomplete")
+        result["images"] = image_set(selected)
     if args.component in ("ldap", "all"):
         result["ldap"] = ldap_build(root, spec["ldap"])
     state = root / "dps-install/config/artifacts-runtime.json"
