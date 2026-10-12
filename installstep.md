@@ -1,6 +1,6 @@
-# DPS 0.9 完整 Lab 手工安装步骤
+# DPS 0.9 完整 Lab 安装步骤（脚本与手工）
 
-本文是完整 Lab 的可重复首次安装流程：原生 K3s、4 rack BMC 模拟器、独立 PostgreSQL/OpenLDAP、DPS 与 PRS，使用原生命令，不混入故障排查实录。原 installstep 的全部历史已逐字保存到 [docs/operation-history.md](docs/operation-history.md)。步骤在远端 root 的 Bash 会话执行，适用于 Ubuntu 22.04/24.04 amd64 + systemd 单物理机。
+本文是完整 Lab 的可重复首次安装流程：原生 K3s、4 rack BMC 模拟器、独立 PostgreSQL/OpenLDAP、DPS 与 PRS，提供脚本入口和逐步原生命令两种方式，不混入故障排查实录。原 installstep 的全部历史已逐字保存到 [docs/operation-history.md](docs/operation-history.md)。步骤在远端 root 的 Bash 会话执行，适用于 Ubuntu 22.04/24.04 amd64 + systemd 单物理机。
 
 先按根 [README 的组件选择表](README.md) 决定需要安装哪些部分。有真实 BMC 时跳过第 3 节；有可用 Kubernetes 时跳过第 2 节的初始化；复用 PostgreSQL / LDAP 时跳过对应服务部署和 Lab 身份生成，改用 [已有基础设施对接指南](dps-install/existing-infrastructure.md) 准备应用连接配置与 Secret。PRS / S3 按需求选择，不照搬本 Lab 的固定开关与资源数量。
 
@@ -49,6 +49,65 @@ ss -ltn
 源码根从实际 clone 位置推导；runtime_root 由用户在 deployment.yaml 选择。可以填写绝对路径（如 /srv/dps-lab），也可以填写相对 deployment.yaml 所在目录的路径（如 .runtime）；填写 . 表示与源码同根。运行目录也可以在源码的上级目录。公开模板与生成配置使用不同文件，不因选择同根而覆盖模板，生成物始终由 .gitignore 排除。可选 CLI --runtime-root 的相对路径按执行目录解析。L20-12 当前的 /raid/vince/deploy 与 /raid/vince/deployed-test 是本实例布局，后续步骤只使用 DPS_SOURCE_ROOT/DPS_RUNTIME_ROOT，无需改其他文档的源码绝对路径。主机/网卡/命名/端口等也只改这一份配置。Compose project 读取 DPS_BMC_PROJECT、DPS_PG_PROJECT、DPS_LDAP_PROJECT。
 
 检查 runtime 中已有 PGDATA、LDAP data.mdb、证书/密码、kubeconfig 与 Helm release。已有部署进入“维护”分支，保留原身份和数据库，跳过所有首次生成/初始化。不能复制本文直接覆盖 L20-12 的现有数据。Git 跟踪公开模板与配方；下载、生成配置、data、日志、报告、archive 进入所选 runtime_root，不提交 Git。改变 runtime_root 只是选择路径，不会自动迁移已有服务或数据库；已有实例须继续使用原目录，另行安排迁移时保留原身份与数据。
+
+## 脚本安装入口（与第 1–9 节手工路径二选一）
+
+第 0 节完成环境选择和参数确认后，可以执行下面的自动化入口，也可以继续第 1–9 节的原生命令。完整脚本已经执行这些安装动作，不要安装完成后再从第 1 节重做密码、证书、数据库或 Secret 初始化。若复用客户已有 BMC / PostgreSQL / LDAP 或任意企业 Kubernetes，请使用 [已有基础设施对接指南](dps-install/existing-infrastructure.md)；完整 Lab 脚本不会按组件选择跳过这些独立服务。
+
+### A. 新建完整 Lab：一条脚本运行
+
+先修改 deployment.yaml 为目标主机和本次实例的配置，确认运行目录、端口、Docker 子网、容器名称、namespace/release 和 API/UI 域名未占用。首次安装使用新的空运行目录；L20-12 当前配置对应已有实例，不用于新建测试实例。然后在源码目录执行：
+
+~~~bash
+bash dps-install/scripts/install-from-zero.sh \
+  --config "$DPS_SOURCE_ROOT/deployment.yaml"
+~~~
+
+这是完整 Lab 安装：安装主机依赖/Docker、校验并下载固定包和镜像、生成新的 BMC/PG/LDAP/DPS 身份及配置、安装物理机原生 K3s、启动独立服务、应用 13 个 Lab Secret、导入镜像并安装 DPS，随后完成真实 LDAP 登录、设备/拓扑登记和 Lab PRS 参数设置。默认保留拓扑 inactive，不写 BMC 功率；生成物写到配置所选 runtime_root。具体动作和原生命令见 [前置](dps-install/manual-prerequisites.md)、[BMC](hardware-sim/manual-install.md)、[PostgreSQL](dps-install/manual-postgresql.md)、[LDAP](dps-install/manual-ldap.md) 和 [DPS](dps-install/manual-install.md) 手册。
+
+也可以分阶段准备，最后再执行上面的完整命令：
+
+~~~bash
+# 校验/下载固定 chart、镜像和 LDAP 构建包，并构建本 Lab LDAP 镜像。
+bash dps-install/scripts/install-from-zero.sh \
+  --config "$DPS_SOURCE_ROOT/deployment.yaml" --download-only
+
+# 在下载阶段之后生成 BMC、PG、LDAP、DPS 的密码、证书、配置和 Secret 文件。
+bash dps-install/scripts/install-from-zero.sh \
+  --config "$DPS_SOURCE_ROOT/deployment.yaml" --prepare-only
+~~~
+
+这两个模式都会先执行主机依赖脚本，可能安装 OS 软件包、Docker 和 Compose；下载阶段还会拉取/构建镜像并记录安装参数。prepare 阶段会写入新身份和配置。它们不会初始化/启动本 Lab 的 Kubernetes、BMC、PG、LDAP、DPS 服务，但不是只读 dry-run；不要用它们检查或覆盖已有非 bootstrap 实例。各阶段继续使用同一份配置和运行目录。
+
+### B. 复用本机原生 K3s，安装一套新的完整 Lab
+
+仅当本机已有可用的原生 K3s 时，可显式传入其外部管理员 kubeconfig，跳过 K3s 服务初始化。该入口仍通过本机 k3s ctr 导入镜像，仍依赖 Traefik CRD/Ingress 与合适的 StorageClass；管理员 kubeconfig 必须指向这台物理机的集群，当前 context 必须正确，并具备 namespace、Secret、Ingress 和 Helm 安装权限。这不是复用任意远程企业集群的通用入口。
+
+先在 deployment.yaml 选择独立的新 namespace/release、instance_prefix、Compose project、AgentId、API/UI 域名、端口、子网和空运行目录，核对不会占用现有实例，再执行：
+
+~~~bash
+# 替换为现有管理员 kubeconfig 的真实路径；不能填写本次 runtime 内的目标副本。
+DPS_ADMIN_KUBECONFIG=/path/to/existing-admin-kubeconfig.yaml
+kubectl --kubeconfig "$DPS_ADMIN_KUBECONFIG" config current-context
+kubectl --kubeconfig "$DPS_ADMIN_KUBECONFIG" get nodes,storageclass
+kubectl --kubeconfig "$DPS_ADMIN_KUBECONFIG" -n kube-system get deployment traefik
+bash dps-install/scripts/install-from-zero.sh \
+  --config "$DPS_SOURCE_ROOT/deployment.yaml" \
+  --kubeconfig "$DPS_ADMIN_KUBECONFIG"
+~~~
+
+该模式复制外部 kubeconfig 到本次运行目录，使用其 current-context；BMC 模拟器、独立 PostgreSQL/OpenLDAP、Lab 身份/Secret、DPS 和 PRS 仍由完整脚本新建。需要复用这些其他服务时，改走对接指南和原生 Helm 流程。
+
+### C. 前置条件、配置和 Secret 已准备好：仅安装/升级 Lab DPS
+
+如果第 1–6 节已完成，或同一 Lab 实例已有可用的原生 K3s、独立 PG/LDAP/BMC、固定 chart/镜像、values、证书和 namespace 内 Secret，可直接运行：
+
+~~~bash
+bash dps-install/scripts/install-dps.sh \
+  --config "$DPS_SOURCE_ROOT/deployment.yaml"
+~~~
+
+此入口检查本机原生 K3s 和目标节点、chart 校验值、Lab LDAP/外部数据库及 PRS/TLS 配置，然后执行 Helm 安装/升级。它不创建基础服务，不生成或应用 Secret，也不完成登录、拓扑登记或 PRS 设置；新实例还需按 [DPS 手册](dps-install/manual-install.md) 完成对应后续步骤。它针对本仓库的 Lab values 约束，客户自有认证、数据库或集群组合按对接指南执行原生 Helm 命令。
 
 ## 1. Lab 主机依赖、Helm/kubectl 与固定包下载
 

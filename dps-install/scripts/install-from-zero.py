@@ -62,7 +62,7 @@ def run_source(name, env=None, args=None):
 def main():
     global ctx
     p=argparse.ArgumentParser(description=__doc__)
-    p.add_argument("--root","--runtime-root",dest="root",help="Runtime directory, separate from this source checkout");p.add_argument("--config","--deployment-config",dest="config",help="Public deployment YAML")
+    p.add_argument("--root","--runtime-root",dest="root",help="Runtime directory; same-root, nested and external layouts are supported");p.add_argument("--config","--deployment-config",dest="config",help="Public deployment YAML")
     for key in ["host-ip","host-name","interface","namespace","release","agent-id","api-name","ui-name","instance-prefix","pg-subnet"]:
         p.add_argument("--"+key)
     for key in ["pg-port","ldap-port","bmc-start-port"]:p.add_argument("--"+key,type=int)

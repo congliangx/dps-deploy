@@ -4,6 +4,22 @@
 
 配置依据是实际 0.9 chart 与 [NVIDIA 部署文档](https://docs.nvidia.com/datacenter/dps/versions/0.9/guides/installation/deploy-guide.html)。DPS 由下面明确的 Helm 命令安装，SDK 不参与部署。
 
+## 脚本路线在本页做什么
+
+整套 Lab 脚本与只安装 DPS 的简短入口均在 [installstep.md](../installstep.md)。下面说明各自实际执行范围；后续章节保留完整的 openssl、kubectl、Helm 和 dpsctl 展开步骤。
+
+| 脚本/阶段 | 实际动作和产物 | 对应正文 |
+| --- | --- | --- |
+| prepare-dps-fresh.py | 根据已生成的 PG/BMC/LDAP 输入创建或复用 DPS CA/Core/Agent/UI leaf、持久 JWT、S3/Controller 凭据和 Secret YAML；渲染 Lab values | 第 1–4 节 |
+| install-from-zero.py 完整模式 | 创建/核对归属 namespace，apply 13 个外部 Secret；解析 chart 镜像并核对固定 digest，导入本机 K3s containerd，直接执行 Helm upgrade --install | 第 3–5 节 |
+| 同一完整入口 | 使用真实 LDAP 账号通过 stdin 登录；注册电源类型，首次导入 inactive 四 rack 拓扑，核对/更新 Agent 路由，写 PRS=true/-15/5 | 第 6–8 节 |
+| install-dps.sh | 已完成 Lab 前置、values/Secret/镜像准备时，核对 chart SHA、K3s/node、LDAP 和 PRS 配置后仅执行 Helm upgrade --install | 第 5 节 |
+| dps-login.sh / register-devices.sh / update-topology.sh | 单独的 Lab 登录/设备注册/安全路由更新入口；不意味着已经完成整套安装 | 第 6–8 节 |
+
+整套脚本固定启用 PRS 和独立 Lab PG/LDAP/模拟器。prepare-only 生成输入，尚未 apply Secret 或执行 Helm；安装脚本本身不会自动运行 verification 全栈验收。install-dps.sh 不创建密码/证书/namespace Secret，不安装 PG、LDAP 或 BMC，也不执行后续登录/拓扑/PRS 开关；它仍按本机原生 K3s + LDAP + Lab PRS 库名校验，不能作为任意客户环境的通用 Helm 包装。
+
+重复执行只有在同一 bootstrap 配置、路径和归属保持一致时复用身份/数据；手工创建或其他安装归属的 namespace/身份不由 fresh 链接管。客户使用真实硬件、自选 PG/IdP 或 Kubernetes 方案时，使用 [已有基础设施对接](existing-infrastructure.md) 的原生 Helm 和条件性 Secret。整套脚本保持拓扑 inactive，不创建 ResourceGroup 或执行 BMC 功率 PATCH；动态闭环与额外验收另行选择。
+
 ## 1. 新建 DPS CA、server/agent/ingress 证书和 JWT
 
 ~~~bash

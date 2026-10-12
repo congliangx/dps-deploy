@@ -1,8 +1,8 @@
-# 从空源码到完整 Lab：手工部署
+# 从空源码到完整 Lab：脚本与手工部署
 
 本页复现完整 Lab，包含缺少硬件时的模拟器和独立基础设施。已有客户集群、真实 BMC、数据库或身份服务按 [组件选择](../README.md) 和 [对接指南](existing-infrastructure.md) 跳过相应新建；此页的 13 Secret/9 工作负载/4 PVC 仅指 Lab 组合。
 
-首次新实例按 [installstep.md](../installstep.md) 逐步执行原生命令；不以自编 bash/Python入口替代安装过程。Lab 脚本的统一参数 [deployment.yaml](../deployment.yaml) 中的 runtime_root 由用户选择：支持绝对路径（如 /srv/dps-lab），或相对该配置文件目录的路径（如 .runtime）；填写 . 可与源码同根，运行目录也可以在源码的上级目录。所有下载/生成输入/data/logs/reports/archive 写入 DPS_RUNTIME_ROOT 并排除 Git。源码根由实际 clone 位置推导；L20-12 当前使用 /raid/vince/deploy 与 /raid/vince/deployed-test，是本实例的目录安排。
+首次新实例在 [installstep.md](../installstep.md) 选择一条整套脚本、分阶段脚本或逐步手工方式；具体脚本动作、产物及对应原生命令都在各 manual，不必把同一安装重复执行两遍。Lab 脚本的统一参数 [deployment.yaml](../deployment.yaml) 中的 runtime_root 由用户选择：支持绝对路径（如 /srv/dps-lab），或相对该配置文件目录的路径（如 .runtime）；填写 . 可与源码同根，运行目录也可以在源码的上级目录。所有下载/生成输入/data/logs/reports/archive 写入 DPS_RUNTIME_ROOT 并排除 Git。源码根由实际 clone 位置推导；L20-12 当前使用 /raid/vince/deploy 与 /raid/vince/deployed-test，是本实例的目录安排。
 
 ## 原生步骤与输出
 
@@ -35,4 +35,4 @@
 
 该轮显式复用L20-12既有物理原生K3s，没有另一台空白OS/K3s首次安装实测。完整入口重入于10:28:56+08退出0；46份证书/密钥/凭据/Secret文件内容不变，数据库sentinel保留后清理。证据在runtime/verification/reports及runtime/verification/archive，日期与完整记录见 [operation-history](../docs/operation-history.md)。
 
-可选自编自动化/维护入口在 [scripts/README.md](scripts/README.md)，不构成本手工流程的黑盒依赖。所有安装后验证材料与生产输入分离，安装不会读取verification报告。
+自动化与维护实现索引在 [scripts/README.md](scripts/README.md)，执行示例集中在 installstep，动作展开在 manual。所有安装后验证材料与生产输入分离，安装不会读取verification报告。

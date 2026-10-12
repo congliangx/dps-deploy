@@ -2,6 +2,22 @@
 
 本页先总结安装 DPS 前需要具备的服务、工具和输入，再给出缺少基础设施时的完整 Lab 新建步骤。已有的组件先检查并复用，只安装缺少的部分；是否具备这些条件与是否需要重新安装是两件事。
 
+## 脚本路线在本页做什么
+
+整套脚本的执行入口、暂停模式和参数示例统一在根 [installstep.md](../installstep.md)。选择脚本方式时，以下动作由入口执行；选择手工方式时按后续原生命令展开，两条路线无需重复执行。
+
+| 脚本/阶段 | 实际动作 | 对应正文 |
+| --- | --- | --- |
+| install-from-zero.sh → install-host-dependencies.sh | 检查 root/amd64、Python/YAML、OpenSSL/curl/git/ss、Docker/Compose；缺少时安装 OS 依赖与 Docker，已有匹配安装复用 | 本页执行准备及第 1 节 |
+| download-artifacts.py --component all | 校验/下载固定 chart、11 个镜像、17 个 Debian 包和 LDAP base/配方；构建或核对 LDAP 镜像并记录本次 image ID | 第 3–4 节 |
+| install-tools.py / install-dpsctl.sh | 完整模式中安装缺少的 Helm/kubectl/dpsctl，并核对已有工具版本；下载/准备暂停模式还不执行此阶段 | 第 2 节，dpsctl 见 [DPS 手册](manual-install.md) |
+| install-kubernetes.sh / refresh-kubeconfig.py | 默认完整模式下载固定 K3s binary/installer/airgap 包，配置 systemd、runtime 数据目录与 kubeconfig，等待物理节点 Ready | 第 5 节 |
+| install-from-zero.py | 等待 Traefik CRD/Deployment，检查 API/UI 域名归属；核对 chart 引用的镜像并用 Docker save/k3s ctr 导入 K3s containerd | 第 5–6 节与 [DPS 手册](manual-install.md) |
+
+--download-only 停在下载/LDAP 构建之后；--prepare-only 在此基础上继续四个配置/身份生产者后暂停。Shell 入口两种模式都先检查/补装宿主机依赖；下载阶段若构建 LDAP 镜像会产生构建容器；准备模式生成配置和身份，不启动业务服务，不能称为只读 dry run。业务 Compose、K3s 安装、namespace Secret apply 与 Helm 部署在完整模式中执行。
+
+--kubeconfig 只跳过 K3s 初始化，复用的仍须是本机可使用 k3s ctr 的原生 K3s，并具备所需 Traefik/StorageClass 与权限；它不是任意发行版已有集群的通用选项。客户复用 PG/LDAP/真实 BMC 或自选 Kubernetes 时按 [已有环境对接](existing-infrastructure.md)，不运行完整 Lab 链。
+
 ## 安装 DPS 前需要准备什么
 
 | 前置项 | 用途和需要达到的状态 | 已有时如何处理 / 缺少时去哪里 |

@@ -2,6 +2,20 @@
 
 先完成 [OpenLDAP 固定镜像构建](manual-prerequisites.md)。本节初始化新的空 LDAP data；已有 data.mdb、用户密码或 CA 时只检查/维护，不覆盖重新生成。DPS 使用 LDAP，不连接公司目录，OIDC 关闭。
 
+## 脚本路线在本页做什么
+
+整套入口见 [installstep.md](../installstep.md)。下载阶段先构建并记录 LDAP 镜像，准备阶段调用 prepare-ldap-fresh.py --image 使用该记录的 image ID；后续正文解释其原生命令。
+
+| 阶段 | 实际动作和产物 |
+| --- | --- |
+| download-artifacts.py | 根据固定 Debian 包与公开配方构建/核对镜像，写 runtime-build.json；不借用旧服务器上的未记录镜像 ID |
+| prepare-ldap-fresh.py | 创建或复用归属内的 admin/bind/user/noaccess 密码，生成哈希、LDAP CA/server/client 证书 |
+| 同一生产者 | 生成 slapd.conf、bootstrap.ldif、ACL、用户/组/只读 bind、credentials/dps-access JSON、Compose，以及 bind/CA/client Secret YAML |
+| install-from-zero.py 完整模式 | 启动 OpenLDAP Compose 并等健康；容器首次仅在空数据目录 slapadd，之后复用 data.mdb |
+| LDAP status/start/backup 脚本 | 已有 Lab 目录服务的检查、启停和受限备份入口 |
+
+--prepare-only 在 Python 中生成带盐密码哈希，核对已记录镜像，但不运行密码工具容器、不启动 LDAP 部署服务、不向运行目录服务写入用户。已有生产者管理身份按归属复用；客户 LDAP 不创建实验用户/OU、不换密码/CA，按 [已有环境对接](existing-infrastructure.md) 配置真实 bind、用户/组与 TLS 输入。
+
 ## 1. 生成四份密码与 LDAP TLS
 
 ~~~bash

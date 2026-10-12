@@ -2,6 +2,19 @@
 
 先读取源码 deployment.yaml 导出的环境，完成 [下载镜像与工具](manual-prerequisites.md)。此步骤仅创建新的空数据目录；已有 PGDATA、证书或密码时跳过“生成/初始化”，先核对原配置，不能给已有数据库换密码或重新运行初始化 SQL。
 
+## 脚本路线在本页做什么
+
+整套入口见 [installstep.md](../installstep.md)。install-from-zero.py 在准备阶段调用 prepare-postgresql.py；完整模式再启动此生产者输出的 Compose。原生命令的展开说明在后续章节。
+
+| 阶段 | 实际动作和产物 |
+| --- | --- |
+| prepare-postgresql.py | 创建或按已有归属复用 postgres 管理员/dps 应用密码、PG CA/server TLS、私密连接 JSON 和 PG 密码/CA Secret YAML |
+| 同一生产者 | 输出 SCRAM/TLS 配置、限定来源 pg_hba.conf、首次四库/应用角色初始化 SQL、Compose 和数据目录 |
+| install-from-zero.py 完整模式 | 启动独立 PG Compose 并等待健康；官方 PostgreSQL 镜像仅在空 PGDATA 初始化角色/数据库 |
+| postgresql-start.sh / status / backup 脚本 | 已有 Lab 运行配置的启动、状态及备份便利入口；不自动重设密码或重建数据库 |
+
+--prepare-only 不启动 PG、不执行数据库初始化。新建完整 Lab 包括 Core 与三个 PRS 库；客户已有 PG 只准备实际使用的库、应用权限和真实密码 Secret，见 [对接指南](existing-infrastructure.md)，不执行 fresh 或初始化去改动客户数据库。已有非生产者管理的身份须走手工维护。
+
 ## 1. 生成管理员/应用密码和独立 CA
 
 ~~~bash

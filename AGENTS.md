@@ -12,7 +12,7 @@
 - Git 跟踪脚本、公开模板/资源清单、节点蓝图和文档；用户可以选择同根、仓库内专用 runtime 子目录或其他位置，生成物均不提交。公开模板与生成配置路径必须区分，支持同根部署时不得覆盖源模板。本实例继续使用现有外置 runtime，不为改进通用目录配置而搬迁服务或数据；不通过 symlink/bind mount 把其运行材料放回当前仓库。
 - 必要安装输入/数据分别在 runtime/dps-install/config、packages、data；硬件模拟输出在 runtime/hardware-sim；报告/log/archive 在 runtime/verification。
 - 更改 host/runtime/namespace/project 等设置时先评估既有实例；fresh 入口不能接管无归属的旧 namespace、复用其他实例的域名或重置现有身份。
-- 维护脚本是可选便利入口。installstep.md 和组件 README 必须给下载、配置、证书/密码、Secret、原生 docker/kubectl/helm/dpsctl 命令、解释与预期结果，不能只列自编脚本调用。
+- installstep.md 保留完整 Lab 一条脚本与分阶段执行入口，同时可按手工路线安装；各 manual 解释脚本阶段、产物及完整原生命令。脚本/手工路线无需重复执行，不能再把脚本示例从主安装入口完全移除。客户已有服务仍走对接指南，当前 Lab 脚本不变成任意企业环境的通用安装器。
 - installstep.md 只记录可重复安装流程；实际迁移、故障、日期和验收记录追加 docs/operation-history.md。完整私密证据留 runtime/verification，不提交 Git。
 - 修改前备份必要配置/数据库，并保留失败实录；历史不得伪装成当前结果。更新此文件后同步本机 deploy/AGENTS.md。
 

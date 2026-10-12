@@ -1,6 +1,6 @@
 # DPS 0.9 安装与基础设施选择
 
-本仓库交付 DPS 0.9 的手工 Helm 安装说明，以及没有现成基础设施时可选的 Kubernetes、PostgreSQL、OpenLDAP 和 GB300 BMC 模拟器部署步骤。客户按已有环境选择组件；真实 GB300 BMC 可以直接接入 DPS，只有缺少硬件的 Lab 才需要模拟器。SDK 只用于硬件模拟，安装 DPS 不依赖 SDK。
+本仓库交付完整 Lab 的脚本安装入口与 DPS 0.9 的手工 Helm 安装说明，以及没有现成基础设施时可选的 Kubernetes、PostgreSQL、OpenLDAP 和 GB300 BMC 模拟器部署步骤。客户按已有环境选择组件；真实 GB300 BMC 可以直接接入 DPS，只有缺少硬件的 Lab 才需要模拟器。SDK 只用于硬件模拟，安装 DPS 不依赖 SDK。
 
 安装前先读 [前置要求与手工安装](dps-install/manual-prerequisites.md)：同一页先列准备项和新建/复用选择，再给出版本说明、具体安装命令与状态检查。固定版本及完整 Lab 检查单只描述本仓库实验环境，客户可以复用满足要求的现有服务。
 
@@ -44,7 +44,7 @@
 2. **已有 Kubernetes 和真实 BMC，缺少数据库或身份服务。** 保留已有集群与 BMC，只选择缺少部分的 [PostgreSQL](dps-install/manual-postgresql.md) / [OpenLDAP](dps-install/manual-ldap.md) 手工步骤；再按 [对接指南](dps-install/existing-infrastructure.md) 汇总连接参数和 Secret，并安装 DPS。可以只新装其中一个服务。
 3. **没有硬件和基础设施的完整 Lab。** 按 [installstep.md](installstep.md) 的顺序部署原生 K3s、4 rack 模拟器、独立 PostgreSQL/OpenLDAP、DPS 和可选 PRS，再使用 [验证说明](verification/README.md)。这条路径复现本仓库当前验证环境。
 
-[install-from-zero](dps-install/from-zero.md) 是完整 Lab 的便捷自动化，具有其现有环境检查与复用边界；它不是按客户任意现成基础设施自由选择组件的安装器。已有企业环境应使用手工对接、Secret 与 Helm 流程，不要通过改一项地址后直接执行全套 Lab 脚本。
+完整 Lab 的一条脚本执行和分阶段入口在 [installstep.md](installstep.md)，动作与产物展开在对应 manual。[install-from-zero](dps-install/from-zero.md) 是完整 Lab 的便捷自动化，具有其现有环境检查与复用边界；它不是按客户任意现成基础设施自由选择组件的安装器。已有企业环境应使用手工对接、Secret 与 Helm 流程，不要通过改一项地址后直接执行全套 Lab 脚本。
 
 [installstep.md](installstep.md) 只包含可重复安装步骤。完整历史实录、失败修复与带日期验收位于 [docs/operation-history.md](docs/operation-history.md)，不能把其中一次性迁移命令当成当前安装流程。
 
@@ -96,7 +96,7 @@ source "$DPS_SOURCE_ROOT/dps-install/scripts/deployment-env.sh"
 5. [DPS / PRS](dps-install/README.md)：当前 Lab 的 13 Secrets、values、Helm、真实 LDAP 登录、电源类型、4 rack inactive 拓扑与 PRS=true；客户启用不同组件时所需 Secret 和工作负载数量不同。
 6. [独立验证](verification/README.md)：安装输入与验证脚本/结果分开，健康 GET 与动态功率控制分开。
 
-每个组件都有完整原生命令、说明和预期结果；仓库自编安装脚本不作为手工步骤的前置黑盒。可选脚本索引在 [scripts/README.md](dps-install/scripts/README.md)。[from-zero.md](dps-install/from-zero.md) 说明首次实例与维护的区别。
+脚本安装与手工安装均可选择；各组件 manual 说明对应脚本做了什么，并保留完整原生命令、产物和预期结果，无需重复执行两条路线。可选脚本索引在 [scripts/README.md](dps-install/scripts/README.md)。[from-zero.md](dps-install/from-zero.md) 说明首次实例与维护的区别。
 
 ## 已验证范围与现有实例
 

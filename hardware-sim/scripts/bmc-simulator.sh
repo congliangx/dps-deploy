@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
+umask 077
 script_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 source "$script_dir/../../dps-install/scripts/deployment-env.sh" "$@"
 set -- "${DPS_DEPLOY_ARGS[@]}"
@@ -19,7 +20,10 @@ from pathlib import Path
 from datetime import datetime,timezone,timedelta
 import os
 stamp=datetime.now(timezone(timedelta(hours=8))).isoformat(timespec='seconds')
-with (Path(os.environ['DPS_RUNTIME_ROOT'])/'installstep.md').open('a') as f:
+log = Path(os.environ['DPS_RUNTIME_ROOT'])/'verification/logs/installation-actions.md'
+log.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+with log.open('a') as f:
     f.write(f"\n- {stamp} Successfully ran hardware-sim/scripts/bmc-simulator.sh {os.environ['BMC_ACTION']}.\n")
+log.chmod(0o600)
 PY
 fi

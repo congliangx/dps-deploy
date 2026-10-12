@@ -2,6 +2,21 @@
 
 SDK 仅提供 BMC 模拟，不安装 DPS。使用固定 0.9 simulator 镜像和公开节点/拓扑模板，无需 SDK checkout 或 vendor。先按 [主机/下载步骤](../dps-install/manual-prerequisites.md) 准备 Docker、镜像和环境变量。以下是新实例原生命令；已有 TLS、凭据、runtime 配置时直接使用，不重新生成。
 
+## 脚本路线在本页做什么
+
+整套入口见 [installstep.md](../installstep.md)。选择脚本安装时，install-from-zero.py 调用 prepare-bmc-fresh.py 并直接启动保存的 Compose；SDK 不负责安装 DPS。
+
+| 阶段 | 实际动作和产物 |
+| --- | --- |
+| prepare-bmc-fresh.py | 从公开 nodes/拓扑模板渲染四 rack、72 URL 和 AgentId；创建或按归属复用 BMC 密码、外部 CA/leaf、凭据清单、BMC/CA Secret YAML |
+| 同一生产者 | 生成 runtime/hardware-sim/runtime 的 config.yaml、nodes.json、nginx.conf、compose.yaml，及 runtime/dps-install/config 的拓扑与凭据 |
+| install-from-zero.py 完整模式 | docker compose up 启动模拟器和代理；执行 nginx 配置检查/reload，等待代理健康 |
+| bmc-simulator.sh | 已有本 Lab 配置的单独 start/stop/restart/status/logs 维护入口，不能代替上述身份/配置准备 |
+
+bmc-simulator.sh 的启停实录写入 runtime/verification/logs/installation-actions.md，不追加到源码 installstep.md，同根布局也保留安装文档原文。
+
+后续章节给出各产物如何通过原生命令创建。--prepare-only 只做到配置/身份生成，不启动 BMC 部署服务；已有生产者归属身份保留，缺失或参数冲突时停止。手工创建或客户真实 BMC 身份不由 fresh 入口接管。真实 BMC 的用户直接跳过本页并准备 [对接输入](../dps-install/existing-infrastructure.md)。
+
 ## 1. 下载固定镜像，准备目录与密码
 
 ~~~bash
