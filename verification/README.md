@@ -2,9 +2,15 @@
 
 安装步骤在 [installstep.md](../installstep.md)。Git跟踪本目录的可选验收脚本与说明；所有报告、日志、archive和临时文件写入deployment.yaml定义的runtime_root/verification，并排除Git。runtime_root由用户选择：.runtime为仓库内专用子目录，.为源码与运行材料同根，/srv/dps-lab为自选绝对目录，源码上级目录也可用。配置中的相对路径按deployment.yaml所在目录解析。安装不会读取verification报告，不把验证脚本当作必需部署文件。
 
-## 原生只读检查顺序
+## 按实际安装范围选择验证
 
-先读取同一配置，再用原生工具检查独立服务→物理集群→DPS认证/拓扑/PRS，完整输入创建步骤分别在 [BMC](../hardware-sim/manual-install.md)、[PG](../dps-install/manual-postgresql.md)、[LDAP](../dps-install/manual-ldap.md)、[DPS](../dps-install/manual-install.md)。
+本目录现有验收脚本主要针对本仓库的 4 rack 模拟器、独立 Docker PostgreSQL/OpenLDAP、单节点 K3s、PRS/SeaweedFS Lab。它们不是适用于任意客户环境的通用探测器；其中固定容器名、72 节点、9 个工作负载、4 个 PVC 和本地证书路径，均不能作为客户环境的通用成功条件。
+
+已有基础设施按 [对接指南](../dps-install/existing-infrastructure.md) 及客户实际 values 检查：目标 kubeconfig/context 与工作负载、存储及 Ingress；DPS Pod 到数据库/LDAP/BMC 的网络与 TLS；对应 Secret 的名称/键/挂载；实际账号授权、拓扑 AgentId 路由；启用 PRS 时再验证 PRS 数据库和 S3。真实 BMC 不运行模拟器生成或控制脚本，也不要求存在模拟器 Compose、/readyz 或 simulator-ca.crt。
+
+## 本 Lab 的原生只读检查顺序
+
+以下块仅供本仓库 Lab。先读取同一 Lab 配置，再用原生工具检查独立服务→物理集群→DPS认证/拓扑/PRS，完整输入创建步骤分别在 [BMC](../hardware-sim/manual-install.md)、[PG](../dps-install/manual-postgresql.md)、[LDAP](../dps-install/manual-ldap.md)、[DPS](../dps-install/manual-install.md)。
 
 ~~~bash
 # 先进入实际 clone 的仓库根目录。
@@ -29,7 +35,7 @@ dpsctl topology list
 dpsctl settings list
 ~~~
 
-预期单物理节点Ready、9工作负载与4PVC、独立Compose服务、严格TLS、LDAP权限/Agentconnected、inactive拓扑、PRS=true。9个Ready按Deployment/StatefulSet工作负载统计；CronJob产生的Succeeded Pod是正常完成记录，保留，不按全部Pod总数判失败。需要先真实LDAP登录；CLI token和日志600，不能cat凭据/Secret。密码错误/不存在用户被拒绝；有效组外身份可能取得无角色token，受保护API403/RPC AUTHORIZATION_FAILED才是授权检查。
+本 Lab 预期单物理节点Ready、9工作负载与4PVC、独立Compose服务、严格TLS、LDAP权限/Agentconnected、inactive拓扑、PRS=true。9个Ready按Deployment/StatefulSet工作负载统计；CronJob产生的Succeeded Pod是正常完成记录，保留，不按全部Pod总数判失败。需要先真实LDAP登录；CLI token和日志600，不能cat凭据/Secret。密码错误/不存在用户被拒绝；有效组外身份可能取得无角色token，受保护API403/RPC AUTHORIZATION_FAILED才是授权检查。
 
 ## 验证脚本与输出边界
 

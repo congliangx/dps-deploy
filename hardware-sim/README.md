@@ -1,10 +1,12 @@
-# 4 rack GB300 硬件模拟
+# 可选 Lab 组件：4 rack GB300 硬件模拟
+
+**有真实 BMC 的环境跳过本目录的全部安装步骤。** 模拟器仅用于本 Lab 缺少 GB300 硬件的情况；DPS 可以直接对接真实硬件，不要求下载 SDK 或部署模拟服务。真实 BMC 用户按 [已有基础设施对接指南](../dps-install/existing-infrastructure.md) 配置 Redfish URL、账号/密码 Secret、受信 CA、设备模型与实际拓扑，并验证 Agent 到 BMC 的网络和 TLS。
 
 本组件使用 SDK 官方 BMC Simulator 0.9，加载 /app/mockups/gb300 + synthetic 插件。4 rack×18节点=72 BMC、288GPU、144CPU；不调用 SDK task deploy/sdk/setup 安装 DPS。公开 nodes/topology 模板与镜像足够启动，无需下载 SDK/vendor。
 
 完整首次步骤在 [manual-install.md](manual-install.md)，根流程在 [installstep.md](../installstep.md)。以下原生命令顺序是下载→密码/CA→节点/路由配置→Compose→严格只读检查；配置细节都在手册可审阅。
 
-## 唯一配置与输入
+## 模拟器配置与输入
 
 ~~~bash
 # 先进入实际 clone 的仓库根目录。
@@ -12,7 +14,7 @@ DPS_SOURCE_ROOT=$(git rev-parse --show-toplevel)
 source "$DPS_SOURCE_ROOT/dps-install/scripts/deployment-env.sh"
 ~~~
 
-部署参数从根 [deployment.yaml](../deployment.yaml) 读取，runtime_root由用户选择：.runtime为仓库内专用子目录，.为源码与运行材料同根，/srv/dps-lab为自选绝对目录，源码上级目录也可用。配置中的相对路径按deployment.yaml所在目录解析，生成物不提交Git。公开节点模板 [templates/nodes.json](templates/nodes.json)、DPS拓扑 [topology-4rack-dps09.json](../dps-install/templates/topology-4rack-dps09.json) 在源码。生成Compose/nginx/nodes/TLS在runtime/hardware-sim/runtime，必要凭据/URL/CA/拓扑在runtime/dps-install/config；验证在runtime/verification。
+本模拟器的 Lab 参数从根 [deployment.yaml](../deployment.yaml) 读取，runtime_root由用户选择：.runtime为仓库内专用子目录，.为源码与运行材料同根，/srv/dps-lab为自选绝对目录，源码上级目录也可用。配置中的相对路径按deployment.yaml所在目录解析，生成物不提交Git。公开节点模板 [templates/nodes.json](templates/nodes.json)、DPS拓扑 [topology-4rack-dps09.json](../dps-install/templates/topology-4rack-dps09.json) 在源码。生成Compose/nginx/nodes/TLS在runtime/hardware-sim/runtime，必要凭据/URL/CA/拓扑在runtime/dps-install/config；验证在runtime/verification。
 
 ## 1. 下载固定镜像
 

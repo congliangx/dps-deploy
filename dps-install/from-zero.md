@@ -1,6 +1,8 @@
-# 从空源码到新实例：手工部署
+# 从空源码到完整 Lab：手工部署
 
-首次新实例按 [installstep.md](../installstep.md) 逐步执行原生命令；不以自编 bash/Python入口替代安装过程。唯一配置 [deployment.yaml](../deployment.yaml) 中的 runtime_root 由用户选择：支持绝对路径（如 /srv/dps-lab），或相对该配置文件目录的路径（如 .runtime）；填写 . 可与源码同根，运行目录也可以在源码的上级目录。所有下载/生成输入/data/logs/reports/archive 写入 DPS_RUNTIME_ROOT 并排除 Git。源码根由实际 clone 位置推导；L20-12 当前使用 /raid/vince/deploy 与 /raid/vince/deployed-test，是本实例的目录安排。
+本页复现完整 Lab，包含缺少硬件时的模拟器和独立基础设施。已有客户集群、真实 BMC、数据库或身份服务按 [组件选择](../README.md) 和 [对接指南](existing-infrastructure.md) 跳过相应新建；此页的 13 Secret/9 工作负载/4 PVC 仅指 Lab 组合。
+
+首次新实例按 [installstep.md](../installstep.md) 逐步执行原生命令；不以自编 bash/Python入口替代安装过程。Lab 脚本的统一参数 [deployment.yaml](../deployment.yaml) 中的 runtime_root 由用户选择：支持绝对路径（如 /srv/dps-lab），或相对该配置文件目录的路径（如 .runtime）；填写 . 可与源码同根，运行目录也可以在源码的上级目录。所有下载/生成输入/data/logs/reports/archive 写入 DPS_RUNTIME_ROOT 并排除 Git。源码根由实际 clone 位置推导；L20-12 当前使用 /raid/vince/deploy 与 /raid/vince/deployed-test，是本实例的目录安排。
 
 ## 原生步骤与输出
 

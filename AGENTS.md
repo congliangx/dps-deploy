@@ -2,6 +2,8 @@
 
 ## 当前任务与目录
 
+安装入口必须先总结组件并允许客户按现有环境选择新建或复用：真实 BMC 不需要模拟器，已有 K8s/PG/LDAP/PKI/S3 不重建。客户对接在自选 Helm values、namespace Secret、kubeconfig/context 中完成；deployment.yaml 是本仓库 Lab 脚本统一参数，不代替客户全部应用配置。Lab 的 13 Secret/9 workload/4 PVC 不是通用固定要求。按需 Secret 引用与原生命令见 [已有基础设施对接](dps-install/existing-infrastructure.md)。本次仅文档整理，不调整当前 L20-12 服务配置、身份或数据。
+
 当前 L20-12 实例按用户要求保持仓库工作目录干净：源码在 /raid/vince/deploy，下载、生成配置、证书、密码、Secret、data、日志、报告与历史归档在 /raid/vince/deployed-test，使用 ssh root@L20-12。这组路径只描述当前实例，不限制其他用户的安装目录。源码根从脚本位置推导；运行参数由唯一的 [deployment.yaml](deployment.yaml) 读取，不在各脚本固定主机/IP/端口/目录。runtime_root 支持绝对路径或相对 deployment.yaml 所在目录的路径，可与源码同根、位于源码子目录、源码外部或其上级目录；CLI --runtime-root 的相对路径按执行目录解析。
 
 所有实际部署与验证均在远端执行。本机只连接并同步本约定。系统服务/二进制按系统机制放在标准路径；系统单元的配置副本和服务数据仍属于 runtime。当前运行目录与默认设置以 deployment.yaml 为准。

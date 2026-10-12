@@ -1,10 +1,12 @@
-# DPS 0.9 手工安装与独立前置组件
+# DPS 0.9 手工安装与基础设施对接
 
-首次部署先读根 [installstep.md](../installstep.md)。这里只使用手工原生命令：配置和下载→独立 PG/LDAP→13 Secret→values/Helm→真实 LDAP登录→inactive 拓扑/PRS。长步骤分别在 [主机/K3s](manual-prerequisites.md)、[PG](manual-postgresql.md)、[LDAP](manual-ldap.md)、[DPS](manual-install.md)。
+先读根 [README 的组件选择表](../README.md)，按已有基础设施选择安装范围。已有 Kubernetes、数据库、LDAP 和真实 BMC 的客户从 [已有基础设施对接指南](existing-infrastructure.md) 开始，只准备 DPS 的 values、权限、证书与 Secret 后执行 Helm，无需安装 K3s、模拟器或另一套数据库/目录服务。
+
+本页后续命令是完整 Lab 示例：配置和下载→独立 PG/LDAP→13 Secret→values/Helm→真实 LDAP 登录→inactive 模拟拓扑/PRS。完整顺序在根 [installstep.md](../installstep.md)，原生命令的长步骤分别在 [主机/K3s](manual-prerequisites.md)、[PG](manual-postgresql.md)、[LDAP](manual-ldap.md)、[DPS](manual-install.md)。只新装缺少的组件即可；以下 Docker 容器名、目录、账号、Secret/Pod/PVC 数量均属于该 Lab 配置。
 
 ## 路径与配置
 
-唯一可编辑的部署参数是源码根 [deployment.yaml](../deployment.yaml)。读取：
+[deployment.yaml](../deployment.yaml) 统一设置本仓库 Lab 脚本参数；它不是任意客户环境的 DPS Helm values。客户对接信息应写入自己的 values，并使用目标集群的 kubeconfig/context。下列 source 命令只用于本仓库 Lab：
 
 ~~~bash
 # 先进入实际 clone 的仓库根目录。
@@ -14,7 +16,7 @@ source "$DPS_SOURCE_ROOT/dps-install/scripts/deployment-env.sh"
 
 Git 跟踪 dps-install 的公开 config 模板、artifact-sources.json、LDAP 构建配方与脚本。运行时输入是 $DPS_RUNTIME_ROOT/dps-install/config；下载包是 runtime/dps-install/packages；数据库、K3s、备份是 runtime/dps-install/data。runtime_root由用户选择：.runtime为仓库内专用子目录，.为源码与运行材料同根，/srv/dps-lab为自选绝对目录，源码上级目录也可用。配置中的相对路径按deployment.yaml所在目录解析；live values/真实 Secret、密码、证书/私钥和 kubeconfig 均排除 Git。
 
-## 1. 下载与物理集群
+## 1. Lab 示例：下载与物理集群
 
 [完整下载命令](manual-prerequisites.md) 用 curl/SHA 获取 chart 0.9.0、工具和 K3s；用 docker pull 固定 digest，Docker save / k3s ctr import 供 chart 使用；OpenLDAP 从固定 Debian base + 17 deb docker build。必要原生检查：
 
@@ -28,9 +30,9 @@ kubectl get storageclass
 
 预期原生物理节点 Ready，K3s v1.34.12+k3s1、Helm 3.22.0、kubectl 1.34.12、local-path；不用 k3d/kind。chart SHA 为 2fc7b6e098b17085bf9aaf010d86dfeaf62677fd0f80bb4c2702e91b0b3fd6ef。
 
-## 2. 独立 PostgreSQL 与 OpenLDAP
+## 2. 可选：独立 PostgreSQL 与 OpenLDAP
 
-分别按 [PG 手册](manual-postgresql.md)、[LDAP 手册](manual-ldap.md) 执行 openssl CA/leaf、随机密码、CREATE ROLE/DATABASE、slappasswd/LDIF/ACL、Compose 明确配置。下面是启动与检查入口，不能替代首次配置步骤：
+需要新建对应服务时分别按 [PG 手册](manual-postgresql.md)、[LDAP 手册](manual-ldap.md) 执行 openssl CA/leaf、随机密码、CREATE ROLE/DATABASE、slappasswd/LDIF/ACL、Compose 明确配置。下面是启动与检查入口，不能替代首次配置步骤：
 
 ~~~bash
 docker compose -p "$DPS_PG_PROJECT" \
@@ -45,11 +47,11 @@ LDAPTLS_CACERT="$DPS_RUNTIME_ROOT/dps-install/config/ldap/tls/ca.crt" LDAPTLS_RE
   -y "$DPS_RUNTIME_ROOT/dps-install/config/ldap/user.password"
 ~~~
 
-预期 PG17.11 四库 Owner dps/非 superuser，TLS verify-full/SCRAM；LDAP2.6.10 真实用户/授权组、只读 bind、仅 LDAPS。Core/PowerSteering 两层内建 PostgreSQL 关闭。LDAP 用户与 BMC 凭据分开；组外身份可登录取得无角色 token，但受保护接口拒绝。
+本 Lab 预期 PG17.11 四库 Owner dps/非 superuser，TLS verify-full/SCRAM；LDAP2.6.10 真实用户/授权组、只读 bind、仅 LDAPS。Core/PowerSteering 两层内建 PostgreSQL 关闭。LDAP 用户与 BMC 凭据分开；组外身份可登录取得无角色 token，但受保护接口拒绝。
 
-## 3. 原生 Secret、values 和 Helm
+## 3. 必需：按实际配置准备 Secret、values 与 Helm
 
-[DPS 手册](manual-install.md) 完整列出 13 个 kubectl create secret --from-file 命令与每个键，CA/Agent mTLS/JWT/S3，以及 source values.example.yaml 的显式参数渲染。密码不入 values、argv 或日志。
+[DPS 手册](manual-install.md) 完整列出本 Lab 的 13 个 kubectl create secret --from-file 命令与每个键，CA/Agent mTLS/JWT/S3，以及 source values.example.yaml 的显式参数渲染。复用外部服务时也要在目标 namespace 创建或引用对应凭据与证书 Secret，具体取舍见 [对接指南](existing-infrastructure.md)。密码不入 values、argv 或日志。
 
 ~~~bash
 kubectl -n "$DPS_NAMESPACE" get secret
@@ -64,9 +66,9 @@ helm upgrade --install "$DPS_RELEASE" "$DPS_RUNTIME_ROOT/dps-install/packages/dp
 kubectl -n "$DPS_NAMESPACE" get pods,pvc
 ~~~
 
-先检查 API/UI Host 路由归属，另一 namespace/release 占用时拒绝部署。预期 deployed，Core/Agent/UI、Power Config/Controller2.1.0、SeaweedFS4.18 共9工作负载 Ready；Core1PVC、S3三PVC（1Gi/1Gi/10Gi）Bound。实际 logs emptyDir。Template成功与运行验收分别记录。
+先检查 API/UI Host 路由归属，另一 namespace/release 占用时拒绝部署。本 Lab 预期 deployed，Core/Agent/UI、Power Config/Controller2.1.0、SeaweedFS4.18 共9工作负载 Ready；Core1PVC、S3三PVC（1Gi/1Gi/10Gi）Bound。实际 logs emptyDir。Template成功与运行验收分别记录。
 
-## 4. 登录、注册、inactive 拓扑与 PRS
+## 4. 本 Lab 示例：登录、模拟拓扑与 PRS
 
 ~~~bash
 dpsctl --output json login --username dps-lab --password-stdin \
@@ -84,9 +86,9 @@ dpsctl topology list
 dpsctl settings list
 ~~~
 
-预期真实 LDAP admin、Agent connected、110 实体/72计算节点/4rack、inactive、PRS=true。安装新客户端与 DNS/CA 操作见手册。AgentId 在 Topology.Entities，必须用官方 GetTopologyModel 回读72条；CLI export省字段、CLI update实测缺陷的安全手工 current hash 更新也在手册。
+本 Lab 预期真实 LDAP admin、Agent connected、110 实体/72计算节点/4rack、inactive、PRS=true。安装新客户端与 DNS/CA 操作见手册。AgentId 在 Topology.Entities，必须用官方 GetTopologyModel 回读72条；CLI export省字段、CLI update实测缺陷的安全手工 current hash 更新也在手册。
 
-默认不 activate、不建资源组、不写 BMC；无活跃PRS domain不能宣称动态功率控制通过。独立网络/身份/S3/PG检查与备份见 [verification](../verification/README.md)。
+真实 BMC 应使用实际硬件的 URL、认证、设备模型、拓扑和 AgentId，跳过 4 rack 模拟蓝图；PRS 按业务选择启用及参数。本 Lab 默认不 activate、不建资源组、不写 BMC；无活跃PRS domain不能宣称动态功率控制通过。独立网络/身份/S3/PG检查与备份见 [verification](../verification/README.md)。
 
 ## 现有实例维护与历史
 

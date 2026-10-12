@@ -2,7 +2,9 @@
 
 手工安装从根 [installstep.md](../../installstep.md) 开始，具体原生命令在 [主机/K3s](../manual-prerequisites.md)、[PG](../manual-postgresql.md)、[LDAP](../manual-ldap.md)、[DPS](../manual-install.md)。本目录自编脚本不作为步骤中的黑盒替代；它们仅是可选自动化/维护实现。
 
-## 单一配置
+完整从零入口用于 Lab，不提供任意企业既有服务的选择式安装。客户对接已有 PG/LDAP/Kubernetes/真实 BMC 使用 [对接指南](../existing-infrastructure.md) 的自选 Helm values、Secret 和 kubeconfig，不运行完整 fresh 链重写其配置。
+
+## Lab 脚本单一配置
 
 ~~~bash
 # 先进入实际 clone 的仓库根目录。
