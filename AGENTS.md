@@ -2,7 +2,7 @@
 
 ## 当前任务与目录
 
-安装入口必须先总结组件并允许客户按现有环境选择新建或复用：真实 BMC 不需要模拟器，已有 K8s/PG/LDAP/PKI/S3 不重建。客户对接在自选 Helm values、namespace Secret、kubeconfig/context 中完成；deployment.yaml 是本仓库 Lab 脚本统一参数，不代替客户全部应用配置。Lab 的 13 Secret/9 workload/4 PVC 不是通用固定要求。按需 Secret 引用与原生命令见 [已有基础设施对接](dps-install/existing-infrastructure.md)。本次审查并修复安装/维护入口、镜像校验及文档一致性，交付离线回归脚本；不调整当前 L20-12 服务配置、身份或数据。
+安装入口必须先总结组件并允许客户按现有环境选择新建或复用：真实 BMC 不需要模拟器，已有 K8s/PG/LDAP/PKI/S3 不重建。客户对接在自选 Helm values、namespace Secret、kubeconfig/context 中完成；deployment.yaml 是本仓库 Lab 脚本统一参数，不代替客户全部应用配置。Lab 的 13 Secret/9 workload/4 PVC 不是通用固定要求。按需 Secret 引用与原生命令见 [已有基础设施对接](dps-install/existing-infrastructure.md)。2026-10-12 用户明确授权激活当前拓扑、创建并激活 PRS 资源组，并将相应原生命令添加到 dps-install/README.md。已完成这些运行操作；本次只更新该 README 和本工作约定，操作证据保留 runtime，不改旧历史。
 
 当前 L20-12 实例按用户要求保持仓库工作目录干净：源码在 /raid/vince/deploy，下载、生成配置、证书、密码、Secret、data、日志、报告与历史归档在 /raid/vince/deployed-test，使用 ssh root@L20-12。这组路径只描述当前实例，不限制其他用户的安装目录。源码根从脚本位置推导；运行参数由唯一的 [deployment.yaml](deployment.yaml) 读取，不在各脚本固定主机/IP/端口/目录。runtime_root 支持绝对路径或相对 deployment.yaml 所在目录的路径，可与源码同根、位于源码子目录、源码外部或其上级目录；CLI --runtime-root 的相对路径按执行目录解析。
 
@@ -31,7 +31,7 @@ DPS 登录必须为真实 LDAP，禁止 alwaysAllow。密码不写 values 明文
 
 PRS 全局 true，headroom -15%，调度间隔 5 秒；Core 与三个 PRS 数据库都在独立 PG，verify-full/SCRAM，禁用 Helm 内建数据库。S3 为集群内认证 SeaweedFS，拒绝匿名读取。调度周期之间 idle 正常。
 
-四 rack、72 计算节点、288 GPU、144 CPU。模拟器不强制密码检查且 fixture 有 GB200/Generic 字样/重复序列号限制，必须如实说明。拓扑保持 inactive，无资源组/PRS domain；不激活拓扑、不执行 BMC 功率 PATCH，不将服务和网络验收当作自动功率闭环验收。
+四 rack、72 计算节点、288 GPU、144 CPU。模拟器不强制密码检查且 fixture 有 GB200/Generic 字样/重复序列号限制，必须如实说明。新装流程默认导入 inactive 拓扑；当前 dps-gb300-4rack 已按用户要求 active，默认 MaxLPS 下发 72/72 成功。资源组 dps-gb300-4rack-prs（external_id=1）已 active，含72节点，MaxLPS、DPM/PRS/shared-GPU=true；PRS已同步1个running domain/72节点/288GPU。用户授权包含本次激活、资源组配置和PRS运行必需的自动功率写入，不扩展为任意手工PATCH、额外资源组或工作负载注入。模拟控制链已回读验证，真实硬件与真实训练工作负载仍不在本轮范围。
 
 拓扑输入从 source 蓝图按配置生成到 runtime；72 个 AgentId 必须在 Topology.Entities 关系中，通过官方 raw GetTopologyModel 检查。首次注册 33kW PowerSupply95_33000W 并导入；既有 inactive 拓扑若需要更新使用 current Hash 防冲突。0.9 CLI update 走 create、export 遗漏 AgentId 的实测限制仍适用。
 
@@ -46,4 +46,4 @@ PRS 全局 true，headroom -15%，调度间隔 5 秒；Core 与三个 PRS 数据
 
 Git 仅交付维护源码、公开配置/模板和文档；真实 Secret、私钥、密码、JWT、kubeconfig、LDAP hash、下载包、SDK/vendor、data 与生成的验收报告不得提交。统一参数文件不含秘密。提交前审查实际 index blobs，确认源码闭包和秘密扫描。
 
-本次用户已授权目录/服务路径迁移、文档整理和参数化，必要服务暂停/重建已执行。不得删除无关服务、重置系统或覆盖恢复运行数据库。新增破坏性且不在当前任务内的操作应先说明影响。此前 LDAP/PRS 启用授权继续有效，功率写入仍未获授权。
+本次用户已授权目录/服务路径迁移、文档整理和参数化，必要服务暂停/重建已执行。不得删除无关服务、重置系统或覆盖恢复运行数据库。新增破坏性且不在当前任务内的操作应先说明影响。此前 LDAP/PRS 启用授权继续有效；本次拓扑与资源组激活、启用PRS及其必需的自动策略下发已获用户明确授权，其他功率操作按具体用户任务判断。
