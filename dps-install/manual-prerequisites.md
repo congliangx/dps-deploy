@@ -1,6 +1,35 @@
-# 手工安装前置：主机、安装包与物理 Kubernetes
+# 手工安装前置：先确认准备项，再选择安装步骤
 
-这是首次安装步骤。先完成根目录 [installstep.md](../installstep.md) 的配置与清点；以下命令在远端 root 的 Bash 会话执行。仅修改源码根 deployment.yaml，再读取配置。生成路径都在 DPS_RUNTIME_ROOT。
+本页先总结安装 DPS 前需要具备的服务、工具和输入，再给出缺少基础设施时的完整 Lab 新建步骤。已有的组件先检查并复用，只安装缺少的部分；是否具备这些条件与是否需要重新安装是两件事。
+
+## 安装 DPS 前需要准备什么
+
+| 前置项 | 用途和需要达到的状态 | 已有时如何处理 / 缺少时去哪里 |
+| --- | --- | --- |
+| 部署工具与安装包 | kubectl、Helm、匹配 DPS 0.9 的 chart/dpsctl；具备实际启用组件的镜像访问权限，私有仓库按需提供 image pull Secret | 复用符合要求的工具/缓存；本页第 2–3 节给出 Lab 下载与校验，dpsctl 安装见 [DPS 手册](manual-install.md) |
+| Kubernetes 与部署权限 | 目标 kubeconfig/context、namespace 和安装 chart 所需资源的权限；集群节点可用 | 已有集群跳过第 5–6 节的 K3s 初始化/导入，使用客户 registry 与拉取凭据；缺少时第 5 节给出单物理机示例 |
+| 存储、入口、域名与网络 | 可用 StorageClass/持久存储、所选 Ingress/Gateway/DNS/TLS；Pod 可达 PG、身份服务、BMC，启 PRS 时还可达 S3/API | 使用客户已有方案；本页 K3s 的 local-path/Traefik 只是 Lab 选择，CRD 随所选入口而定 |
+| PostgreSQL | Core 专用库、真实应用账号及 schema/migration 权限；启 PRS 再增加三个数据库；信任链与连接参数准备 | 已有 PG 只准备 DPS 所需库/权限和连接 Secret；缺少时见 [独立 PG 手册](manual-postgresql.md) |
+| 身份服务 | 选 LDAP 或 OIDC；LDAP 需 URL、只读 bind、用户/组授权和 TLS 材料 | 复用客户目录/IdP，按实际 schema 配置；缺少且选择 LDAP 时本页第 4 节构建镜像，再见 [OpenLDAP 手册](manual-ldap.md) |
+| BMC 与硬件输入 | 真实 Redfish URL、认证、受信 CA、设备规格/拓扑及 Agent 路由；Agent 能访问设备 | 有硬件直接接实机；无硬件才选 [4 rack 模拟器](../hardware-sim/manual-install.md)，不要求客户安装 SDK |
+| DPS 身份、证书与 Secret | Core/Agent/所选 API/UI TLS、所选认证所需持久身份；在目标 namespace 创建或引用所需 Secret | 可复用 PKI/已有匹配 Secret；缺少的 DPS 身份按 [DPS 手册](manual-install.md) 准备，已有服务的凭据用真实值 |
+| PRS 与对象存储（可选） | 仅启 PRS 时准备三库、S3 bucket/真实访问凭据、Controller 登录 DPS 的授权身份及网络 | 可复用外部 S3，不安装 SeaweedFS；不启 PRS 就跳过其额外准备，详见 [已有环境对接](existing-infrastructure.md) |
+
+版本下限、安装前状态清单和本仓库 Lab 固定版本见 [prerequisites.md](prerequisites.md)。Ubuntu 22.04/24.04、root、Docker Compose、固定工具版本和整套镜像清单是下文 Lab 主机新建方案的选择；对接已有 Kubernetes 不要求客户重新安装 K3s/Docker 或取得节点 root 登录。
+
+**复用服务仍需检查 DPS 的 Secret 是否就绪。** 已有 Secret 的 namespace、名称、key 和挂载路径与 values 一致时可直接引用；否则按实际启用功能供给。客户 PG/LDAP/BMC/S3 的已有密码和 CA 不重新生成，DPS 新缺少的证书/JWT 才按需创建。当前 Lab 的 13 个外部 Secret 不是所有用户的固定清单，具体原生命令见 [已有基础设施对接指南](existing-infrastructure.md)。
+
+## 根据现有环境选择下一步
+
+1. **Kubernetes、PG、身份服务和真实 BMC 已齐备：** 进入 [已有基础设施对接指南](existing-infrastructure.md)，配置 values/权限/Secret 后安装 DPS，跳过本页新建主机、第 5–6 节 K3s 初始化/专用导入、LDAP 镜像及整套 Lab 镜像下载；镜像由客户已有 registry/拉取机制提供。
+2. **只缺少部分组件：** 仅取相应章节或 PG/LDAP 手册，保留现有服务，再汇总到自己的 DPS values；本页第 3 节是完整 Lab 镜像清单，客户只需准备实际 Helm 渲染引用的镜像。
+3. **完整空白 Lab：** 继续下文执行准备与第 1–7 节；随后按对应手册准备 BMC、PG、LDAP、证书/Secret，再用 Helm 安装 DPS。Docker 用于独立 Lab 服务，K3s 使用自己的 containerd。
+
+本页正文的第 1–6 节覆盖主机、工具/包、LDAP 镜像和原生 K3s；第 7 节链接独立数据库/目录服务手册。硬件模拟与 DPS 本体的完整安装步骤分别在上述手册中。
+
+## 执行本页 Lab 步骤前
+
+先完成根 [installstep.md 第 0 节](../installstep.md) 的配置与清点，包括 python3/python3-yaml 配置解析依赖和运行目录准备。以下主机新建命令在远端 root 的 Bash 会话执行；本仓库 Lab 参数集中在源码根 deployment.yaml，读取后生成路径使用 DPS_RUNTIME_ROOT。
 
 ~~~bash
 set -euo pipefail
@@ -283,4 +312,4 @@ k3s ctr --namespace k8s.io images list
 
 ## 7. 创建独立 PostgreSQL 与 OpenLDAP
 
-按 [手工 PostgreSQL](manual-postgresql.md) 创建 CA、密码、4 个数据库与 HBA，验证 verify-full；再按 [手工 OpenLDAP](manual-ldap.md) 创建真实用户/组、只读 bind、LDAPS 和 Core 客户端证书。两个服务都通过后，进入 [DPS 手工安装](manual-install.md) 创建 13 个 Secret 与 Helm release。
+按 [手工 PostgreSQL](manual-postgresql.md) 创建 CA、密码、4 个数据库与 HBA，验证 verify-full；再按 [手工 OpenLDAP](manual-ldap.md) 创建真实用户/组、只读 bind、LDAPS 和 Core 客户端证书。同时确认真实 BMC 或所选 [模拟 BMC](../hardware-sim/manual-install.md) 已准备好。PG、LDAP 和所选硬件输入通过后，进入 [DPS 手工安装](manual-install.md) 准备当前完整 Lab 的 13 个 Secret 与 Helm release；客户配置按实际选择供给 Secret。
