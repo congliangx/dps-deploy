@@ -15,7 +15,7 @@
 | DPS 身份、证书与 Secret | Core/Agent/所选 API/UI TLS、所选认证所需持久身份；在目标 namespace 创建或引用所需 Secret | 可复用 PKI/已有匹配 Secret；缺少的 DPS 身份按 [DPS 手册](manual-install.md) 准备，已有服务的凭据用真实值 |
 | PRS 与对象存储（可选） | 仅启 PRS 时准备三库、S3 bucket/真实访问凭据、Controller 登录 DPS 的授权身份及网络 | 可复用外部 S3，不安装 SeaweedFS；不启 PRS 就跳过其额外准备，详见 [已有环境对接](existing-infrastructure.md) |
 
-版本下限、安装前状态清单和本仓库 Lab 固定版本见 [prerequisites.md](prerequisites.md)。Ubuntu 22.04/24.04、root、Docker Compose、固定工具版本和整套镜像清单是下文 Lab 主机新建方案的选择；对接已有 Kubernetes 不要求客户重新安装 K3s/Docker 或取得节点 root 登录。
+版本与完整 Lab 检查单已收录在本页后续章节。Ubuntu 22.04/24.04、root、Docker Compose、固定工具版本和整套镜像清单是下文 Lab 主机新建方案的选择；对接已有 Kubernetes 不要求客户重新安装 K3s/Docker 或取得节点 root 登录。
 
 **复用服务仍需检查 DPS 的 Secret 是否就绪。** 已有 Secret 的 namespace、名称、key 和挂载路径与 values 一致时可直接引用；否则按实际启用功能供给。客户 PG/LDAP/BMC/S3 的已有密码和 CA 不重新生成，DPS 新缺少的证书/JWT 才按需创建。当前 Lab 的 13 个外部 Secret 不是所有用户的固定清单，具体原生命令见 [已有基础设施对接指南](existing-infrastructure.md)。
 
@@ -27,7 +27,28 @@
 
 本页正文的第 1–6 节覆盖主机、工具/包、LDAP 镜像和原生 K3s；第 7 节链接独立数据库/目录服务手册。硬件模拟与 DPS 本体的完整安装步骤分别在上述手册中。
 
+## 当前完整 Lab 的平台与版本
+
+| 项目 | 当前完整 Lab |
+| --- | --- |
+| OS/节点 | Ubuntu22.04/24.04 amd64、systemd；物理单节点原生K3s |
+| K3s | v1.34.12+k3s1，Docker外的containerd，local-path/Traefik |
+| 工具 | Helm v3.22.0、kubectl v1.34.12、dpsctl0.9.0 |
+| DPS | chart0.9.0、Core/Agent/UI0.9.0，同版本 |
+| PG | 独立17.11，4库Owner dps、非superuser、SCRAM/TLS verify-full |
+| LDAP | 独立OpenLDAP2.6.10，真实用户/组/只读bind，LDAPS |
+| PRS | chart依赖PowerSteering2.1.0；SeaweedFS4.18内部S3 |
+| BMC | SDK simulator0.9、GB300 mockup/synthetic，4rack72节点 |
+
+NVIDIA0.9要求Kubernetes≥1.31、PowerSteering使用Helm≥3.12及PG≥17；此表是本方案实际固定版本，不据此宣称其他新版本全部兼容。依据：[官方安装要求](https://docs.nvidia.com/datacenter/dps/versions/0.9/guides/installation/deploy-guide.html)。
+
+以下具体参数与安装命令面向这套完整 Lab。客户复用已有服务时依据所选 DPS 功能核对支持条件，继续使用自己的平台、数据库、认证和存储方案。
+
 ## 执行本页 Lab 步骤前
+
+Lab 脚本参数统一在源码根 [deployment.yaml](../deployment.yaml)，由 deployment-env.sh 读取；客户对接内容写自己的 Helm values，目标集群由自己的 kubeconfig/context 选择。固定 chart/images/deb 来源与校验值见 [artifact-sources.json](config/artifact-sources.json)，公开 values/拓扑模板只读。
+
+下载、生成配置/证书/Secret/kubeconfig、数据/备份与验证输出写入所选 DPS_RUNTIME_ROOT；验证报告不是安装依赖。必要应用输入在其 dps-install/config 或 hardware-sim/runtime，下载缓存在 dps-install/packages，持久数据在 dps-install/data。运行目录可同根、子目录或其他位置，生成物不提交 Git；当前 L20-12 路径和地址只是实例设置。
 
 先完成根 [installstep.md 第 0 节](../installstep.md) 的配置与清点，包括 python3/python3-yaml 配置解析依赖和运行目录准备。以下主机新建命令在远端 root 的 Bash 会话执行；本仓库 Lab 参数集中在源码根 deployment.yaml，读取后生成路径使用 DPS_RUNTIME_ROOT。
 
@@ -313,3 +334,35 @@ k3s ctr --namespace k8s.io images list
 ## 7. 创建独立 PostgreSQL 与 OpenLDAP
 
 按 [手工 PostgreSQL](manual-postgresql.md) 创建 CA、密码、4 个数据库与 HBA，验证 verify-full；再按 [手工 OpenLDAP](manual-ldap.md) 创建真实用户/组、只读 bind、LDAPS 和 Core 客户端证书。同时确认真实 BMC 或所选 [模拟 BMC](../hardware-sim/manual-install.md) 已准备好。PG、LDAP 和所选硬件输入通过后，进入 [DPS 手工安装](manual-install.md) 准备当前完整 Lab 的 13 个 Secret 与 Helm release；客户配置按实际选择供给 Secret。
+
+## 完整 Lab 安装前的状态检查
+
+下列清单仅用于复现完整 Lab；在完成所选服务的对应手册后检查。已有客户环境按开头的准备项和 [对接指南](existing-infrastructure.md) 核对实际组件，不要求固定四 rack、LDAP-only 或 13 个 Secret。
+
+1. 主机管理网卡/IP、磁盘、systemd、Docker Compose v2准备；现有服务/端口/子网先清点。
+2. curl下载验证chart SHA、工具SHA与固定11镜像digest/amd64；Debian17deb SHA与公开配方构建LDAP，不要求旧imageID。
+3. 原生K3s实际节点Ready、local-path与Traefik；Docker镜像导入K3s独立containerd；kubeconfig600。
+4. BMC72URL严格CA GET；模拟器不强制密码行为独立标明。
+5. 独立PG四库/权限/HBA与verify-full实际连接，管理员/应用密码分开；两个内建chart PG禁用。
+6. LDAP真实用户与授权组/只读bind、严格LDAPS，完整CA/clientcert/key投射输入；OIDC关闭。
+7. DPS13Secret、values无秘密；API/UI域名路由无其他实例占用；Core/PRS/Docker网络可通。
+
+~~~bash
+# 先进入实际 clone 的仓库根目录。
+DPS_SOURCE_ROOT=$(git rev-parse --show-toplevel)
+source "$DPS_SOURCE_ROOT/dps-install/scripts/deployment-env.sh"
+kubectl --context "$DPS_KUBE_CONTEXT" get nodes -o wide
+kubectl get storageclass
+docker compose -p "$DPS_BMC_PROJECT" \
+  -f "$DPS_RUNTIME_ROOT/hardware-sim/runtime/compose.yaml" ps
+docker compose -p "$DPS_PG_PROJECT" \
+  -f "$DPS_RUNTIME_ROOT/dps-install/config/postgresql/compose.yaml" ps
+docker compose -p "$DPS_LDAP_PROJECT" \
+  -f "$DPS_RUNTIME_ROOT/dps-install/config/ldap/compose.yaml" ps
+~~~
+
+安装前“没有 DPS release”只适用于新实例。完成基础设施检查后，按 [DPS 手工安装](manual-install.md) 准备证书、Secret 和 values；第 7 项在这些输入准备完成、执行 Helm 前确认。独立 PG/LDAP 和所选 BMC 的部署分别由对应手册完成，SDK 仅模拟硬件。
+
+## 验证范围
+
+具体日期与验收记录见 [operation-history](../docs/operation-history.md)。已有新身份/新数据验证复用了 L20-12 的物理 K3s，没有在另一台空白 OS/K3s 上完成首装实测。单节点不代表多节点 HA；inactive 拓扑、Agent connected、BMC 严格 TLS GET 和 PRS 部署开启也不能替代真实硬件的 Core→Agent 派发或动态功率闭环验收。

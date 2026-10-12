@@ -2,7 +2,7 @@
 
 先读根 [README 的组件选择表](../README.md)，按已有基础设施选择安装范围。已有 Kubernetes、数据库、LDAP 和真实 BMC 的客户从 [已有基础设施对接指南](existing-infrastructure.md) 开始，只准备 DPS 的 values、权限、证书与 Secret 后执行 Helm，无需安装 K3s、模拟器或另一套数据库/目录服务。
 
-安装前阅读 [prerequisites.md：前置要求与检查顺序](prerequisites.md)，先确认自己实际启用组件的准备状态；它与提供具体新建命令的 [manual-prerequisites.md](manual-prerequisites.md) 分工不同。已有服务的应用对接按上面的指南准备，不必执行完整 Lab 检查单中的全部新建步骤。
+安装前阅读 [前置要求与手工安装](manual-prerequisites.md)：准备项、组件复用选择、版本说明、安装命令和状态检查集中在同一页。已有服务的应用对接按上面的指南准备，只执行缺少组件的相应步骤。
 
 本页后续命令是完整 Lab 示例：配置和下载→独立 PG/LDAP→13 Secret→values/Helm→真实 LDAP 登录→inactive 模拟拓扑/PRS。完整顺序在根 [installstep.md](../installstep.md)，原生命令的长步骤分别在 [主机/K3s](manual-prerequisites.md)、[PG](manual-postgresql.md)、[LDAP](manual-ldap.md)、[DPS](manual-install.md)。只新装缺少的组件即可；以下 Docker 容器名、目录、账号、Secret/Pod/PVC 数量均属于该 Lab 配置。
 

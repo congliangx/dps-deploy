@@ -2,7 +2,7 @@
 
 本仓库交付 DPS 0.9 的手工 Helm 安装说明，以及没有现成基础设施时可选的 Kubernetes、PostgreSQL、OpenLDAP 和 GB300 BMC 模拟器部署步骤。客户按已有环境选择组件；真实 GB300 BMC 可以直接接入 DPS，只有缺少硬件的 Lab 才需要模拟器。SDK 只用于硬件模拟，安装 DPS 不依赖 SDK。
 
-安装前先读 [前置要求与检查顺序](dps-install/prerequisites.md)：确认所选组件的集群、数据库、身份、网络、证书和 Secret 条件。该页的固定版本及完整 Lab 检查单仅描述本仓库实验环境；客户可以复用满足要求的现有服务。具体新建主机/K3s 的原生命令另见 [manual-prerequisites.md](dps-install/manual-prerequisites.md)。
+安装前先读 [前置要求与手工安装](dps-install/manual-prerequisites.md)：同一页先列准备项和新建/复用选择，再给出版本说明、具体安装命令与状态检查。固定版本及完整 Lab 检查单只描述本仓库实验环境，客户可以复用满足要求的现有服务。
 
 ## 安装内容与组件选择
 
