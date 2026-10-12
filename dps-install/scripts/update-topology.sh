@@ -1,25 +1,26 @@
 #!/usr/bin/env bash
 # Update an existing inactive topology with the server's current optimistic-lock hash.
 set -euo pipefail
+source "$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)/deployment-env.sh" "$@"
+set -- "${DPS_DEPLOY_ARGS[@]}"
 umask 077
-base=/raid/vince/deploy
-source "$base/dps-install/config/dps-env.sh"
+base=$DPS_RUNTIME_ROOT
 export DPSCTL_CREDENTIALS_PATH="${DPSCTL_CREDENTIALS_PATH:-$base/dps-install/config/dpsctl/credentials.yaml}"
 export DPSCTL_LOG_FILE="${DPSCTL_LOG_FILE:-$base/verification/logs/dpsctl.log}"
 [[ $# -eq 0 ]] || { printf '%s\n' 'Usage: update-topology.sh' >&2; exit 2; }
 [[ -s "$DPSCTL_CREDENTIALS_PATH" ]] || { printf '%s\n' 'Authenticate using the project dpsctl credentials path first.' >&2; exit 1; }
-"$base/dps-install/scripts/register-devices.sh"
+"$DPS_SOURCE_ROOT/dps-install/scripts/register-devices.sh"
 python3 - "$base/dps-install/config/topology-4rack-dps09.json" <<'PYTHON'
 import base64,copy,json,os,pathlib,subprocess,sys,urllib.request,urllib.error,yaml
 input_path=pathlib.Path(sys.argv[1])
 desired=json.loads(input_path.read_text())
 name=desired['Topology']['Name']
-if name!='dps-gb300-4rack' or desired.get('Policies'):
+if name!=os.environ['DPS_TOPOLOGY_NAME'] or desired.get('Policies'):
  raise SystemExit('Unexpected topology name or legacy policies in input')
 compute={e['Name'] for e in desired['Entities'] if e.get('Type')=='ComputerSystem'}
-routed={e['Name'] for e in desired['Topology']['Entities'] if e.get('AgentId')=='gb300-lab-agent'}
+routed={e['Name'] for e in desired['Topology']['Entities'] if e.get('AgentId')==os.environ['DPS_AGENT_ID']}
 if len(compute)!=72 or routed!=compute:
- raise SystemExit('All 72 compute relationship objects must route to gb300-lab-agent')
+ raise SystemExit('All 72 compute relationship objects must route to the configured agent')
 if 'topologyHash' in desired or 'topologyHash' in desired['Topology']:
  raise SystemExit('Stable installation input must not contain a stale runtime topology hash')
 def cli(args):
@@ -47,7 +48,7 @@ if validation.get('status',{}).get('ok') is not True:
 credentials=yaml.safe_load(pathlib.Path(os.environ['DPSCTL_CREDENTIALS_PATH']).read_text())
 token=credentials.get('token',{}).get('access_token')
 if not token: raise SystemExit('No DPS access token in the protected project credentials file')
-svc=json.loads(subprocess.run(['kubectl','--context',os.environ.get('DPS_KUBE_CONTEXT','dps-l20-12'),'-n','dps','get','service','dps-server-http','-o','json'],capture_output=True,text=True,check=True).stdout)
+svc=json.loads(subprocess.run(['kubectl','--context',os.environ['DPS_KUBE_CONTEXT'],'-n',os.environ['DPS_NAMESPACE'],'get','service',os.environ['DPS_FULLNAME']+'-server-http','-o','json'],capture_output=True,text=True,check=True).stdout)
 ip=svc['spec']['clusterIP']
 port=next(p['port'] for p in svc['spec']['ports'] if p['name']=='dps-http')
 url=f'http://{ip}:{port}/nvidia.dcpower.v1.TopologyManagementService/GetTopologyModel'

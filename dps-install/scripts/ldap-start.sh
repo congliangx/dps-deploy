@@ -1,16 +1,19 @@
 #!/usr/bin/env bash
 set -euo pipefail
-ROOT=/raid/vince/deploy
+source "$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)/deployment-env.sh" "$@"
+set -- "${DPS_DEPLOY_ARGS[@]}"
+COMPOSE_PROJECT=$(dps_compose_project "$DPS_LDAP_CONTAINER" "$DPS_LDAP_PROJECT")
+ROOT=$DPS_RUNTIME_ROOT
 COMPOSE="$ROOT/dps-install/config/ldap/compose.yaml"
-docker compose -p dps-openldap -f "$COMPOSE" config --quiet
-docker compose -p dps-openldap -f "$COMPOSE" up -d
+docker compose -p "$COMPOSE_PROJECT" -f "$COMPOSE" config --quiet
+docker compose -p "$COMPOSE_PROJECT" -f "$COMPOSE" up -d
 for attempt in $(seq 1 60); do
-  state=$(docker inspect --format '{{.State.Health.Status}}' dps-openldap)
+  state=$(docker inspect --format '{{.State.Health.Status}}' "$DPS_LDAP_CONTAINER")
   if [ "$state" = healthy ]; then
-    docker compose -p dps-openldap -f "$COMPOSE" ps
+    docker compose -p "$COMPOSE_PROJECT" -f "$COMPOSE" ps
     exit 0
   fi
   sleep 2
 done
-echo 'OpenLDAP did not become healthy; inspect docker logs dps-openldap.' >&2
+echo "OpenLDAP did not become healthy; inspect docker logs $DPS_LDAP_CONTAINER." >&2
 exit 1

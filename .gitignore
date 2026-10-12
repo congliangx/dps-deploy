@@ -1,65 +1,36 @@
-# Track maintained deployment sources, safe configuration and current summaries.
-# Everything else stays on L20-12; this does not remove local files.
+# Source-only repository. Deployment output belongs in deployment.yaml runtime_root.
 /*
 !/.gitignore
 !/README.md
 !/AGENTS.md
 !/installstep.md
 !/bmc-access.md
+!/deployment.yaml
+!/docs/
 !/dps-install/
 !/hardware-sim/
 !/verification/
-
-# Deployment source and selected non-secret inputs.
+/docs/*
+!/docs/*.md
 /dps-install/*
-!/dps-install/README.md
-!/dps-install/dps-access.md
-!/dps-install/prerequisites.md
-!/dps-install/from-zero.md
+!/dps-install/*.md
 !/dps-install/scripts/
 !/dps-install/config/
 !/dps-install/packages/
 /dps-install/scripts/*
-!/dps-install/scripts/README.md
 !/dps-install/scripts/*.py
 !/dps-install/scripts/*.sh
+!/dps-install/scripts/*.md
 /dps-install/config/*
-!/dps-install/config/values.example.yaml
 !/dps-install/config/artifact-sources.json
-!/dps-install/config/bootstrap.example.yaml
-!/dps-install/config/dps-env.sh
-!/dps-install/config/gb300-power-shelf-devices.yaml
-!/dps-install/config/topology-4rack-dps09.json
+!/dps-install/config/values.example.yaml
 !/dps-install/config/runtime-images.json
-!/dps-install/config/kubernetes/
-!/dps-install/config/postgresql/
-!/dps-install/config/ldap/
+!/dps-install/config/topology-4rack-dps09.json
+!/dps-install/config/gb300-power-shelf-devices.yaml
 !/dps-install/config/prs/
-/dps-install/config/kubernetes/*
-!/dps-install/config/kubernetes/k3s.yaml
-!/dps-install/config/kubernetes/tool-versions.json
-!/dps-install/config/kubernetes/systemd/
-/dps-install/config/kubernetes/systemd/*
-!/dps-install/config/kubernetes/systemd/k3s.service
-!/dps-install/config/kubernetes/systemd/deploy-mount.conf
-/dps-install/config/postgresql/*
-!/dps-install/config/postgresql/README.md
-!/dps-install/config/postgresql/compose.yaml
-!/dps-install/config/postgresql/10-init-dps.sql
-!/dps-install/config/postgresql/pg_hba.conf
-!/dps-install/config/postgresql/postgresql.conf
-!/dps-install/config/postgresql/server-cert-ext.cnf
-/dps-install/config/ldap/*
-!/dps-install/config/ldap/README.md
-!/dps-install/config/ldap/compose.yaml
 /dps-install/config/prs/*
-!/dps-install/config/prs/README.md
-!/dps-install/config/prs/database-prerequisites.md
-!/dps-install/config/prs/prepare-databases.sql
 !/dps-install/config/prs/runtime-images.json
-
-# Downloaded packages/images are omitted. Retain our own LDAP build recipe
-# and the locally generated package checksum manifest, not Debian packages.
+# Our LDAP build recipe is source; downloaded packages and image archives are output.
 /dps-install/packages/*
 !/dps-install/packages/ldap/
 /dps-install/packages/ldap/*
@@ -68,81 +39,46 @@
 !/dps-install/packages/ldap/build/Dockerfile
 !/dps-install/packages/ldap/build/entrypoint.sh
 !/dps-install/packages/ldap/build/SHA256SUMS
-
-# SDK checkout, upstream/vendor charts and generated TLS are not tracked.
 /hardware-sim/*
-!/hardware-sim/bmc-access.md
+!/hardware-sim/*.md
 !/hardware-sim/scripts/
-!/hardware-sim/runtime/
+!/hardware-sim/templates/
 /hardware-sim/scripts/*
 !/hardware-sim/scripts/*.py
 !/hardware-sim/scripts/*.sh
-/hardware-sim/runtime/*
-!/hardware-sim/runtime/compose.yaml
-!/hardware-sim/runtime/config.yaml
-!/hardware-sim/runtime/nginx.conf
-!/hardware-sim/runtime/nodes.json
-
-# Reusable checks plus a small allowlist of the latest summaries only.
-# Runtime logs, archives, old reports, temporary manifests and detailed
-# inventories remain available on the remote host.
+/hardware-sim/templates/*
+!/hardware-sim/templates/nodes.json
 /verification/*
 !/verification/README.md
 !/verification/scripts/
-!/verification/reports/
 /verification/scripts/*
 !/verification/scripts/*.py
 !/verification/scripts/*.sh
-/verification/reports/*
-!/verification/reports/from-zero-summary.json
-!/verification/reports/bmc-health.json
-!/verification/reports/bmc-dps-health-check.json
-!/verification/reports/dps-current-state.json
-!/verification/reports/dps-delivery-status.json
-!/verification/reports/dps-inactive-topology-limit.json
-!/verification/reports/prs-installation.json
-!/verification/reports/prs-render.json
-!/verification/reports/prs-databases.json
-!/verification/reports/dps-ldap-auth.json
-!/verification/reports/ldap-installation.json
 
-# Defense for future files: credentials, generated certificate pairs,
-# archive payloads, caches and editor artifacts are always omitted.
+# Guard against accidental copies of private/runtime material into the source tree.
 **/data/
 **/logs/
 **/archive/
 **/__pycache__/
 *.py[cod]
-.DS_Store
-*.swp
-*.tmp
 .env
 .env.*
 *.env
-*.password
-*credentials.json
-**/credentials.yaml
-**/kubeconfig*.yaml
-**/k3s-admin.yaml
-**/password-hashes.json
-**/bootstrap.ldif
-**/slapd.conf
-**/secrets/
-*-secret.yaml
-*-secrets.yaml
 *.key
 *.pem
 *.crt
-*.csr
-*.p12
-*.pfx
-*.jks
-*.tgz
-*.tar
-*.tar.*
-*.gz
-*.zip
-*.deb
-*.rpm
+*kubeconfig*
+*credentials.json
+*-secret.yaml
 *.dump
-*.log
+*.ldif
+*.deb
+*.tar
+*.tar.gz
+*.tar.zst
+*.tgz
+.DS_Store
+*.swp
+*.tmp
+# refresh-kubeconfig.py is maintained source, not an administrator configuration.
+!/dps-install/scripts/refresh-kubeconfig.py

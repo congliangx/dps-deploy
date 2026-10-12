@@ -1,13 +1,26 @@
 #!/usr/bin/env python3
 """Read secrets from mounted files inside a disposable client; print no passwords."""
+
+# Public deployment settings select source inputs and isolated runtime outputs.
+import sys as _deployment_sys
+from pathlib import Path as _DeploymentPath
+_deployment_sys.dont_write_bytecode = True
+_deployment_sys.path.insert(0, str(_DeploymentPath(__file__).resolve().parents[2] / 'dps-install/scripts'))
+from deployment_context import context_from_cli as _deployment_context
+CTX = _deployment_context()
+SETTINGS = CTX.settings
+SOURCE_ROOT = CTX.source_root
+RUNTIME_ROOT = CTX.runtime_root
+for _deployment_output in ('verification/reports', 'verification/logs', 'verification/archive'):
+    CTX.runtime_path(_deployment_output).mkdir(parents=True, exist_ok=True, mode=0o700)
 from pathlib import Path
 import subprocess, json, datetime, os
-root=Path('/raid/vince/deploy')
+root=CTX.runtime_root
 cfg=root/'dps-install/config/postgresql'
-image=json.loads(subprocess.check_output(['docker','inspect','dps-postgresql','--format','{{json .Config.Image}}'],text=True))
+image=json.loads(subprocess.check_output(['docker','inspect',SETTINGS['pg_container'],'--format','{{json .Config.Image}}'],text=True))
 def run(sql, sslmode='verify-full', wrong_password=False):
     env="export PGPASSWORD=invalid-verification-password;" if wrong_password else "export PGPASSWORD=\"$(cat /run/secrets/dps-password)\";"
-    cmd=env+" export PGSSLMODE="+sslmode+" PGSSLROOTCERT=/run/postgresql-ca.crt; exec psql -X -v ON_ERROR_STOP=1 -At -h 10.6.131.43 -p 15432 -U dps -d dps"
+    cmd=env+" export PGSSLMODE="+sslmode+" PGSSLROOTCERT=/run/postgresql-ca.crt; exec psql -X -v ON_ERROR_STOP=1 -At -h "+SETTINGS["host_ip"]+" -p "+str(SETTINGS["pg_port"])+" -U dps -d dps"
     return subprocess.run([
         'docker','run','--rm','-i','--network','host','--entrypoint','sh',
         '-v',str(cfg/'secrets/dps-password')+':/run/secrets/dps-password:ro',
@@ -29,10 +42,10 @@ bad_password=run('SELECT 1;',wrong_password=True)
 details={}
 if ok.returncode==0:
     details=json.loads(ok.stdout.splitlines()[0])
-admin=subprocess.run(['docker','exec','-u','postgres','dps-postgresql','psql','-X','-At','-v','ON_ERROR_STOP=1','-U','postgres','-d','dps','-c',
+admin=subprocess.run(['docker','exec','-u','postgres',SETTINGS['pg_container'],'psql','-X','-At','-v','ON_ERROR_STOP=1','-U','postgres','-d','dps','-c',
     "SELECT json_build_object('owner',pg_get_userbyid(datdba),'dps_password_scram',(SELECT rolpassword LIKE 'SCRAM-SHA-256$%' FROM pg_authid WHERE rolname='dps'),'max_connections',current_setting('max_connections')) FROM pg_database WHERE datname='dps';"],text=True,capture_output=True)
 report={'generated_at':datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).isoformat(),
-'image':image,'endpoint':'10.6.131.43:15432','authenticated_sql_ok':ok.returncode==0,'connection':details,
+'image':image,'endpoint':f"{SETTINGS['host_ip']}:{SETTINGS['pg_port']}",'authenticated_sql_ok':ok.returncode==0,'connection':details,
 'migration_ddl_transaction_ok':ok.returncode==0 and 'migration_check_rows=1' in ok.stdout,
 'non_tls_rejected':no_tls.returncode!=0,'wrong_password_rejected':bad_password.returncode!=0,
 'admin_metadata':json.loads(admin.stdout) if admin.returncode==0 else {},

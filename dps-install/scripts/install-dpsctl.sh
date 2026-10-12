@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
-cd /raid/vince/deploy
+source "$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)/deployment-env.sh" "$@"
+set -- "${DPS_DEPLOY_ARGS[@]}"
+cd "$DPS_RUNTIME_ROOT"
 dpsctl_image=nvcr.io/nvidia/dpsctl@sha256:27fa8297f0efc18a0d22a6822c812347a7706bb2fc19f4d5c901f7125361bfdb
-dpsctl_target=/raid/vince/deploy/dps-install/packages/tools/bin/dpsctl
+dpsctl_target="$DPS_RUNTIME_ROOT/dps-install/packages/tools/bin/dpsctl"
 check_dpsctl_paths() {
   [[ ! -L "$dpsctl_target" ]] || { echo 'Project dpsctl is a symbolic link; preserve it and stop.' >&2; exit 1; }
   [[ ! -e "$dpsctl_target" || -f "$dpsctl_target" ]] || { echo 'Project dpsctl is not a regular file; stop.' >&2; exit 1; }
@@ -11,8 +13,8 @@ check_dpsctl_paths() {
   fi
 }
 check_dpsctl_paths
-mkdir -p /raid/vince/deploy/dps-install/packages/tools/bin
-dpsctl_stage=$(mktemp -d /raid/vince/deploy/dps-install/packages/tools/.dpsctl-stage.XXXXXX)
+mkdir -p "$DPS_RUNTIME_ROOT/dps-install/packages/tools/bin"
+dpsctl_stage=$(mktemp -d "$DPS_RUNTIME_ROOT/dps-install/packages/tools/.dpsctl-stage.XXXXXX")
 dpsctl_container_id=''
 cleanup_dpsctl() {
   if [[ -n "$dpsctl_container_id" ]]; then

@@ -1,9 +1,13 @@
 #!/usr/bin/env python3
 """Freeze and import PRS images into native K3s from locally verified Docker archives."""
+import sys
+sys.dont_write_bytecode = True
 import hashlib,json,os,subprocess
 from pathlib import Path
-B=Path('/raid/vince/deploy');P=B/'dps-install/config/prs';PKG=B/'dps-install/packages/prs'
-os.umask(0o077);PKG.mkdir(parents=True,exist_ok=True)
+from deployment_context import context_from_cli
+ctx = context_from_cli()
+B=ctx.runtime_root;P=B/'dps-install/config/prs';PKG=B/'dps-install/packages/prs'
+os.umask(0o077);P.mkdir(parents=True,exist_ok=True);PKG.mkdir(parents=True,exist_ok=True)
 tags=['nvcr.io/nvidia/power-config:2.1.0','nvcr.io/nvidia/power-controller:2.1.0','busybox:1.37-glibc','chrislusf/seaweedfs:4.18','otel/opentelemetry-collector-contrib:0.110.0']
 manifest=P/'runtime-images.json'
 old=json.loads(manifest.read_text()) if manifest.exists() else None

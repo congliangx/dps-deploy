@@ -1,14 +1,18 @@
 #!/usr/bin/env python3
 """Stage pinned DPS images into native K3s containerd without deploying workloads."""
+import sys
+sys.dont_write_bytecode = True
 from pathlib import Path
+from deployment_context import context_from_cli
+ctx = context_from_cli()
 import json,subprocess,os
-B=Path('/raid/vince/deploy');P=B/'dps-install/packages/images';P.mkdir(parents=True,exist_ok=True)
+B=ctx.runtime_root;P=B/'dps-install/packages/images';P.mkdir(parents=True,exist_ok=True)
 def run(*args):subprocess.run(args,check=True)
 def image_id(name):
  p=subprocess.run(['docker','image','inspect',name,'--format','{{.Id}}'],capture_output=True,text=True)
  return p.stdout.strip() if p.returncode==0 else None
 run('systemctl','is-active','--quiet','k3s')
-images=json.loads((B/'dps-install/config/runtime-images.json').read_text())
+images=json.loads(ctx.source_path('dps-install/config/runtime-images.json').read_text())
 for item in images:
  if not image_id(item['digest']):run('docker','pull',item['digest'])
  tag_id=image_id(item['name']);target_id=image_id(item['digest'])

@@ -5,6 +5,19 @@ The host Python interpreter runs via nsenter --net only; no debug container,
 Pod change, Kubernetes resource mutation, topology activation, or BMC write.
 Private Secret values and CA material pass only through subprocess stdin.
 """
+
+# Public deployment settings select source inputs and isolated runtime outputs.
+import sys as _deployment_sys
+from pathlib import Path as _DeploymentPath
+_deployment_sys.dont_write_bytecode = True
+_deployment_sys.path.insert(0, str(_DeploymentPath(__file__).resolve().parents[2] / 'dps-install/scripts'))
+from deployment_context import context_from_cli as _deployment_context
+CTX = _deployment_context()
+SETTINGS = CTX.settings
+SOURCE_ROOT = CTX.source_root
+RUNTIME_ROOT = CTX.runtime_root
+for _deployment_output in ('verification/reports', 'verification/logs', 'verification/archive'):
+    CTX.runtime_path(_deployment_output).mkdir(parents=True, exist_ok=True, mode=0o700)
 import base64
 from collections import Counter
 from concurrent.futures import ThreadPoolExecutor
@@ -18,8 +31,8 @@ import subprocess
 import sys
 import urllib.request
 
-ROOT = Path('/raid/vince/deploy')
-SCRIPT = ROOT / 'verification/scripts/verify-agent-pod-bmc.py'
+ROOT = CTX.runtime_root
+SCRIPT = Path(__file__).resolve()
 REPORT = ROOT / 'verification/reports/dps-pod-bmc-connectivity.json'
 CONFIG = ROOT / 'dps-install/config'
 
@@ -97,8 +110,8 @@ def inside(payload):
                              'host_mount_namespace': payload['host_mntns'], 'observed_mount_namespace': observed_mnt,
                              'namespace_match': observed_net == payload['netns'], 'host_mount_retained': observed_mnt == payload['host_mntns'],
                              'pod_spec_modified': False, 'ephemeral_containers_created': False},
-               'tls_ca_verified': True, 'credentials_source': 'Kubernetes Secret dps/bmc-shared-secret key bmc',
-               'ca_source': 'Kubernetes Secret dps/dps-bmc-ca key ca.crt', 'http_methods': ['GET'],
+               'tls_ca_verified': True, 'credentials_source': 'Kubernetes Secret '+payload['namespace']+'/bmc-shared-secret key bmc',
+               'ca_source': 'Kubernetes Secret '+payload['namespace']+'/dps-bmc-ca key ca.crt', 'http_methods': ['GET'],
                'mutating_requests_sent': False, 'node_count': len(results),
                'unique_endpoints': len({n['bmc_url'] for n in payload['nodes']}), 'rack_counts': rack_counts,
                'passed_nodes': sum(n['passed'] for n in results), 'failed_nodes': sum(not n['passed'] for n in results),
@@ -122,17 +135,17 @@ if '--inside' in sys.argv:
 
 os.umask(0o077)
 os.environ['KUBECONFIG'] = str(CONFIG / 'kubernetes/kubeconfig.yaml')
-base = ['kubectl', '--context', 'dps-l20-12', '-n', 'dps']
+base = ['kubectl', '--context', SETTINGS['kube_context'], '-n', SETTINGS['namespace']]
 def read_json(args):
     return json.loads(subprocess.check_output(args, text=True))
-pods = read_json(base + ['get', 'pods', '-l', 'app=dps-server-agent', '-o', 'json'])['items']
+pods = read_json(base + ['get', 'pods', '-l', ('app=' + SETTINGS['fullname'] + '-server-agent'), '-o', 'json'])['items']
 if len(pods) != 1:
     raise RuntimeError('Expected one DPS Agent Pod')
 pod = pods[0]
 cri_config = ROOT / 'dps-install/data/kubernetes/k3s/agent/etc/crictl.yaml'
 cri = ['k3s', 'crictl', '--config', str(cri_config)]
 sandboxes = read_json(cri + ['pods', '-o', 'json'])['items']
-selected = [s for s in sandboxes if s['metadata']['name'] == pod['metadata']['name'] and s['metadata']['namespace'] == 'dps']
+selected = [s for s in sandboxes if s['metadata']['name'] == pod['metadata']['name'] and s['metadata']['namespace'] == SETTINGS['namespace']]
 if len(selected) != 1:
     raise RuntimeError('Expected exactly one Agent sandbox')
 sandbox = selected[0]
@@ -140,7 +153,7 @@ inspection = read_json(cri + ['inspectp', sandbox['id']])
 pid = inspection['info']['pid']
 secret = read_json(base + ['get', 'secret', 'bmc-shared-secret', '-o', 'json'])
 ca = read_json(base + ['get', 'secret', 'dps-bmc-ca', '-o', 'json'])
-payload = {'nodes': json.loads((ROOT / 'hardware-sim/runtime/nodes.json').read_text()),
+payload = {'namespace': SETTINGS['namespace'], 'nodes': json.loads((ROOT / 'hardware-sim/runtime/nodes.json').read_text()),
            'credentials': json.loads(base64.b64decode(secret['data']['bmc'])),
            'ca': base64.b64decode(ca['data']['ca.crt']).decode(),
            'pod_name': pod['metadata']['name'], 'pod_uid': pod['metadata']['uid'],

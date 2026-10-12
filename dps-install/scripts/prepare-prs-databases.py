@@ -1,15 +1,19 @@
 #!/usr/bin/env python3
 """Create only the PRS databases and narrowly scoped TLS/SCRAM HBA rules."""
+import sys
+sys.dont_write_bytecode = True
 import datetime, json, os, subprocess
 from pathlib import Path
-ROOT=Path('/raid/vince/deploy')
+from deployment_context import context_from_cli
+ctx = context_from_cli()
+ROOT=ctx.runtime_root
 CFG=ROOT/'dps-install/config/prs'
 HBA=ROOT/'dps-install/config/postgresql/pg_hba.conf'
 BACKUPS=ROOT/'dps-install/data/postgresql-backups'
 DBS=['dps_prs_config','dps_prs_config_staged','dps_prs_controller']
-NETWORKS=['10.6.131.43/32','10.42.0.0/16','172.30.90.0/24']
+NETWORKS=[ctx.settings['host_ip']+'/32',ctx.settings['pod_cidr'],ctx.settings['pg_subnet']]
 def admin(sql,database='postgres'):
- r=subprocess.run(['docker','exec','-i','-u','postgres','dps-postgresql',
+ r=subprocess.run(['docker','exec','-i','-u','postgres',ctx.settings['pg_container'],
                    'psql','-X','-v','ON_ERROR_STOP=1','-At','-d',database],
                    input=sql,capture_output=True,text=True,check=True)
  return r.stdout.strip()
@@ -48,17 +52,23 @@ new=new.replace('# PostgreSQL authentication; only dps database/role can connect
 stamp=datetime.datetime.now(datetime.timezone.utc).strftime('%Y%m%dT%H%M%S%fZ')
 if new!=old or any(n not in ownership for n in DBS):
  # Preserve the live DPS application database before extending the shared server.
- subprocess.run([str(ROOT/'dps-install/scripts/postgresql-backup.sh')],check=True)
+ subprocess.run([str(ctx.source_path('dps-install/scripts/postgresql-backup.sh'))],check=True)
  for name in DBS:
   if name in ownership:
    dest=BACKUPS/f'{name}-before-prs-{stamp}.dump'
    with dest.open('wb') as f:
-    subprocess.run(['docker','exec','-u','postgres','dps-postgresql',
+    subprocess.run(['docker','exec','-u','postgres',ctx.settings['pg_container'],
                     'pg_dump','-U','postgres','-d',name,'--format=custom'],stdout=f,check=True)
    with dest.open('rb') as f:
-    subprocess.run(['docker','exec','-i','-u','postgres','dps-postgresql',
+    subprocess.run(['docker','exec','-i','-u','postgres',ctx.settings['pg_container'],
                     'pg_restore','--list'],stdin=f,stdout=subprocess.DEVNULL,check=True)
-sql=(CFG/'prepare-databases.sql').read_text()
+sql_path=CFG/'prepare-databases.sql'
+if not sql_path.exists():
+ statements=[]
+ for database in DBS:
+  statements += ["SELECT 'CREATE DATABASE "+database+" OWNER dps' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname='"+database+"')\\gexec", "\\connect "+database, "GRANT USAGE,CREATE ON SCHEMA public TO dps;"]
+ sql_path.write_text("\n".join(statements)+"\n");sql_path.chmod(0o600)
+sql=sql_path.read_text()
 admin(sql)
 hba_backup=None
 if new!=old:
@@ -83,7 +93,7 @@ for name in DBS:
 previous_manifest=CFG/'databases.json'
 previous=json.loads(previous_manifest.read_text()) if previous_manifest.exists() else {}
 manifest={
- 'postgresql_endpoint':'10.6.131.43:15432','username':'dps','database_names':DBS,
+ 'postgresql_endpoint':f"{ctx.settings['host_ip']}:{ctx.settings['pg_port']}",'username':'dps','database_names':DBS,
  'tls_required':True,'password_authentication':'scram-sha-256','allowed_client_networks':NETWORKS,
  'hba_path':str(HBA),'hba_previous_backup':str(hba_backup) if hba_backup else previous.get('hba_previous_backup'),
  'prepare_sql':str(CFG/'prepare-databases.sql'),'database_extensions_precreated':[],

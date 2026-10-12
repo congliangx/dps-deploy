@@ -1,9 +1,22 @@
 #!/usr/bin/env python3
 """Verify actual SDK Redfish interfaces, and restore every changed GPU limit."""
+
+# Public deployment settings select source inputs and isolated runtime outputs.
+import sys as _deployment_sys
+from pathlib import Path as _DeploymentPath
+_deployment_sys.dont_write_bytecode = True
+_deployment_sys.path.insert(0, str(_DeploymentPath(__file__).resolve().parents[2] / 'dps-install/scripts'))
+from deployment_context import context_from_cli as _deployment_context
+CTX = _deployment_context()
+SETTINGS = CTX.settings
+SOURCE_ROOT = CTX.source_root
+RUNTIME_ROOT = CTX.runtime_root
+for _deployment_output in ('verification/reports', 'verification/logs', 'verification/archive'):
+    CTX.runtime_path(_deployment_output).mkdir(parents=True, exist_ok=True, mode=0o700)
 import base64, concurrent.futures, json, ssl, urllib.request, urllib.error
 from datetime import datetime, timezone
 from pathlib import Path
-BASE=Path('/raid/vince/deploy')
+BASE=CTX.runtime_root
 nodes=json.loads((BASE/'hardware-sim/runtime/nodes.json').read_text())
 creds=json.loads((BASE/'dps-install/config/bmc-credentials.json').read_text())
 context=ssl._create_unverified_context()
@@ -25,7 +38,7 @@ def metric(node):
  code,_,d=request(node,PATH);assert code==200,(node['node_id'],code)
  return d['PowerLimitWatts']['SetPoint']
 report={'time_utc':datetime.now(timezone.utc).isoformat(),'rack_count':4,'nodes':72,'tls':'self-signed','checks':{}}
-for label,auth in [('without_auth',None),('sdk_default_credentials',header),('wrong_credentials','Basic '+base64.b64encode(b'wrong:wrong').decode())]:
+for label,auth in [('without_auth',None),('configured_credentials',header),('wrong_credentials','Basic '+base64.b64encode(b'wrong:wrong').decode())]:
  report['checks'][label]={'http_status':request(nodes[0],'/redfish/v1/',auth=auth)[0]}
 report['authentication_enforced']=report['checks']['wrong_credentials']['http_status'] in [401,403]
 code,h,d=request(nodes[0],'/redfish/v1/SessionService/Sessions','POST',{'UserName':creds['username'],'Password':creds['password']})

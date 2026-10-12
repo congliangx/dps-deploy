@@ -1,101 +1,85 @@
-# 四个 GB300 rack 的 SDK BMC 模拟环境
+# 4 rack GB300 BMC 访问与接入说明
 
-首次从仓库创建新的四 rack 模拟器使用 [从零部署](../dps-install/from-zero.md) 的 prepare-bmc-fresh.py：生成新的模拟凭据和对外 CA/证书，不依赖本机旧 SDK/vendor。以下地址与凭据说明属于 L20-12 已运行实例。
+首次安装见 [硬件手工步骤](manual-install.md)，整个部署见 [installstep](../installstep.md)。远端ssh root@L20-12；源码 /raid/vince/deploy，运行 /raid/vince/deployed-test，由根 [deployment.yaml](../deployment.yaml) 的runtime_root/host_ip/bmc_start_port决定。
 
-远程主机：`root@L20-12`（管理 IP `10.6.131.43`）；工作目录：`/raid/vince/deploy`。
+~~~bash
+# 先进入实际 clone 的仓库根目录。
+DPS_SOURCE_ROOT=$(git rev-parse --show-toplevel)
+source "$DPS_SOURCE_ROOT/dps-install/scripts/deployment-env.sh"
+~~~
 
-## 已部署内容
+## 地址、规模与必要文件
 
-官方 `dps-bmc-simulator:0.9.0` 的 `/app/mockups/gb300` 模型与 synthetic 功率遥测插件；Docker Compose 独立运行，不依赖 Kubernetes。一个模拟器后端通过 nginx 为 72 个节点保留各自 Host，提供相互独立的功率控制状态。
+默认BMC地址为https://10.6.131.43:端口，nginx自动保持唯一节点Host，不需要客户端自设Host/DNS。4rack×18节点，288GPU/144CPU：
 
-本目录仅运行硬件模拟器及 HTTPS 路由。DPS 0.9 已通过手动 Helm 安装在 L20-12 物理机原生 K3s，当前 release 为 revision 5，独立 LDAP 与 PRS/PowerSteering 已启用；OIDC 和 Zapp 保持关闭。独立 PostgreSQL、LDAP、DPS 配置与安装脚本位于 `dps-install/`。SDK 原件位于 `hardware-sim/dps-sdk/`，DPS chart 位于 `dps-install/packages/dps-0.9.0.tgz`，内容保留，未执行任何 SDK task deploy/sdk/setup。
+| Rack | 节点名称 | 默认端口 |
+| --- | --- | --- |
+| gb300-rack-01 | gb300-r01-0001–0018 | 18443–18460 |
+| gb300-rack-02 | gb300-r02-0001–0018 | 18461–18478 |
+| gb300-rack-03 | gb300-r03-0001–0018 | 18479–18496 |
+| gb300-rack-04 | gb300-r04-0001–0018 | 18497–18514 |
 
-| Rack | 节点名称 | HTTPS 端口 | 计算节点 / GPU / CPU |
-|---|---|---|---|
-| gb300-rack-01 | gb300-r01-0001 至 gb300-r01-0018 | 18443–18460 | 18 / 72 / 36 |
-| gb300-rack-02 | gb300-r02-0001 至 gb300-r02-0018 | 18461–18478 | 18 / 72 / 36 |
-| gb300-rack-03 | gb300-r03-0001 至 gb300-r03-0018 | 18479–18496 | 18 / 72 / 36 |
-| gb300-rack-04 | gb300-r04-0001 至 gb300-r04-0018 | 18497–18514 | 18 / 72 / 36 |
+实际地址查runtime/dps-install/config/bmc-endpoints.csv（600），共享凭据查bmc-credentials.json（600）。新实例随机生成；已有实例继续使用保存凭据。密码不写入Markdown/Git/日志，不把BMC账号当作DPS LDAP/API/UI账号。
 
-BMC URL 格式为 `https://10.6.131.43:端口`。首节点例：`https://10.6.131.43:18443`。不需要安装 DNS 或修改 DPS Pod 的 hosts 文件，也无需额外发送 Host header；路由已自动映射节点身份。
+| 必要运行输入 | 用途 |
+| --- | --- |
+| runtime/hardware-sim/runtime/compose.yaml、config.yaml、nginx.conf、nodes.json | 启动与路由72节点 |
+| runtime/hardware-sim/runtime/tls | nginx公开CA/leaf和私密leafkey |
+| runtime/hardware-sim/runtime/authority | BMC CA签名身份，不挂容器 |
+| runtime/dps-install/config/simulator-ca.crt | 外部客户端/DPS信任 |
+| runtime/dps-install/config/bmc-shared-secret.yaml / bmc-ca-secret.yaml | 带credentials-store标签的BMCSecret / dps-bmc-ca |
+| runtime/dps-install/config/topology-4rack-dps09.json | 当前有效拓扑，72AgentId在Topology.Entities |
+| source/dps-install/config/gb300-power-shelf-devices.yaml | 33kW/95%PowerSupply注册 |
 
-## 账号、密码与 TLS
+source与runtime是上文两个绝对根；下载chart在runtime/dps-install/packages。公开nodes模板在source/hardware-sim/templates/nodes.json。旧SDK/vendor下载不是当前启动依赖，旧拓扑文件仅属于归档，不是安装输入。
 
-全部节点的 URL、用户名、密码存放于 `dps-install/config/bmc-endpoints.csv`（权限 600）。共享测试凭据位于 `dps-install/config/bmc-credentials.json`（权限 600），沿用官方 0.9.0 simulator chart 的 BMC Secret 值。
+## TLS与认证的真实范围
 
-**模拟器没有强制认证。** 实测正确测试凭据、错误凭据、无 Authorization 均可读取 Redfish；SessionService 创建返回 201。这些是模拟接口可接受的测试凭据，不代表真实 BMC 的密码校验或安全行为。凭据不属于 DPS API/UI 账号。
+客户端使用runtime/dps-install/config/simulator-ca.crt严格校验IP/SAN，不用curl -k。外部nginxleaf来自项目BMC CA；SDK mock ssl会生成私有backend证书，私有Docker链路proxy_ssl_verify off。只有nginx挂项目leaf/key，CA签名私钥不挂容器；不能声称backend读取项目leaf。
 
-HTTPS 使用本项目自签证书，客户端应信任 `dps-install/config/simulator-ca.crt`；已安装的 DPS values 通过 BMC CA Secret 校验证书。2026-10-09 实际 Agent Pod 网络 namespace 到全部 72 个 BMC 的 HTTPS CA、288 GPU/144 CPU 清单和功率遥测检查通过，共 1152 次只读 GET，报告为 `verification/reports/dps-pod-bmc-connectivity.json`。该检查使用现有 Pod 网络，没有修改 Pod spec 或写 BMC；它验证 Agent Pod 到 BMC 的网络/Redfish，Core→Agent→BMC 派发仍待拓扑激活后验收。
+**模拟器不强制认证。** 正确/错误/无Authorization都可GET，SessionService可创建模拟session。测试凭据供DPS接口使用，不证明真实BMC密码校验、安全策略或固件兼容性。
 
-读取首节点 GPU 遥测（从文件加载凭据，不将密码写进命令历史）：
+从私密JSON读凭据验证首节点GPU遥测，密码不进入argv/历史：
 
-```bash
-cd /raid/vince/deploy
+~~~bash
 python3 - <<'PY'
-import base64, json, ssl, urllib.request
-c=json.load(open('dps-install/config/bmc-credentials.json'))
-token=base64.b64encode((c['username']+':'+c['password']).encode()).decode()
-u='https://10.6.131.43:18443/redfish/v1/Systems/HGX_Baseboard_0/Processors/GPU_0/EnvironmentMetrics'
-r=urllib.request.Request(u,headers={'Authorization':'Basic '+token})
-with urllib.request.urlopen(r,context=ssl.create_default_context(cafile='dps-install/config/simulator-ca.crt')) as res:
-    print(json.dumps(json.load(res),indent=2))
+import os,json,base64,ssl,urllib.request
+from pathlib import Path
+c=Path(os.environ["DPS_RUNTIME_ROOT"])/"dps-install/config"
+cred=json.loads((c/"bmc-credentials.json").read_text())
+authorization=base64.b64encode((cred["username"]+":"+cred["password"]).encode()).decode()
+url=f'https://{os.environ["DPS_HOST_IP"]}:{os.environ["DPS_BMC_START_PORT"]}/redfish/v1/Systems/HGX_Baseboard_0/Processors/GPU_0/EnvironmentMetrics'
+req=urllib.request.Request(url,headers={"Authorization":"Basic "+authorization})
+with urllib.request.urlopen(req,context=ssl.create_default_context(cafile=str(c/"simulator-ca.crt"))) as r:
+ print(json.dumps(json.load(r),indent=2))
 PY
-```
+~~~
 
-## Redfish 接口
+## Redfish与模拟限制
 
-- 服务根：`/redfish/v1/`
-- 系统列表：`/redfish/v1/Systems`（System_0 和 HGX_Baseboard_0 属于同一计算节点，不是两个物理节点）
-- GPU 所在系统：`/redfish/v1/Systems/HGX_Baseboard_0`
-- 处理器列表：`/redfish/v1/Systems/HGX_Baseboard_0/Processors`
-- GPU 遥测及功率限制：`/redfish/v1/Systems/HGX_Baseboard_0/Processors/GPU_0/EnvironmentMetrics`（GPU_0 至 GPU_3）
-- 修改限制：PATCH 上述接口，请求体示例 `{"PowerLimitWatts":{"SetPoint":700}}`。
-- 健康检查：`/readyz`、`/livez`
+服务根/redfish/v1/；Systems列表中System_0与HGX_Baseboard_0是同一节点两个视图，不是2台设备。HGX系统Processors下GPU_0–3及CPU_0–1提供EnvironmentMetrics。ready/live为/readyz、/livez。单节点4GPU/2CPU，fixtureGPU限制范围200–1400W、默认1400W；synthetic仅模拟功率，内存状态/session在重启后重置。
 
-官方 fixture 的 GPU 功率限制范围为 200–1400 W，默认 1400 W；synthetic 插件产生模拟功率变化，不代表真实硬件或真实工作负载。节点功率限制和 session 状态在模拟器内存中，重启后恢复初始模拟状态。
+官方GB300fixture还保留GB200 NVL/Generic等陈旧型号、固定serial/UUID；按公开nodes、拓扑Name、每节点独立状态和4GPU/2CPU结构判断模拟模型。DPS输入Model=DGX_GB300。没有真实GB300硬件和固件验收。
 
-上游 0.9.0 的 GB300 mockup 存在陈旧标签：ServiceRoot.Product / ComputerSystem.Model 仍显示 `GB200 NVL`，GPU Model 为 `Generic`，序列号和 UUID 也复用固定 fixture 值。节点身份以交付清单、拓扑 Name 及独立功率状态区分。本次保留官方 fixture，实际已加载 GB300 mockup（每节点 4 GPU、2 CPU）；DPS 导入文件将节点型号明确设置为 `DGX_GB300`。通过 mockup 选择、设备结构及功率接口验证模型，不将陈旧字符串当作 GB200 部署。没有真实硬件和固件兼容性验证。
+## 原生状态检查与维护
 
-## 启动与维护
+~~~bash
+compose="$DPS_RUNTIME_ROOT/hardware-sim/runtime/compose.yaml"
+docker compose -p "$DPS_BMC_PROJECT" -f "$compose" ps
+docker compose -p "$DPS_BMC_PROJECT" -f "$compose" logs --tail 50
+docker exec "$DPS_PROXY_CONTAINER" nginx -t
+curl -fSs --cacert "$DPS_RUNTIME_ROOT/dps-install/config/simulator-ca.crt" \
+  "https://$DPS_HOST_IP:$DPS_BMC_START_PORT/readyz"
+~~~
 
-```bash
-cd /raid/vince/deploy
-./hardware-sim/scripts/bmc-simulator.sh status
-./hardware-sim/scripts/bmc-simulator.sh logs
-./hardware-sim/scripts/bmc-simulator.sh stop
-./hardware-sim/scripts/bmc-simulator.sh start
-./hardware-sim/scripts/bmc-simulator.sh restart
-```
+部署/维护使用同一Compose project；默认dps-gb300-sim，容器名由instance_prefix派生。unless-stopped随Docker启动恢复；明确stop需start恢复。配置修改先审阅并nginx-t/reload，容器重建或restart会重置模拟内存。状态查询不需要重建密码/CA或运行部署脚本。
 
-Compose 文件：`hardware-sim/runtime/compose.yaml`；Docker 项目：`dps-gb300-sim`；容器：`dps-gb300-bmc`、`dps-gb300-bmc-proxy`；网络：`dps-gb300-bmc-net`。Docker 服务已设开机启用，两容器使用 `unless-stopped`，若未手动停止会在 Docker/主机启动后恢复。手动 stop 后使用 start 恢复。
+## DPS接入与验证边界
 
-可选验证统一位于 `verification/`，见 [验证说明](../verification/README.md)。启停脚本只管理模拟器，不调用验证脚本。
+DPS通过物理原生K3s上的手动Helm部署，真实LDAP/PRS启用，OIDC/Zapp关闭。DPS Agent mTLS connected，拓扑dps-gb300-4rack默认inactive；110实体/72计算节点，官方API/currenthash更新后原始回读72AgentId。安装命令见 [DPS手册](../dps-install/manual-install.md)。
 
-## DPS 安装与接入文件
+2026-10-10的BMC只读复检：72端点strictCA、ready/live、2Systems/2Managers/HGXchassis、288GPU144CPU Health=OK/State=Enabled和功率遥测，宿主机2232GET；实际Agent Pod网络72/72、1152GET通过。相关报告在runtime/verification/reports/bmc-health.json、verification-inventory.json、dps-pod-bmc-connectivity.json。日期与完整实录见 [operation-history](../docs/operation-history.md)。
 
-安装输入集中在 `/raid/vince/deploy/dps-install/`，详见 [DPS 安装文件说明](../dps-install/README.md)：
+宿主机/Agent Pod GET与Core→Agent派发分别报告。inactive下dpsctl check connection返回INVALID_OPERATION/no agent configuration available、check status返回SERVER_NOT_STARTED，不代表独立Pod未Ready。深层Core健康派发需active拓扑；当前MaxLPS激活涉及功率策略，本安装没有激活/写BMC，不能列为通过。PRS无活跃RG/domain，动态闭环尚未验证。
 
-- `packages/dps-0.9.0.tgz`：DPS 0.9 Helm chart。
-- `config/topology-4rack-dps09.json`：当前有效的 DPS 0.9 4-rack GB300 导入/更新输入，72 个节点的 AgentId 位于 `Topology.Entities` 关系对象，目标为 `gb300-lab-agent`。旧版拓扑输入仅保留在验证归档中。
-- `config/bmc-shared-secret.yaml`：拓扑引用的共享 BMC Secret；已应用到dps namespace，含credential store所需标签。
-- `config/bmc-endpoints.csv`、`config/bmc-credentials.json`：逐节点地址和测试凭据，供查阅/配置客户端。
-- `config/simulator-ca.crt`：需要信任自签 TLS 时使用的公开证书。
-
-`verification/reports/` 中的拓扑检查、接口检查、功率检查及版本追溯 JSON 都是验证材料，后续 DPS 安装和拓扑导入不读取它们。
-
-DPS 拓扑 `dps-gb300-4rack` 已校验并导入，110 个实体、72 个计算节点在 UI 可见；通过官方 API 与当前 hash 校验更新后，已回读确认全部 72 条 Agent 路由。拓扑保持 inactive，Agent mTLS 已连接，但尚未下发设备配置。DPS 的拓扑连接和深层 BMC 健康检查要求激活拓扑；当前激活会应用 MaxLPS 功率策略，本轮没有执行，Core→Agent→BMC 派发及动态功率控制尚未验收。
-
-2026-10-10 17:28–17:32 +08:00 独立 BMC 健康复检已完成：72/72 节点严格 CA 校验、ready/live、Redfish 系统/BMC Manager/chassis/288 GPU/144 CPU 健康与有效功率遥测通过，主机共 2232 GET；实际 Agent Pod 网络 72/72 端点、1152 GET 通过。独立服务/Pod Ready 检查 12/12 通过。结果见 `verification/reports/bmc-health.json`，所有细项仅在 verification。DPS 实际连接诊断返回 INVALID_OPERATION（no agent configuration available），节点状态查询返回 SERVER_NOT_STARTED；当前拓扑 inactive，未下发设备配置，Core→Agent→BMC 健康派发不列为通过。未重启服务或写入功率。
-
-四个 rack 按节点及 PSU 名称、FloorPDU 归属建模，不额外创建 Rack 类型实体。实际操作记录仍在根目录 `installstep.md`。
-
-## 重建配置
-
-```bash
-cd /raid/vince/deploy
-python3 hardware-sim/scripts/generate-topology.py
-python3 hardware-sim/scripts/configure-bmc-proxy.py
-./hardware-sim/scripts/bmc-simulator.sh start
-```
-
-硬件目录内 `runtime/` 保存 Compose、配置、节点映射和 TLS，`scripts/` 保存生成与启停脚本，`dps-sdk/` 保存 SDK，`vendor/` 保存模拟器 chart 和上游配置。镜像按 digest 固定，上游原文件均保留。证书和 hardware-sim/runtime/config.yaml 已保存；重建时继续使用现有文件。配置更改后执行 `docker compose -p dps-gb300-sim -f hardware-sim/runtime/compose.yaml up -d --force-recreate` 使新配置生效，会重置模拟器内存状态。
+[verification](../verification/README.md) 的topology-check/inventory/control/artifact-version报告均只是验收/追溯，不被BMC启动、DPS安装/拓扑导入读取。生产必要输入与验证文件保持分离。

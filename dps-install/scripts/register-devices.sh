@@ -1,14 +1,15 @@
 #!/usr/bin/env bash
 set -euo pipefail
+source "$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)/deployment-env.sh" "$@"
+set -- "${DPS_DEPLOY_ARGS[@]}"
 umask 077
-base=/raid/vince/deploy
-source "$base/dps-install/config/dps-env.sh"
+base=$DPS_RUNTIME_ROOT
 export DPSCTL_CREDENTIALS_PATH="${DPSCTL_CREDENTIALS_PATH:-$base/dps-install/config/dpsctl/credentials.yaml}"
 export DPSCTL_LOG_FILE="${DPSCTL_LOG_FILE:-$base/verification/logs/dpsctl.log}"
 [[ $# -eq 0 ]] || { printf '%s\n' 'This script accepts no arguments.' >&2; exit 2; }
 [[ -s "$DPSCTL_CREDENTIALS_PATH" ]] || { printf '%s\n' 'Authenticate with dpsctl login using the project credentials path first.' >&2; exit 1; }
 # Add the SDK shelf model only when absent. Never overwrite a mismatched model.
-python3 - "$base/dps-install/config/gb300-power-shelf-devices.yaml" <<'PYTHON'
+python3 - "$DPS_SOURCE_ROOT/dps-install/config/gb300-power-shelf-devices.yaml" <<'PYTHON'
 import json,subprocess,sys
 model='PowerSupply95_33000W'
 def registry():

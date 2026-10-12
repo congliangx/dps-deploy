@@ -1,5 +1,18 @@
 #!/usr/bin/env python3
 """LDAP positive/negative DPS authentication checks, without hardware operations."""
+
+# Public deployment settings select source inputs and isolated runtime outputs.
+import sys as _deployment_sys
+from pathlib import Path as _DeploymentPath
+_deployment_sys.dont_write_bytecode = True
+_deployment_sys.path.insert(0, str(_DeploymentPath(__file__).resolve().parents[2] / 'dps-install/scripts'))
+from deployment_context import context_from_cli as _deployment_context
+CTX = _deployment_context()
+SETTINGS = CTX.settings
+SOURCE_ROOT = CTX.source_root
+RUNTIME_ROOT = CTX.runtime_root
+for _deployment_output in ('verification/reports', 'verification/logs', 'verification/archive'):
+    CTX.runtime_path(_deployment_output).mkdir(parents=True, exist_ok=True, mode=0o700)
 import base64, http.cookiejar, json, os, re, secrets, ssl, subprocess, sys
 import urllib.error, urllib.request
 from datetime import datetime
@@ -7,16 +20,16 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 import yaml
 os.umask(0o077)
-B=Path('/raid/vince/deploy');C=B/'dps-install/config'
+B=CTX.runtime_root;C=B/'dps-install/config'
 REPORT=B/'verification/reports/dps-ldap-auth.json'
-CONTEXT='dps-l20-12'
+CONTEXT=SETTINGS['kube_context']
 os.environ.update({'KUBECONFIG':str(C/'kubernetes/kubeconfig.yaml'),
- 'DPSCTL_HOST':'api.dps.lab','DPSCTL_PORT':'443','DPSCTL_CA_CERT_PATH':str(C/'tls/ca.crt'),
+ 'DPSCTL_HOST':SETTINGS['api_name'],'DPSCTL_PORT':'443','DPSCTL_CA_CERT_PATH':str(C/'tls/ca.crt'),
  'DPSCTL_CREDENTIALS_PATH':str(C/'dpsctl/credentials.yaml'),
  'DPSCTL_LOG_FILE':str(B/'verification/logs/dpsctl.log')})
 account=json.loads((C/'dps-access.json').read_text())
 ldap=json.loads((C/'ldap/credentials.json').read_text())
-migration=json.loads((C/'ldap-auth-migration.json').read_text())
+migration=json.loads((C/'ldap-auth-migration.json').read_text()) if (C/'ldap-auth-migration.json').exists() else {}
 private=[account['password'],ldap['noaccess_password']]
 checks=[]
 work=B/'verification/archive/ldap-auth-tests'/datetime.now(ZoneInfo('Asia/Shanghai')).strftime('%Y%m%dT%H%M%S%z')
@@ -37,7 +50,7 @@ def cli(args,stdin=None,path=None):
  if path:command+=['--credentials-path',str(path),'--log-file',str(work/'dpsctl.log')]
  return subprocess.run(command+args,input=stdin,capture_output=True,text=True,timeout=65)
 def kube(resource):
- return json.loads(subprocess.check_output(['kubectl','--context',CONTEXT,'-n','dps','get',resource,'-o','json'],text=True))
+ return json.loads(subprocess.check_output(['kubectl','--context',CONTEXT,'-n',SETTINGS['namespace'],'get',resource,'-o','json'],text=True))
 def leaves(x):
  if isinstance(x,dict):return [s for v in x.values() for s in leaves(v)]
  if isinstance(x,list):return [s for v in x for s in leaves(v)]
@@ -53,8 +66,8 @@ def opener(cookies=None):
  return urllib.request.build_opener(*handlers)
 def http_request(client,url,body=None,token=None,session=False):
  headers={'Accept':'application/json','Content-Type':'application/json'}
- if url.startswith('https://ui.dps.lab/'):
-  headers.update({'Origin':'https://ui.dps.lab','X-Client-Id':'dps-ui-v2','X-Client-Version':'0.9.0'})
+ if url.startswith(('https://' + SETTINGS['ui_name'] + '/')):
+  headers.update({'Origin':('https://' + SETTINGS['ui_name']),'X-Client-Id':'dps-ui-v2','X-Client-Version':'0.9.0'})
  if token:headers['Authorization']='Bearer '+token
  if session:headers['X-DPS-Session']='1'
  data=json.dumps(body).encode() if body is not None else None
@@ -87,11 +100,11 @@ def login_valid():
   {'username':claims.get('preferred_username'),'roles':roles,'authorization_group_present':any('dcpower-users' in x for x in ([member] if isinstance(member,str) else member))})
  check('cli-credentials-private',p.stat().st_mode&0o777==0o600,{'mode':'0600'})
  r=cli(['topology','list']);x=parse_cli(r)
- tops=x.get('topologies',[]);chosen=[t for t in tops if t.get('topology_name')=='dps-gb300-4rack']
+ tops=x.get('topologies',[]);chosen=[t for t in tops if t.get('topology_name')==SETTINGS['topology_name']]
  check('cli-authorized-topology-read',r.returncode==0 and status_ok(x) and len(chosen)==1,
   {'topology_count':len(tops),'expected_found':len(chosen)==1})
  check('four-rack-topology-preserved-inactive',len(chosen)==1 and not chosen[0].get('is_active',False) and len(chosen[0].get('leaf_node_names',[]))==72,
-  {'name':'dps-gb300-4rack','active':chosen[0].get('is_active',False) if chosen else None,'leaf_nodes':len(chosen[0].get('leaf_node_names',[])) if chosen else 0})
+  {'name':SETTINGS['topology_name'],'active':chosen[0].get('is_active',False) if chosen else None,'leaf_nodes':len(chosen[0].get('leaf_node_names',[])) if chosen else 0})
 attempt('cli-positive-flow',login_valid)
 cases=[
  ('wrong-password',account['username'],'wrong-'+secrets.token_urlsafe(20)),
@@ -118,7 +131,7 @@ for label,user,password in cases:
    check('cli-group-outside-user-authorization-denied',protected.returncode!=0 and not status_ok(denied) and denied.get('status',{}).get('error',{}).get('code')=='AUTHORIZATION_FAILED',
     {'exit_code':protected.returncode,'status_ok':status_ok(denied),'error_code':denied.get('status',{}).get('error',{}).get('code')})
    if issued:
-    service=kube('service/dps-server-http')
+    service=kube(('service/' + SETTINGS['fullname'] + '-server-http'))
     endpoint='http://'+service['spec']['clusterIP']+':'+str(next(port['port']for port in service['spec']['ports'] if port['name']=='dps-http'))
     code,result=http_request(opener(),endpoint+'/nvidia.dcpower.v1.AuthService/Logout',{'accessToken':credentials['access_token'],'refreshToken':credentials['refresh_token']})
     check('cli-group-outside-test-session-logout',code==200 and not (result.get('status') and not status_ok(result)),{'http_status':code})
@@ -126,7 +139,7 @@ for label,user,password in cases:
    check('cli-reject-'+label,r.returncode!=0 and not status_ok(x) and not issued,
     {'exit_code':r.returncode,'status_ok':status_ok(x),'credentials_issued':issued,'error_code':x.get('status',{}).get('error',{}).get('code')})
  attempt('cli-reject-'+label,cli_negative)
-base='https://ui.dps.lab'
+base=('https://' + SETTINGS['ui_name'])
 def ui_positive():
  jar=http.cookiejar.CookieJar();client=opener(jar);token=None
  try:
@@ -136,7 +149,7 @@ def ui_positive():
   check('ui-valid-ldap-password',code==200 and bool(token),{'http_status':code,'access_token_present':bool(token),'ca_verified':True,'session_cookie_present':len(jar)>0})
   if not token:return
   code,x=http_request(client,base+'/api/nvidia.dcpower.v1.TopologyManagementService/ListTopologies',{},token)
-  check('ui-authorized-topology-read',code==200 and status_ok(x) and any(t.get('topologyName')=='dps-gb300-4rack' for t in x.get('topologies',[])),
+  check('ui-authorized-topology-read',code==200 and status_ok(x) and any(t.get('topologyName')==SETTINGS['topology_name'] for t in x.get('topologies',[])),
    {'http_status':code,'status_ok':status_ok(x),'topology_count':len(x.get('topologies',[]))})
  finally:
   if token:
@@ -169,10 +182,16 @@ for label,user,password in cases:
   jar.clear()
  attempt('ui-reject-'+label,ui_negative)
 def old_token_rejection():
- oldpath=Path(migration['pre_change_archive'])/'dps-install/config/dpsctl/credentials.yaml'
+ if not migration:
+  check('evaluation-token-revocation-not-applicable',True,{'previous_evaluation_authentication':False})
+  return
+ archive=Path(migration['pre_change_archive'])
+ if not archive.is_relative_to(B) and 'verification' in archive.parts:
+  archive=B.joinpath(*archive.parts[archive.parts.index('verification'):])
+ oldpath=archive/'dps-install/config/dpsctl/credentials.yaml'
  old=yaml.safe_load(oldpath.read_text())['token']
  private.extend([old['access_token'],old['refresh_token']])
- svc=kube('service/dps-server-http')
+ svc=kube(('service/' + SETTINGS['fullname'] + '-server-http'))
  root='http://'+svc['spec']['clusterIP']+':'+str(next(p['port']for p in svc['spec']['ports'] if p['name']=='dps-http'))
  client=opener()
  # Prove the same native RefreshToken request succeeds for a new LDAP session.
@@ -196,11 +215,11 @@ def old_token_rejection():
  check('evaluation-refresh-token-rejected',code>=400 and not token_present(x),{'http_status':code,'new_token_returned':token_present(x)})
 attempt('evaluation-token-revocation',old_token_rejection)
 def component_health():
- pods=[p for p in kube('pods')['items']if p['metadata']['name']=='dps-server-0' or p['metadata']['name'].startswith(('dps-server-agent-','dps-ui-'))]
+ pods=[p for p in kube('pods')['items']if p['metadata']['name']==(SETTINGS['fullname'] + '-server-0') or p['metadata']['name'].startswith(((SETTINGS['fullname'] + '-server-agent-'),(SETTINGS['fullname'] + '-ui-')))]
  states=[{'name':p['metadata']['name'],'phase':p['status']['phase'],'ready':all(c['ready']for c in p['status'].get('containerStatuses',[]))}for p in pods]
  check('core-agent-ui-ready-after-auth-switch',len(states)==3 and all(p['phase']=='Running' and p['ready']for p in states),states)
  r=cli(['agent','list']);x=json.loads(r.stdout)
- check('agent-mtls-connection-preserved',r.returncode==0 and any(a.get('agent_id')=='gb300-lab-agent' and a.get('connected')for a in x),
+ check('agent-mtls-connection-preserved',r.returncode==0 and any(a.get('agent_id')==SETTINGS['agent_id'] and a.get('connected')for a in x),
   [{'agent_id':a.get('agent_id'),'connected':a.get('connected')}for a in x])
  r=cli(['verify','--dps-server','--database','--auth']);x=parse_cli(r)
  components={k:v.get('healthy')for k,v in x.items()if k!='status' and isinstance(v,dict)}

@@ -1,59 +1,40 @@
 #!/usr/bin/env bash
 set -euo pipefail
-cd /raid/vince/deploy
-source dps-install/config/dps-env.sh
-kubectl --context "$DPS_KUBE_CONTEXT" create namespace dps --dry-run=client -o yaml | kubectl --context "$DPS_KUBE_CONTEXT" apply -f -
-for dps_secret_file in \
-  dps-install/config/postgresql-secret.yaml \
-  dps-install/config/postgresql-ca-secret.yaml \
-  dps-install/config/bmc-shared-secret.yaml \
-  dps-install/config/bmc-ca-secret.yaml \
-  dps-install/config/tls/dps-server-tls-secret.yaml \
-  dps-install/config/tls/dps-agent-tls-secret.yaml \
-  dps-install/config/tls/dps-ingress-tls-secret.yaml \
-  dps-install/config/tls/dps-jwt-keys-secret.yaml; do
-  kubectl --context "$DPS_KUBE_CONTEXT" --namespace dps apply --server-side --field-manager=dps-prerequisites -f "$dps_secret_file"
-done
-# External LDAP credentials and CA are required only for the LDAP authenticator.
-if python3 - <<'LDAP_ENABLED'
+umask 077
+source "$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)/deployment-env.sh" "$@"
+set -- "${DPS_DEPLOY_ARGS[@]}"
+[[ $# -eq 0 ]] || { echo 'Usage: prepare-namespace.sh [deployment overrides]' >&2; exit 2; }
+python3 - <<'PYTHON'
+import json,os,socket,subprocess
 from pathlib import Path
-import sys,yaml
-v=yaml.safe_load(Path('/raid/vince/deploy/dps-install/config/values.yaml').read_text())
-sys.exit(0 if v.get('dps',{}).get('ldap',{}).get('enabled') is True else 1)
-LDAP_ENABLED
-then
-  for dps_ldap_secret in dps-install/config/ldap/dps-ldap-bind-secret.yaml dps-install/config/ldap/dps-ldap-ca-secret.yaml dps-install/config/ldap/dps-ldap-client-tls-secret.yaml; do
-    test -s "$dps_ldap_secret"
-    kubectl --context "$DPS_KUBE_CONTEXT" --namespace dps apply --server-side --field-manager=dps-prerequisites -f "$dps_ldap_secret"
-  done
-fi
-# PRS credentials remain external to Helm values.
-if python3 - <<'PRS_ENABLED'
-from pathlib import Path
-import sys,yaml
-v=yaml.safe_load(Path('/raid/vince/deploy/dps-install/config/values.yaml').read_text())
-sys.exit(0 if v['dps'].get('prs',{}).get('enabled') else 1)
-PRS_ENABLED
-then
-  for dps_prs_secret in dps-install/config/prs/s3-secret.yaml dps-install/config/prs/dps-auth-secret.yaml; do
-    test -s "$dps_prs_secret"
-    kubectl --context "$DPS_KUBE_CONTEXT" --namespace dps apply --server-side --field-manager=dps-prerequisites -f "$dps_prs_secret"
-  done
-fi
-python3 - <<'PY'
-from pathlib import Path
-import socket
-for host in ['api.dps.lab','ui.dps.lab']:
- try:
-  addresses={r[4][0] for r in socket.getaddrinfo(host,None,socket.AF_INET)}
+import yaml
+from deployment_context import load_context
+ctx=load_context();c=ctx.runtime_path('dps-install/config');ns=ctx.settings['namespace']
+k=['kubectl','--context',ctx.settings['kube_context']]
+v=yaml.safe_load((c/'values.yaml').read_text())
+files=[c/f for f in ['postgresql-secret.yaml','postgresql-ca-secret.yaml','bmc-shared-secret.yaml','bmc-ca-secret.yaml']]
+files += [c/'tls'/f for f in ['dps-server-tls-secret.yaml','dps-agent-tls-secret.yaml','dps-ingress-tls-secret.yaml','dps-jwt-keys-secret.yaml']]
+if v.get('dps',{}).get('ldap',{}).get('enabled'):
+ files += [c/'ldap'/f for f in ['dps-ldap-bind-secret.yaml','dps-ldap-ca-secret.yaml','dps-ldap-client-tls-secret.yaml']]
+if v.get('dps',{}).get('prs',{}).get('enabled'):
+ files += [c/'prs'/f for f in ['s3-secret.yaml','dps-auth-secret.yaml']]
+# Verify every local Secret's namespace before making any cluster change.
+for f in files:
+ obj=yaml.safe_load(f.read_text())
+ if obj.get('kind')!='Secret' or obj['metadata'].get('namespace')!=ns:
+  raise SystemExit('Secret input namespace/type conflicts with deployment.yaml: '+f.name)
+r=subprocess.run([*k,'get','namespace',ns],capture_output=True)
+if r.returncode:subprocess.run([*k,'create','namespace',ns],check=True)
+for f in files:subprocess.run([*k,'--namespace',ns,'apply','--server-side','--field-manager=dps-prerequisites','-f',f],check=True)
+p=Path('/etc/hosts');text=p.read_text();missing=[];ip=ctx.settings['host_ip']
+for host in [ctx.settings['api_name'],ctx.settings['ui_name']]:
+ try:addresses={r[4][0] for r in socket.getaddrinfo(host,None,socket.AF_INET)}
  except socket.gaierror:addresses=set()
- if addresses and addresses!={'10.6.131.43'}:raise RuntimeError(host+' already resolves to another address')
-p=Path('/etc/hosts');s=p.read_text()
-missing=[h for h in ['api.dps.lab','ui.dps.lab'] if h not in [w for line in s.splitlines() for w in line.split('#')[0].split()[1:]]]
+ if addresses and addresses!={ip}:raise SystemExit('Hostname resolves to another address: '+host)
+ if not addresses:missing.append(host)
 if missing:
- backup=Path('/raid/vince/deploy/verification/archive/prerequisites/hosts.before-dps')
- if not backup.exists():backup.write_text(s)
- with p.open('a') as f:f.write('\n10.6.131.43 '+' '.join(missing)+' # DPS lab\n')
-print('DPS lab hostnames resolve on L20-12.')
-PY
-kubectl --context "$DPS_KUBE_CONTEXT" get secrets --namespace dps
+ backup=ctx.runtime_path('verification/archive/prerequisites/hosts.before-dps');backup.parent.mkdir(parents=True,exist_ok=True)
+ if not backup.exists():backup.write_text(text);backup.chmod(0o600)
+ with p.open('a') as f:f.write('\n'+ip+' '+' '.join(missing)+' # DPS '+ns+'\n')
+print('External Secrets applied to '+ns+'; project hostnames checked.')
+PYTHON

@@ -1,12 +1,16 @@
 #!/usr/bin/env python3
-"""Prepare the independent LDAP integration and retire evaluation-issued JWTs once."""
+"""Prepare the independent LDAP integration and preserve existing JWT identities."""
+import sys
+sys.dont_write_bytecode = True
 import hashlib, json, os, subprocess
 from datetime import datetime
 from pathlib import Path
+from deployment_context import context_from_cli
+ctx = context_from_cli()
 from zoneinfo import ZoneInfo
 import yaml
 os.umask(0o077)
-B = Path('/raid/vince/deploy')
+B = ctx.runtime_root
 C = B/'dps-install/config'
 V, S = C/'values.yaml', C/'ldap-auth-migration.json'
 def save(path, value, json_format=False):
@@ -19,18 +23,18 @@ def now():
 def public_sha(path):
     pub = subprocess.check_output(['openssl','pkey','-in',str(path),'-pubout','-outform','DER'], stderr=subprocess.PIPE)
     return hashlib.sha256(pub).hexdigest()
-subprocess.run([str(B/'dps-install/scripts/ldap-status.sh')], check=True)
+subprocess.run([str(ctx.source_path('dps-install/scripts/ldap-status.sh'))], check=True)
 ldap = json.loads((C/'ldap/credentials.json').read_text())
 account = json.loads((C/'dps-access.json').read_text())
 assert ldap['username'] == account['username'] == 'dps-lab'
 assert ldap['password'] == account['password'], 'LDAP and documented user credentials differ'
-assert ldap['endpoint'] == 'ldaps://10.6.131.43:1636'
+assert ldap['endpoint'] == f"ldaps://{ctx.settings['host_ip']}:{ctx.settings['ldap_port']}"
 assert ldap['bind_dn'] == 'uid=dps-bind,ou=services,dc=dps,dc=lab'
 for filename, name, key in [
     ('dps-ldap-bind-secret.yaml','dps-ldap-bind','bind-password'),
     ('dps-ldap-ca-secret.yaml','dps-ldap-ca','ca.crt')]:
     secret = yaml.safe_load((C/'ldap'/filename).read_text())
-    assert secret['metadata']['name'] == name and secret['metadata']['namespace'] == 'dps'
+    assert secret['metadata']['name'] == name and secret['metadata']['namespace'] == ctx.settings['namespace']
     assert key in secret.get('stringData',{}) or key in secret.get('data',{})
 values = yaml.safe_load(V.read_text())
 auth = values['dps'].setdefault('auth',{})
@@ -39,37 +43,21 @@ state = json.loads(S.read_text()) if S.exists() else {
     'target_authenticator':'ldap'}
 key = C/'tls/jwt-private-key.pem'
 rotation = state.get('jwt_rotation')
-if rotation is None:
-    if auth.get('authenticatorType') != 'alwaysAllow':
-        raise SystemExit('Refusing an unplanned JWT rotation outside the evaluation-to-LDAP migration')
-    newkey = key.with_name('.jwt-ldap-new.pem')
-    subprocess.run(['openssl','genrsa','-out',str(newkey),'3072'],check=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-    newkey.chmod(0o600)
-    rotation = {'old_public_key_sha256':public_sha(key),
-                'new_public_key_sha256':public_sha(newkey),
-                'prepared_at':now(),'status':'prepared'}
+current = public_sha(key)
+if rotation:
+    if rotation.get('status') not in ('committed', 'retained') or current != rotation.get('new_public_key_sha256'):
+        raise SystemExit('JWT identity differs from its retained record; restore/review rather than rotate')
+else:
+    if auth.get('authenticatorType') != 'ldap':
+        raise SystemExit('Maintenance requires an existing LDAP identity; use fresh preparation for a new instance')
+    rotation = {'new_public_key_sha256':current, 'status':'retained', 'recorded_at':now()}
     state['jwt_rotation'] = rotation
-    save(S,state,True)
-if rotation['status'] == 'prepared':
-    current = public_sha(key)
-    if current == rotation['old_public_key_sha256']:
-        newkey = key.with_name('.jwt-ldap-new.pem')
-        if not newkey.exists() or public_sha(newkey) != rotation['new_public_key_sha256']:
-            raise SystemExit('Prepared JWT key is missing or inconsistent; restore migration material')
-        newkey.replace(key)
-    elif current != rotation['new_public_key_sha256']:
-        raise SystemExit('JWT key differs from both recorded migration identities')
-    rotation['status']='committed'
-    rotation['committed_at']=now()
-    save(S,state,True)
-if public_sha(key) != rotation['new_public_key_sha256']:
-    raise SystemExit('Current JWT signing key does not match the committed LDAP identity')
 key.chmod(0o600)
 auth['authenticatorType']='ldap'
 auth['auth_required_groups']='dcpower-users'
 auth.setdefault('oidc',{})['enabled']=False
 auth['jwt']={'existingSecret':'dps-jwt-keys','existingSecretKey':'private-key.pem'}
-subprocess.run(['python3',str(B/'dps-install/scripts/prepare-ldap-client-tls.py')],check=True)
+subprocess.run(['python3',str(ctx.source_path('dps-install/scripts/prepare-ldap-client-tls.py'))],check=True)
 values['dps']['ldap'] = {
     'enabled':True, 'serverUrl':ldap['endpoint'], 'bindDn':ldap['bind_dn'],
     'baseDn':ldap['base_dn'],
@@ -88,7 +76,7 @@ save(V,values)
 account.update({'authenticator':'ldap','authentication':'ldap','role':'admin','ldap_dn':ldap['user_dn'],'note':'Real LDAP user; password is verified by the independent OpenLDAP service, admin role comes from dcpower-users.'})
 account.pop('authentication_note',None)
 save(C/'dps-access.json',account,True)
-subprocess.run(['python3',str(B/'dps-install/scripts/prepare-certificates.py')],check=True)
+subprocess.run(['python3',str(ctx.source_path('dps-install/scripts/prepare-certificates.py'))],check=True)
 state['status']='configured'
 state['configured_at']=now()
 state['ldap_endpoint']=ldap['endpoint']
@@ -96,5 +84,5 @@ state['bind_secret']='dps-ldap-bind'
 state['ca_secret']='dps-ldap-ca'
 state['jwt_secret']='dps-jwt-keys'
 save(S,state,True)
-print('LDAP values and external Secrets prepared. Evaluation JWT signing identity replaced once; no password printed.')
+print('LDAP values and external Secrets prepared. Existing JWT signing identity preserved; no password printed.')
 print('Next: prepare-namespace.sh, then install-dps.sh to apply the reviewed Helm configuration.')

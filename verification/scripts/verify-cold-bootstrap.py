@@ -1,5 +1,18 @@
 #!/usr/bin/env python3
 """Verify a freshly bootstrapped DPS stack without deployment or hardware writes."""
+
+# Public deployment settings select source inputs and isolated runtime outputs.
+import sys as _deployment_sys
+from pathlib import Path as _DeploymentPath
+_deployment_sys.dont_write_bytecode = True
+_deployment_sys.path.insert(0, str(_DeploymentPath(__file__).resolve().parents[2] / 'dps-install/scripts'))
+from deployment_context import context_from_cli as _deployment_context
+CTX = _deployment_context()
+SETTINGS = CTX.settings
+SOURCE_ROOT = CTX.source_root
+RUNTIME_ROOT = CTX.runtime_root
+for _deployment_output in ('verification/reports', 'verification/logs', 'verification/archive'):
+    CTX.runtime_path(_deployment_output).mkdir(parents=True, exist_ok=True, mode=0o700)
 import argparse
 import base64
 from concurrent.futures import ThreadPoolExecutor
@@ -43,17 +56,35 @@ def finite(value):
     return isinstance(value, (int, float)) and not isinstance(value, bool) and math.isfinite(value)
 
 
+def is_job_pod(pod):
+    return any(owner.get("kind") == "Job" for owner in pod.get("metadata", {}).get("ownerReferences", []))
+
+def pod_state(pod):
+    statuses = pod.get("status", {}).get("containerStatuses", [])
+    return {"name": pod["metadata"]["name"], "phase": pod.get("status", {}).get("phase", "Unknown"),
+            "ready": bool(statuses) and all(status.get("ready", False) for status in statuses),
+            "restarts": sum(status.get("restartCount", 0) for status in statuses)}
+
+def job_pod_inventory(pods):
+    return [{**pod_state(pod),
+             "owner_jobs": [owner.get("name") for owner in pod.get("metadata", {}).get("ownerReferences", [])
+                            if owner.get("kind") == "Job"]} for pod in pods if is_job_pod(pod)]
+
+def job_phase_counts(inventory):
+    return {phase: sum(pod["phase"] == phase for pod in inventory)
+            for phase in sorted({pod["phase"] for pod in inventory})}
+
 class Verification:
     def __init__(self, root):
         self.root = root.resolve()
         self.cfg = self.root / "dps-install/config"
-        self.settings = json.loads((self.cfg / "bootstrap-settings.json").read_text())
+        self.settings = dict(SETTINGS, root=str(self.root), kubeconfig=str(self.cfg/'kubernetes/kubeconfig.yaml'))
         if Path(self.settings["root"]).resolve() != self.root:
-            raise RuntimeError("bootstrap-settings.json belongs to a different root")
+            raise RuntimeError("Deployment settings belong to a different runtime directory")
         required = ["host_ip", "namespace", "release", "agent_id", "api_name", "ui_name", "bmc_start_port",
                     "pg_container", "ldap_container", "bmc_container", "proxy_container", "kubeconfig", "kube_context"]
         if any(not self.settings.get(key) for key in required):
-            raise RuntimeError("bootstrap-settings.json lacks required target fields")
+            raise RuntimeError("deployment.yaml lacks required target fields")
         self.ns, self.release = self.settings["namespace"], self.settings["release"]
         self.kubeconfig = Path(self.settings["kubeconfig"])
         if not self.kubeconfig.is_absolute():
@@ -79,7 +110,7 @@ class Verification:
                         for item in value:
                             collect(item)
                 collect(json.loads(path.read_text()))
-        self.checks, self.nodes, self.pods, self.services = [], [], [], []
+        self.checks, self.nodes, self.pods, self.services, self.job_pods = [], [], [], [], []
         self.tools = {}
         for name in ["kubectl", "helm", "dpsctl"]:
             local = self.root / "dps-install/packages/tools/bin" / name
@@ -279,8 +310,15 @@ class Verification:
         items = self.kube("deployments,statefulsets")["items"]
         states = [{"name": item["metadata"]["name"], "replicas": item["spec"].get("replicas", 1),
                    "ready_replicas": item.get("status", {}).get("readyReplicas", 0)} for item in items]
-        self.check("nine-dps-prs-s3-workloads-ready", len(states) == 9 and all(item["replicas"] > 0 and item["ready_replicas"] == item["replicas"] for item in states), states)
-        self.pods = self.kube("pods")["items"]
+        all_pods = self.kube("pods")["items"]
+        self.job_pods = job_pod_inventory(all_pods)
+        self.pods = [pod for pod in all_pods if not is_job_pod(pod)]
+        pod_states = [pod_state(pod) for pod in self.pods]
+        workloads_ready = len(states) == 9 and all(item["replicas"] > 0 and item["ready_replicas"] == item["replicas"] for item in states)
+        pods_ready = (len(pod_states) == sum(item["replicas"] for item in states) and
+                      all(pod["phase"] == "Running" and pod["ready"] for pod in pod_states))
+        self.check("nine-dps-prs-s3-workloads-ready", workloads_ready and pods_ready,
+                   {"workloads": states, "service_pods": pod_states})
         self.services = self.kube("services")["items"]
         self.check("no-bundled-postgresql-workload", not any("postgres" in item["name"] for item in states), {"external_pg": self.settings["pg_container"]})
         claims = [item for item in self.kube("pvc")["items"] if "seaweedfs" in item["metadata"]["name"]]
@@ -544,8 +582,9 @@ print(json.dumps({'signed_put_get_delete':True,'anonymous_http_status':anonymous
                 safe_log.chmod(0o600)
         report = {
             "checked_at": datetime.now(ZoneInfo("Asia/Shanghai")).isoformat(), "root": str(self.root),
-            "namespace": self.ns, "release": self.release, "settings_file": str(self.cfg / "bootstrap-settings.json"),
+            "namespace": self.ns, "release": self.release, "settings_file": str(CTX.config_path),
             "checks": self.checks, "bmc_node_results": self.nodes,
+            "job_pod_inventory": self.job_pods, "job_pod_phase_counts": job_phase_counts(self.job_pods),
             "summary": {"total": len(self.checks), "passed": sum(item["passed"] for item in self.checks),
                         "failed": sum(not item["passed"] for item in self.checks), "all_passed": all(item["passed"] for item in self.checks)},
             "hardware_write_operations": 0, "topology_activation_performed": False, "deployment_performed": False,
@@ -563,7 +602,7 @@ print(json.dumps({'signed_put_get_delete':True,'anonymous_http_status':anonymous
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--root", type=Path, required=True)
+    parser.add_argument("--root", type=Path, default=CTX.runtime_root)
     args = parser.parse_args()
     os.umask(0o077)
     try:

@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 """Prepare an independent first-install LDAP identity without migrating existing DPS."""
+import sys
+sys.dont_write_bytecode = True
 import argparse
 import base64
 import hashlib
@@ -7,6 +9,8 @@ import ipaddress
 import json
 import os
 from pathlib import Path
+from deployment_context import context_from_cli
+ctx = context_from_cli()
 import re
 import secrets
 import shutil
@@ -82,9 +86,29 @@ def ssha(password):
 def secret(name, namespace, values):
     return {
         "apiVersion": "v1", "kind": "Secret",
-        "metadata": {"name": name, "namespace": namespace}, "type": "Opaque",
+        "metadata": {"name": name, "namespace": namespace},
+        "type": "kubernetes.io/tls" if "tls.crt" in values and "tls.key" in values else "Opaque",
         "data": {key: base64.b64encode(value).decode() for key, value in values.items()},
     }
+
+
+def secret_matches(existing, name, namespace, payload, optional_ca=None):
+    """Compare retained identity payloads, accepting equivalent Kubernetes representations."""
+    if (not isinstance(existing, dict) or existing.get("kind") != "Secret" or
+            existing.get("metadata", {}).get("name") != name or
+            existing.get("metadata", {}).get("namespace") != namespace):
+        return False
+    allowed_types = {"Opaque", "kubernetes.io/tls"} if name == "dps-ldap-client-tls" else {"Opaque"}
+    if existing.get("type", "Opaque") not in allowed_types:
+        return False
+    try:
+        actual = {k:base64.b64decode(v,validate=True) for k,v in existing.get("data", {}).items()}
+        actual.update({k:v.encode() for k,v in existing.get("stringData", {}).items()})
+    except (ValueError,TypeError,AttributeError):
+        return False
+    if optional_ca is not None and "ca.crt" in actual:
+        if actual.pop("ca.crt") != optional_ca: return False
+    return actual == payload
 
 
 def expected_identity(args, image_id):
@@ -177,7 +201,8 @@ def validate_existing(args, root, cfg, data, image_id):
             "tls.crt": (cfg / "dps-client.crt").read_bytes(), "tls.key": (cfg / "dps-client.key").read_bytes()}),
     ]:
         existing = yaml.safe_load((cfg / filename).read_text())
-        if existing != secret(name, args.namespace, payload):
+        if not secret_matches(existing,name,args.namespace,payload,
+                              (cfg/"tls/ca.crt").read_bytes() if name=="dps-ldap-client-tls" else None):
             raise RuntimeError("Existing LDAP Secret differs from retained identity: " + filename)
     return True
 
@@ -382,7 +407,8 @@ member: {info['user_dn']}
             ("dps-ldap-bind-secret.yaml", "dps-ldap-bind", {"bind-password": info["bind_password"].encode()}),
             ("dps-ldap-ca-secret.yaml", "dps-ldap-ca", {"ca.crt": (tls / "ca.crt").read_bytes()}),
             ("dps-ldap-client-tls-secret.yaml", "dps-ldap-client-tls", {
-                "tls.crt": (stage / "dps-client.crt").read_bytes(), "tls.key": (stage / "dps-client.key").read_bytes()}),
+                "tls.crt": (stage / "dps-client.crt").read_bytes(), "tls.key": (stage / "dps-client.key").read_bytes(),
+                "ca.crt": (tls / "ca.crt").read_bytes()}),
         ]:
             write(stage / filename, secret(name, args.namespace, payload))
         account = {"username": info["username"], "password": info["password"], "role": "admin",
@@ -423,13 +449,13 @@ member: {info['user_dn']}
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--root", type=Path, default=Path(__file__).resolve().parents[2])
-    parser.add_argument("--host-ip", default="10.6.131.43")
-    parser.add_argument("--host-name", default="L20-12")
-    parser.add_argument("--port", type=int, default=1636)
-    parser.add_argument("--container-name", default="dps-openldap")
-    parser.add_argument("--namespace", default="dps")
-    parser.add_argument("--image", default="dps-openldap:2.6.10-debian13",
+    parser.add_argument("--root", type=Path, default=ctx.runtime_root)
+    parser.add_argument("--host-ip", default=ctx.settings["host_ip"])
+    parser.add_argument("--host-name", default=ctx.settings["host_name"])
+    parser.add_argument("--port", type=int, default=ctx.settings["ldap_port"])
+    parser.add_argument("--container-name", default=ctx.settings["ldap_container"])
+    parser.add_argument("--namespace", default=ctx.settings["namespace"])
+    parser.add_argument("--image", default="dps-openldap:2.6.10-bootstrap",
                         help="Existing image/tag/ID built from the independent LDAP recipe; no historical ID required")
     args = parser.parse_args()
     os.umask(0o077)

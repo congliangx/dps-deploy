@@ -1,18 +1,22 @@
 #!/usr/bin/env python3
 """Generate all four-rack BMC inputs from tracked topology; no SDK checkout required."""
+import sys
+sys.dont_write_bytecode = True
 import argparse, copy, csv, json, os, secrets
 from pathlib import Path
+from deployment_context import context_from_cli
+ctx = context_from_cli()
 import yaml
 from bootstrap_common import repo_root, private, pair, secret, bind_settings, validate_host, command, require_existing_identity
 
 def main():
     p=argparse.ArgumentParser(description=__doc__)
-    p.add_argument("--root"); p.add_argument("--host-ip",required=True)
-    p.add_argument("--host-name",default="dps-lab"); p.add_argument("--start-port",type=int,default=18443)
-    p.add_argument("--namespace",default="dps"); p.add_argument("--agent-id",default="gb300-lab-agent")
-    p.add_argument("--topology-name",default="dps-gb300-4rack")
-    p.add_argument("--container-name",default="dps-gb300-bmc")
-    p.add_argument("--proxy-name",default="dps-gb300-bmc-proxy"); p.add_argument("--network-name",default="dps-gb300-bmc-net")
+    p.add_argument("--root"); p.add_argument("--host-ip",default=ctx.settings["host_ip"])
+    p.add_argument("--host-name",default=ctx.settings["host_name"]); p.add_argument("--start-port",type=int,default=ctx.settings["bmc_start_port"])
+    p.add_argument("--namespace",default=ctx.settings["namespace"]); p.add_argument("--agent-id",default=ctx.settings["agent_id"])
+    p.add_argument("--topology-name",default=ctx.settings["topology_name"])
+    p.add_argument("--container-name",default=ctx.settings["bmc_container"])
+    p.add_argument("--proxy-name",default=ctx.settings["proxy_container"]); p.add_argument("--network-name",default=ctx.settings["bmc_network"])
     a=p.parse_args(); os.umask(0o077); r=repo_root(a.root); validate_host(a.host_ip,a.host_name)
     if not 1<=a.start_port<=65464: raise ValueError("Invalid 72-node port range")
     c=r/"dps-install/config"; s=r/"hardware-sim/runtime"; c.mkdir(parents=True,exist_ok=True)
@@ -20,9 +24,10 @@ def main():
     marker=c/"bmc-bootstrap.json"
     require_existing_identity(marker,[s/"authority/ca.key",s/"authority/ca.crt",s/"tls/tls.key",s/"tls/tls.crt",c/"bmc-credentials.json"])
     bind_settings(marker,desired,(s/"tls/tls.key").exists() or (c/"bmc-credentials.json").exists())
-    nodes=json.loads((s/"nodes.json").read_text())
+    s.mkdir(parents=True,exist_ok=True)
+    nodes=json.loads(ctx.source_path("hardware-sim/templates/nodes.json").read_text())
     if len(nodes)!=72: raise ValueError("Expected tracked four-rack node mapping")
-    topology=json.loads((c/"topology-4rack-dps09.json").read_text())
+    topology=json.loads(ctx.source_path("dps-install/config/topology-4rack-dps09.json").read_text())
     for i,n in enumerate(nodes):
         n["port"]=a.start_port+i; n["bmc_url"]=f"https://{a.host_ip}:{n['port']}"; n["secret_name"]="bmc-shared-secret"
     by_name={n["node_id"]:n for n in nodes}

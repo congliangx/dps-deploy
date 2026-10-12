@@ -1,18 +1,33 @@
 #!/usr/bin/env python3
 """Verify PRS databases using the pinned application's actual SQLAlchemy engine."""
-import datetime,json,subprocess
+
+# Public deployment settings select source inputs and isolated runtime outputs.
+import sys as _deployment_sys
+from pathlib import Path as _DeploymentPath
+_deployment_sys.dont_write_bytecode = True
+_deployment_sys.path.insert(0, str(_DeploymentPath(__file__).resolve().parents[2] / 'dps-install/scripts'))
+from deployment_context import context_from_cli as _deployment_context
+CTX = _deployment_context()
+SETTINGS = CTX.settings
+SOURCE_ROOT = CTX.source_root
+RUNTIME_ROOT = CTX.runtime_root
+for _deployment_output in ('verification/reports', 'verification/logs', 'verification/archive'):
+    CTX.runtime_path(_deployment_output).mkdir(parents=True, exist_ok=True, mode=0o700)
+import datetime,ipaddress,json,subprocess
 from pathlib import Path
-ROOT=Path('/raid/vince/deploy')
+ROOT=CTX.runtime_root
 DBS=['dps_prs_config','dps_prs_config_staged','dps_prs_controller']
 checks=[]
 def record(name,passed,detail):
  checks.append({'name':name,'passed':bool(passed),'detail':detail})
  print(name+': '+('PASS' if passed else 'FAIL'))
 def admin(sql,database='postgres'):
- return subprocess.run(['docker','exec','-i','-u','postgres','dps-postgresql','psql','-X','-At',
+ return subprocess.run(['docker','exec','-i','-u','postgres',SETTINGS['pg_container'],'psql','-X','-At',
                         '-v','ON_ERROR_STOP=1','-d',database],
                        input=sql,capture_output=True,text=True,check=True).stdout.strip()
 payload=r"""
+import json,os
+SETTINGS=json.loads(os.environ["DPS_VERIFICATION_SETTINGS"])
 import json,os,secrets
 from pathlib import Path
 from sqlalchemy import URL,text
@@ -24,7 +39,7 @@ positive=[]
 os.environ['PGSSLMODE']='verify-full'
 os.environ['PGSSLROOTCERT']='/secrets/postgresql/ca.crt'
 for name in databases:
- uri=URL.create('postgresql',username='dps',password=password,host='10.6.131.43',port=15432,database=name)
+ uri=URL.create('postgresql',username='dps',password=password,host=SETTINGS['host_ip'],port=SETTINGS['pg_port'],database=name)
  engine=EngineFactory.create(uri.render_as_string(hide_password=False))
  with engine.connect() as conn:
   row=conn.execute(text("SELECT current_database(),current_user,s.ssl,s.version FROM pg_stat_ssl s WHERE s.pid=pg_backend_pid()")).one()
@@ -37,15 +52,15 @@ for name in databases:
  engine.dispose()
 negative=[]
 cases=[
- ('untrusted-ca','verify-full','/secrets/postgresql/untrusted-ca.crt','10.6.131.43',password,None,'certificate verify failed'),
- ('incorrect-server-name','verify-full','/secrets/postgresql/ca.crt','untrusted.dps.lab',password,'10.6.131.43','does not match host name'),
- ('plaintext-rejected','disable','/secrets/postgresql/ca.crt','10.6.131.43',password,None,'no encryption'),
- ('wrong-password-rejected','verify-full','/secrets/postgresql/ca.crt','10.6.131.43',secrets.token_urlsafe(32),None,'password authentication failed')]
+ ('untrusted-ca','verify-full','/secrets/postgresql/untrusted-ca.crt',SETTINGS['host_ip'],password,None,'certificate verify failed'),
+ ('incorrect-server-name','verify-full','/secrets/postgresql/ca.crt','untrusted.dps.lab',password,SETTINGS['host_ip'],'does not match host name'),
+ ('plaintext-rejected','disable','/secrets/postgresql/ca.crt',SETTINGS['host_ip'],password,None,'no encryption'),
+ ('wrong-password-rejected','verify-full','/secrets/postgresql/ca.crt',SETTINGS['host_ip'],secrets.token_urlsafe(32),None,'password authentication failed')]
 for label,mode,ca,host,pw,addr,expected in cases:
  os.environ['PGSSLMODE']=mode;os.environ['PGSSLROOTCERT']=ca
  if addr:os.environ['PGHOSTADDR']=addr
  else:os.environ.pop('PGHOSTADDR',None)
- uri=URL.create('postgresql',username='dps',password=pw,host=host,port=15432,database='dps_prs_config')
+ uri=URL.create('postgresql',username='dps',password=pw,host=host,port=SETTINGS['pg_port'],database='dps_prs_config')
  engine=EngineFactory.create(uri.render_as_string(hide_password=False))
  try:
   with engine.connect() as conn:conn.execute(text('SELECT 1'))
@@ -57,7 +72,7 @@ for label,mode,ca,host,pw,addr,expected in cases:
 print(json.dumps({'client':'power-config EngineFactory SQLAlchemy/psycopg2','driver_version':psycopg2.__version__,
                   'positive':positive,'negative':negative}))
 """
-command=['docker','run','--rm','--network=host','--read-only','--user=0','--entrypoint','python3',
+command=['docker','run','--rm','--network=host','--read-only','--user=0','--entrypoint','python3','-e','DPS_VERIFICATION_SETTINGS='+json.dumps(SETTINGS),
          '-e','PGCONNECT_TIMEOUT=10',
          '-v',str(ROOT/'dps-install/config/postgresql/secrets/dps-password')+':/run/secrets/dps-password:ro',
          '-v',str(ROOT/'dps-install/config/postgresql/tls/ca.crt')+':/secrets/postgresql/ca.crt:ro',
@@ -71,6 +86,8 @@ for row in result['negative']:
  record(row['name'],row['passed'],{k:v for k,v in row.items() if k not in ('name','passed')})
 controller_payload=r"""
 import json,os
+SETTINGS=json.loads(os.environ["DPS_VERIFICATION_SETTINGS"])
+import json,os
 from pathlib import Path
 from sqlalchemy import URL,text
 from controller.db.database import EngineFactory
@@ -79,7 +96,7 @@ from prs_shared.settings import DatabaseSettings
 os.environ['PGSSLMODE']='verify-full'
 os.environ['PGSSLROOTCERT']='/secrets/postgresql/ca.crt'
 password=Path('/run/secrets/dps-password').read_text().strip()
-uri=URL.create('postgresql',username='dps',password=password,host='10.6.131.43',port=15432,database='dps_prs_controller')
+uri=URL.create('postgresql',username='dps',password=password,host=SETTINGS['host_ip'],port=SETTINGS['pg_port'],database='dps_prs_controller')
 engine=EngineFactory.create(uri.render_as_string(hide_password=False))
 with engine.connect() as conn:
  row=conn.execute(text("SELECT current_database(),current_user,s.ssl,s.version FROM pg_stat_ssl s WHERE s.pid=pg_backend_pid()")).one()
@@ -105,10 +122,14 @@ role=admin("SELECT rolsuper,rolcreatedb,rolcreaterole,(rolpassword LIKE 'SCRAM-S
 record('non-superuser-scram-role',role=='f|f|f|t',{'superuser_createdb_createrole_scram_flags':role})
 errors=admin("SELECT count(*) FROM pg_hba_file_rules WHERE error IS NOT NULL;")
 record('hba-rules-valid',errors=='0',{'errors':int(errors)})
-rules=admin("SELECT count(*) FROM pg_hba_file_rules WHERE type='hostssl' AND user_name=ARRAY['dps'] "
-            "AND database=ARRAY['dps_prs_config','dps_prs_config_staged','dps_prs_controller'] "
-            "AND auth_method='scram-sha-256';")
-record('three-trusted-network-prs-rules',rules=='3',{'scoped_hostssl_rules':int(rules)})
+rules=json.loads(admin("SELECT COALESCE(json_agg(json_build_object('address',address,'netmask',netmask)), '[]'::json) "
+                       "FROM pg_hba_file_rules WHERE type='hostssl' AND user_name=ARRAY['dps'] "
+                       "AND database @> ARRAY['dps_prs_config','dps_prs_config_staged','dps_prs_controller'] "
+                       "AND auth_method='scram-sha-256';"))
+networks={str(ipaddress.ip_network(row['address']+'/'+row['netmask'],strict=False)) for row in rules}
+expected_networks={SETTINGS['host_ip']+'/32',SETTINGS['pg_subnet'],SETTINGS['pod_cidr']}
+record('three-trusted-network-prs-rules',networks==expected_networks and len(rules)==len(expected_networks),
+       {'scoped_hostssl_rules':len(rules),'trusted_networks':sorted(networks)})
 tables=admin("SELECT count(*) FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE';",'dps')
 record('existing-dps-database-present',int(tables)>0,{'public_table_count':int(tables)})
 report={'timestamp':datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).isoformat(),

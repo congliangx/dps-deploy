@@ -4,6 +4,19 @@
 No topology import, activation, policy change, BMC write, or Helm mutation.
 Private credentials remain in config/dpsctl; tokens and cookies are never reported.
 """
+
+# Public deployment settings select source inputs and isolated runtime outputs.
+import sys as _deployment_sys
+from pathlib import Path as _DeploymentPath
+_deployment_sys.dont_write_bytecode = True
+_deployment_sys.path.insert(0, str(_DeploymentPath(__file__).resolve().parents[2] / 'dps-install/scripts'))
+from deployment_context import context_from_cli as _deployment_context
+CTX = _deployment_context()
+SETTINGS = CTX.settings
+SOURCE_ROOT = CTX.source_root
+RUNTIME_ROOT = CTX.runtime_root
+for _deployment_output in ('verification/reports', 'verification/logs', 'verification/archive'):
+    CTX.runtime_path(_deployment_output).mkdir(parents=True, exist_ok=True, mode=0o700)
 import datetime
 import http.cookiejar
 import json
@@ -17,13 +30,13 @@ import yaml
 import urllib.error
 import urllib.request
 
-ROOT = Path('/raid/vince/deploy')
+ROOT = CTX.runtime_root
 CONFIG = ROOT / 'dps-install/config'
 REPORT = ROOT / 'verification/reports/dps-installation.json'
 CLI_LOG = ROOT / 'verification/logs/dpsctl.log'
 CREDENTIALS = CONFIG / 'dpsctl/credentials.yaml'
-CONTEXT = 'dps-l20-12'
-NAMESPACE = 'dps'
+CONTEXT = SETTINGS['kube_context']
+NAMESPACE = SETTINGS['namespace']
 checks = []
 private_values = []
 os.umask(0o077)
@@ -32,7 +45,7 @@ os.environ.update({
     'HELM_CONFIG_HOME': str(CONFIG / 'helm'),
     'HELM_CACHE_HOME': str(ROOT / 'dps-install/data/helm-cache'),
     'HELM_DATA_HOME': str(ROOT / 'dps-install/data/helm-data'),
-    'DPSCTL_HOST': 'api.dps.lab', 'DPSCTL_PORT': '443',
+    'DPSCTL_HOST': SETTINGS['api_name'], 'DPSCTL_PORT': '443',
     'DPSCTL_CA_CERT_PATH': str(CONFIG / 'tls/ca.crt'),
     'DPSCTL_CREDENTIALS_PATH': str(CREDENTIALS),
     'DPSCTL_LOG_FILE': str(CLI_LOG),
@@ -102,7 +115,7 @@ def attempt(name, function):
 
 def helm_check():
     release = run(['helm', '--kube-context', CONTEXT, 'list', '-n', NAMESPACE, '-o', 'json'])
-    selected = [x for x in release if x['name'] == 'dps']
+    selected = [x for x in release if x['name'] == SETTINGS['release']]
     details = [{k: x.get(k) for k in ('name', 'namespace', 'revision', 'status', 'chart', 'app_version')} for x in selected]
     check('helm-release-0.9.0', len(selected) == 1 and selected[0]['status'] == 'deployed' and selected[0]['app_version'] == '0.9.0', details)
 
@@ -111,7 +124,7 @@ def workload_check():
     stateful = kube('statefulsets')['items']
     deployments = kube('deployments')['items']
     names = {x['metadata']['name'] for x in stateful + deployments}
-    expected = {'dps-server', 'dps-server-agent', 'dps-ui'}
+    expected = {(SETTINGS['fullname'] + '-server'), (SETTINGS['fullname'] + '-server-agent'), (SETTINGS['fullname'] + '-ui')}
     status = []
     for item in stateful + deployments:
         wanted = item['spec'].get('replicas', 1)
@@ -160,7 +173,7 @@ def agent_check():
     for agent in agents:
         filtered.append({k: agent.get(k) for k in ('agent_id', 'configured', 'connected', 'assigned_devices') if k in agent})
         filtered[-1]['session_count'] = len(agent.get('sessions', []))
-    check('agent-mtls-connected', any(x.get('agent_id') == 'gb300-lab-agent' and x.get('connected') is True for x in agents), filtered)
+    check('agent-mtls-connected', any(x.get('agent_id') == SETTINGS['agent_id'] and x.get('connected') is True for x in agents), filtered)
 
 
 def topology_check():
@@ -173,7 +186,7 @@ def ui_http_check():
     context = ssl.create_default_context(cafile=str(CONFIG / 'tls/ca.crt'))
     cookies = http.cookiejar.CookieJar()
     opener = urllib.request.build_opener(urllib.request.ProxyHandler({}), urllib.request.HTTPSHandler(context=context), urllib.request.HTTPCookieProcessor(cookies))
-    base = 'https://ui.dps.lab'
+    base = ('https://' + SETTINGS['ui_name'])
     def request(path, body=None, token=None, session=False):
         headers = {'Accept': 'application/json', 'X-Client-Id': 'dps-ui-v2', 'X-Client-Version': '0.9.0', 'Origin': base}
         if body is not None:
@@ -236,7 +249,7 @@ if CLI_LOG.exists():
     CLI_LOG.write_text(sanitize(CLI_LOG.read_text(errors='replace')))
     CLI_LOG.chmod(0o600)
 report = {'timestamp': datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).isoformat(),
-          'namespace': NAMESPACE, 'context': CONTEXT, 'release': 'dps', 'expected_version': '0.9.0',
+          'namespace': NAMESPACE, 'context': CONTEXT, 'release': SETTINGS['release'], 'expected_version': SETTINGS['dps_version'],
           'scope': 'installation checks only; no topology import/activation or hardware writes',
           'authentication': authenticator,
           'checks': checks, 'passed': all(x['passed'] for x in checks),

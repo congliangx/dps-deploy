@@ -1,5 +1,18 @@
 #!/usr/bin/env python3
 """Read-only, eight-worker inventory verification of all simulated GB300 BMCs."""
+
+# Public deployment settings select source inputs and isolated runtime outputs.
+import sys as _deployment_sys
+from pathlib import Path as _DeploymentPath
+_deployment_sys.dont_write_bytecode = True
+_deployment_sys.path.insert(0, str(_DeploymentPath(__file__).resolve().parents[2] / 'dps-install/scripts'))
+from deployment_context import context_from_cli as _deployment_context
+CTX = _deployment_context()
+SETTINGS = CTX.settings
+SOURCE_ROOT = CTX.source_root
+RUNTIME_ROOT = CTX.runtime_root
+for _deployment_output in ('verification/reports', 'verification/logs', 'verification/archive'):
+    CTX.runtime_path(_deployment_output).mkdir(parents=True, exist_ok=True, mode=0o700)
 import base64
 from collections import Counter
 from concurrent.futures import ThreadPoolExecutor
@@ -14,7 +27,7 @@ import urllib.error
 import urllib.request
 
 os.umask(0o077)
-BASE = Path("/raid/vince/deploy")
+BASE = CTX.runtime_root
 nodes = json.loads((BASE / "hardware-sim/runtime/nodes.json").read_text())
 topology = json.loads((BASE / "dps-install/config/topology-4rack-dps09.json").read_text())
 credentials = json.loads((BASE / "dps-install/config/bmc-credentials.json").read_text())
@@ -171,12 +184,12 @@ failures = [result for result in results if result["status"] != "pass"]
 deviation_counts = Counter(deviation for result in results for deviation in result["deviations"])
 report = {
     "verified_at_utc": datetime.now(timezone.utc).isoformat(),
-    "verification_scope": "Read-only HTTPS GET from L20-12 using actual public BMC URLs and eight concurrent workers.",
+    "verification_scope": "Read-only HTTPS GET using configured public BMC URLs and eight concurrent workers.",
     "source_nodes_path": str(BASE / "hardware-sim/runtime/nodes.json"),
     "source_topology_path": str(BASE / "dps-install/config/topology-4rack-dps09.json"),
     "credentials_path": str(BASE / "dps-install/config/bmc-credentials.json"),
     "authentication": "Supplied credentials were sent; endpoint access restriction is evaluated separately.",
-    "verification_script": str(BASE / "verification/scripts/verify-bmc-inventory.py"),
+    "verification_script": str(Path(__file__).resolve()),
     "tls_certificate_verification": "strict CA and endpoint identity verification using config/simulator-ca.crt",
     "tls_ca_verified": True,
     "passed": not failures,

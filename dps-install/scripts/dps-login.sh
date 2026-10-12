@@ -1,13 +1,14 @@
 #!/usr/bin/env bash
 # Authenticate the documented LDAP account without putting passwords on argv.
 set -euo pipefail
+source "$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)/deployment-env.sh" "$@"
+set -- "${DPS_DEPLOY_ARGS[@]}"
 umask 077
-source /raid/vince/deploy/dps-install/config/dps-env.sh
 python3 - <<'PYTHON'
 import json, os, subprocess
 from pathlib import Path
 import yaml
-c=Path('/raid/vince/deploy/dps-install/config')
+c=Path(os.environ['DPS_RUNTIME_ROOT'])/'dps-install/config'
 v=yaml.safe_load((c/'values.yaml').read_text())
 if v['dps']['auth']['authenticatorType']!='ldap' or not v['dps']['ldap']['enabled']:
  raise SystemExit('Current deployment input must use LDAP authentication')

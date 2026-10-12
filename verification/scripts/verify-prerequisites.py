@@ -1,12 +1,25 @@
 #!/usr/bin/env python3
 """Verify DPS prerequisites using temporary resources; never install DPS or write BMC power."""
+
+# Public deployment settings select source inputs and isolated runtime outputs.
+import sys as _deployment_sys
+from pathlib import Path as _DeploymentPath
+_deployment_sys.dont_write_bytecode = True
+_deployment_sys.path.insert(0, str(_DeploymentPath(__file__).resolve().parents[2] / 'dps-install/scripts'))
+from deployment_context import context_from_cli as _deployment_context
+CTX = _deployment_context()
+SETTINGS = CTX.settings
+SOURCE_ROOT = CTX.source_root
+RUNTIME_ROOT = CTX.runtime_root
+for _deployment_output in ('verification/reports', 'verification/logs', 'verification/archive'):
+    CTX.runtime_path(_deployment_output).mkdir(parents=True, exist_ok=True, mode=0o700)
 import base64,datetime,hashlib,json,os,pathlib,re,subprocess,sys,time,uuid
 import yaml
-BASE=pathlib.Path('/raid/vince/deploy')
+BASE=CTX.runtime_root
 # source dps-install/config/dps-env.sh to override these project defaults.
-CONTEXT=os.environ.get('DPS_KUBE_CONTEXT','dps-l20-12')
-TARGET_NODE=os.environ.get('DPS_KUBE_NODE','l20-12')
-NAMESPACE='dps'
+CONTEXT=os.environ.get('DPS_KUBE_CONTEXT',SETTINGS['kube_context'])
+TARGET_NODE=os.environ.get('DPS_KUBE_NODE',SETTINGS['host_name'].lower())
+NAMESPACE=SETTINGS['namespace']
 KUBECONFIG=pathlib.Path(os.environ.get('KUBECONFIG',str(BASE/'dps-install/config/kubernetes/kubeconfig.yaml')))
 ENV=dict(os.environ,KUBECONFIG=str(KUBECONFIG))
 REPORT=BASE/'verification/reports/prerequisite-check.json'
@@ -125,19 +138,19 @@ try:
         cert=decode(secrets[name],'tls.crt')
         result=subprocess.run(['openssl','x509','-noout','-subject','-ext','subjectAltName','-enddate'],input=cert,capture_output=True)
         output=result.stdout.decode();valid=result.returncode==0
-        if name=='dps-server-tls':valid=valid and 'DNS:api.dps.lab' in output and 'DNS:dps-server-grpc.dps.svc.cluster.local' in output
-        if name=='dps-agent-tls':valid=valid and bool(re.search(r'CN\s*=\s*gb300-lab-agent',output))
-        if name=='dps-ingress-tls':valid=valid and 'DNS:ui.dps.lab' in output
+        if name=='dps-server-tls':valid=valid and ('DNS:' + SETTINGS['api_name']) in output and ('DNS:' + SETTINGS['fullname'] + '-server-grpc.' + SETTINGS['namespace'] + '.svc.cluster.local') in output
+        if name=='dps-agent-tls':valid=valid and bool(re.search(r'CN\s*=\s*'+re.escape(SETTINGS['agent_id']),output))
+        if name=='dps-ingress-tls':valid=valid and ('DNS:' + SETTINGS['ui_name']) in output
         certcheck[name]={'passed':valid,'public_certificate_identity':output.strip()}
     condition(all(x['passed'] for x in certcheck.values()),'tls_certificate_names',certcheck)
     jwt=subprocess.run(['openssl','pkey','-check','-noout'],input=decode(secrets['dps-jwt-keys'],'private-key.pem'),capture_output=True)
     condition(jwt.returncode==0,'jwt_private_key_valid',{'secret':'dps-jwt-keys','private_material_printed':False})
-    release=json.loads(command(['helm','list','--all','--namespace',NAMESPACE,'--kube-context',CONTEXT,'--filter','^dps$','--output','json']).stdout)
+    release=json.loads(command(['helm','list','--all','--namespace',NAMESPACE,'--kube-context',CONTEXT,'--filter','^'+re.escape(SETTINGS['release'])+'$','--output','json']).stdout)
     condition(not release,'dps_release_absent',{'matching_release_count':len(release)})
-    render=command(['helm','template','dps',str(BASE/'dps-install/packages/dps-0.9.0.tgz'),'--namespace',NAMESPACE,'--kube-version',version,'--values',str(BASE/'dps-install/config/values.yaml')])
+    render=command(['helm','template',SETTINGS['release'],str(BASE/'dps-install/packages/dps-0.9.0.tgz'),'--namespace',NAMESPACE,'--kube-version',version,'--values',str(BASE/'dps-install/config/values.yaml')])
     rendered=BASE/'verification/reports/dps-prereq-rendered.yaml';rendered.write_text(render.stdout);rendered.chmod(0o600)
     resources=[x for x in yaml.safe_load_all(render.stdout) if isinstance(x,dict)];workloads=[x['metadata']['name'] for x in resources if x['kind'] in ['Deployment','StatefulSet']]
-    condition(set(workloads)=={'dps-server','dps-server-agent','dps-ui'} and not any(x['kind']=='Secret' for x in resources),'helm_render',{'workloads':workloads,'secret_objects':sum(x['kind']=='Secret' for x in resources),'rendered_file':str(rendered)})
+    condition(set(workloads)=={(SETTINGS['fullname'] + '-server'),(SETTINGS['fullname'] + '-server-agent'),(SETTINGS['fullname'] + '-ui')} and not any(x['kind']=='Secret' for x in resources),'helm_render',{'workloads':workloads,'secret_objects':sum(x['kind']=='Secret' for x in resources),'rendered_file':str(rendered)})
     runid=uuid.uuid4().hex[:8];prefix='dps-prereq-'+runid;podname=prefix+'-check';pvcname=prefix+'-storage';configname=prefix+'-inputs';labels={'app.kubernetes.io/component':'prerequisite-verification','dps-prereq-run':runid}
     report['temporary_resources']={'Pod':podname,'PVC':pvcname,'ConfigMap':configname};save()
     topology=json.loads((BASE/'dps-install/config/topology-4rack-dps09.json').read_text());targets=[{'name':e['Name'],'url':e['Redfish']['URL']} for e in topology['Entities'] if e['Type']=='ComputerSystem'];assert len(targets)==72
@@ -145,7 +158,7 @@ try:
     {'apiVersion':'v1','kind':'PersistentVolumeClaim','metadata':{'name':pvcname,'namespace':NAMESPACE,'labels':labels},'spec':{'storageClassName':'local-path','accessModes':['ReadWriteOnce'],'resources':{'requests':{'storage':'1Gi'}}}},
     {'apiVersion':'v1','kind':'Pod','metadata':{'name':podname,'namespace':NAMESPACE,'labels':labels},'spec':{'nodeSelector':{'kubernetes.io/hostname':TARGET_NODE},'restartPolicy':'Never','automountServiceAccountToken':False,'containers':[
         {'name':'postgres-check','image':'postgres:17','imagePullPolicy':'IfNotPresent','command':['psql','--set','ON_ERROR_STOP=1','--tuples-only','--no-align','--command',PG_SQL],
-         'env':[{'name':k,'value':v} for k,v in {'PGHOST':'10.6.131.43','PGPORT':'15432','PGDATABASE':'dps','PGUSER':'dps','PGSSLMODE':'verify-full','PGSSLROOTCERT':'/secrets/postgresql/ca.crt'}.items()]+[{'name':'PGPASSWORD','valueFrom':{'secretKeyRef':{'name':'dps-postgresql','key':'password'}}}],
+         'env':[{'name':k,'value':v} for k,v in {'PGHOST':SETTINGS['host_ip'],'PGPORT':str(SETTINGS['pg_port']),'PGDATABASE':'dps','PGUSER':'dps','PGSSLMODE':'verify-full','PGSSLROOTCERT':'/secrets/postgresql/ca.crt'}.items()]+[{'name':'PGPASSWORD','valueFrom':{'secretKeyRef':{'name':'dps-postgresql','key':'password'}}}],
          'volumeMounts':[{'name':'postgres-ca','mountPath':'/secrets/postgresql','readOnly':True}],'resources':{'requests':{'cpu':'10m','memory':'32Mi'},'limits':{'cpu':'250m','memory':'128Mi'}}},
         {'name':'bmc-storage-dns-check','image':'python:3.13-slim','imagePullPolicy':'IfNotPresent','command':['python3','-c',PYTHON_CODE],
          'volumeMounts':[{'name':'inputs','mountPath':'/inputs','readOnly':True},{'name':'bmc','mountPath':'/secrets/bmc','readOnly':True},{'name':'bmc-ca','mountPath':'/secrets/bmc-ca','readOnly':True},{'name':'storage','mountPath':'/data'}],

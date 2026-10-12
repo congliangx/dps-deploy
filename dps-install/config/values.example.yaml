@@ -7,7 +7,7 @@ global:
   defaultStorageClass: local-path
   imagePullSecrets: []
   postgresql:
-    host: 10.6.131.43
+    host: 0.0.0.0
     service:
       ports:
         postgresql: '15432'
@@ -71,14 +71,14 @@ power-steering:
     - &id004
       to:
       - ipBlock:
-          cidr: 10.6.131.43/32
+          cidr: 0.0.0.0/32
       ports:
       - port: 15432
         protocol: TCP
     - &id005
       to:
       - ipBlock:
-          cidr: 172.30.90.2/32
+          cidr: 0.0.0.0/32
       ports:
       - port: 5432
         protocol: TCP
@@ -114,7 +114,7 @@ power-steering:
     - *id005
     - to:
       - ipBlock:
-          cidr: 10.6.131.43/32
+          cidr: 0.0.0.0/32
       ports:
       - port: 6443
         protocol: TCP
@@ -143,7 +143,7 @@ dps:
     tag: 0.9.0
   ingress:
     enabled: true
-    hostname: api.dps.lab
+    hostname: api.invalid
     className: traefik
     tlsPassthrough: true
     traefik:
@@ -162,7 +162,7 @@ dps:
     auth_required_groups: dcpower-users
   ldap:
     enabled: true
-    serverUrl: ldaps://10.6.131.43:1636
+    serverUrl: ldaps://0.0.0.0:1636
     bindDn: uid=dps-bind,ou=services,dc=dps,dc=lab
     baseDn: dc=dps,dc=lab
     userFilter: (&(objectClass=person)(uid={username}))
@@ -243,7 +243,7 @@ dps:
   excursionMitigation:
     strategy: ''
   cors:
-    allowedOrigins: https://ui.dps.lab
+    allowedOrigins: https://ui.invalid
   persistence:
     size: 1Gi
     storageClass: local-path
@@ -276,11 +276,11 @@ ui:
     provider: dps
   ingress:
     enabled: true
-    hostname: ui.dps.lab
+    hostname: ui.invalid
     className: traefik
     tls:
     - hosts:
-      - ui.dps.lab
+      - ui.invalid
       secretName: dps-ingress-tls
     annotations:
       traefik.ingress.kubernetes.io/router.entrypoints: websecure

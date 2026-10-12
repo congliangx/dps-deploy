@@ -343,7 +343,7 @@
       "Model": "DGX_GB300",
       "Name": "gb300-r01-0001",
       "Redfish": {
-        "URL": "https://10.6.131.43:18443",
+        "URL": "https://BMC_HOST:BMC_PORT",
         "SecretName": "bmc-shared-secret"
       }
     },
@@ -352,7 +352,7 @@
       "Model": "DGX_GB300",
       "Name": "gb300-r01-0002",
       "Redfish": {
-        "URL": "https://10.6.131.43:18444",
+        "URL": "https://BMC_HOST:BMC_PORT",
         "SecretName": "bmc-shared-secret"
       }
     },
@@ -361,7 +361,7 @@
       "Model": "DGX_GB300",
       "Name": "gb300-r01-0003",
       "Redfish": {
-        "URL": "https://10.6.131.43:18445",
+        "URL": "https://BMC_HOST:BMC_PORT",
         "SecretName": "bmc-shared-secret"
       }
     },
@@ -370,7 +370,7 @@
       "Model": "DGX_GB300",
       "Name": "gb300-r01-0004",
       "Redfish": {
-        "URL": "https://10.6.131.43:18446",
+        "URL": "https://BMC_HOST:BMC_PORT",
         "SecretName": "bmc-shared-secret"
       }
     },
@@ -379,7 +379,7 @@
       "Model": "DGX_GB300",
       "Name": "gb300-r01-0005",
       "Redfish": {
-        "URL": "https://10.6.131.43:18447",
+        "URL": "https://BMC_HOST:BMC_PORT",
         "SecretName": "bmc-shared-secret"
       }
     },
@@ -388,7 +388,7 @@
       "Model": "DGX_GB300",
       "Name": "gb300-r01-0006",
       "Redfish": {
-        "URL": "https://10.6.131.43:18448",
+        "URL": "https://BMC_HOST:BMC_PORT",
         "SecretName": "bmc-shared-secret"
       }
     },
@@ -397,7 +397,7 @@
       "Model": "DGX_GB300",
       "Name": "gb300-r01-0007",
       "Redfish": {
-        "URL": "https://10.6.131.43:18449",
+        "URL": "https://BMC_HOST:BMC_PORT",
         "SecretName": "bmc-shared-secret"
       }
     },
@@ -406,7 +406,7 @@
       "Model": "DGX_GB300",
       "Name": "gb300-r01-0008",
       "Redfish": {
-        "URL": "https://10.6.131.43:18450",
+        "URL": "https://BMC_HOST:BMC_PORT",
         "SecretName": "bmc-shared-secret"
       }
     },
@@ -415,7 +415,7 @@
       "Model": "DGX_GB300",
       "Name": "gb300-r01-0009",
       "Redfish": {
-        "URL": "https://10.6.131.43:18451",
+        "URL": "https://BMC_HOST:BMC_PORT",
         "SecretName": "bmc-shared-secret"
       }
     },
@@ -424,7 +424,7 @@
       "Model": "DGX_GB300",
       "Name": "gb300-r01-0010",
       "Redfish": {
-        "URL": "https://10.6.131.43:18452",
+        "URL": "https://BMC_HOST:BMC_PORT",
         "SecretName": "bmc-shared-secret"
       }
     },
@@ -433,7 +433,7 @@
       "Model": "DGX_GB300",
       "Name": "gb300-r01-0011",
       "Redfish": {
-        "URL": "https://10.6.131.43:18453",
+        "URL": "https://BMC_HOST:BMC_PORT",
         "SecretName": "bmc-shared-secret"
       }
     },
@@ -442,7 +442,7 @@
       "Model": "DGX_GB300",
       "Name": "gb300-r01-0012",
       "Redfish": {
-        "URL": "https://10.6.131.43:18454",
+        "URL": "https://BMC_HOST:BMC_PORT",
         "SecretName": "bmc-shared-secret"
       }
     },
@@ -451,7 +451,7 @@
       "Model": "DGX_GB300",
       "Name": "gb300-r01-0013",
       "Redfish": {
-        "URL": "https://10.6.131.43:18455",
+        "URL": "https://BMC_HOST:BMC_PORT",
         "SecretName": "bmc-shared-secret"
       }
     },
@@ -460,7 +460,7 @@
       "Model": "DGX_GB300",
       "Name": "gb300-r01-0014",
       "Redfish": {
-        "URL": "https://10.6.131.43:18456",
+        "URL": "https://BMC_HOST:BMC_PORT",
         "SecretName": "bmc-shared-secret"
       }
     },
@@ -469,7 +469,7 @@
       "Model": "DGX_GB300",
       "Name": "gb300-r01-0015",
       "Redfish": {
-        "URL": "https://10.6.131.43:18457",
+        "URL": "https://BMC_HOST:BMC_PORT",
         "SecretName": "bmc-shared-secret"
       }
     },
@@ -478,7 +478,7 @@
       "Model": "DGX_GB300",
       "Name": "gb300-r01-0016",
       "Redfish": {
-        "URL": "https://10.6.131.43:18458",
+        "URL": "https://BMC_HOST:BMC_PORT",
         "SecretName": "bmc-shared-secret"
       }
     },
@@ -487,7 +487,7 @@
       "Model": "DGX_GB300",
       "Name": "gb300-r01-0017",
       "Redfish": {
-        "URL": "https://10.6.131.43:18459",
+        "URL": "https://BMC_HOST:BMC_PORT",
         "SecretName": "bmc-shared-secret"
       }
     },
@@ -496,7 +496,7 @@
       "Model": "DGX_GB300",
       "Name": "gb300-r01-0018",
       "Redfish": {
-        "URL": "https://10.6.131.43:18460",
+        "URL": "https://BMC_HOST:BMC_PORT",
         "SecretName": "bmc-shared-secret"
       }
     },
@@ -505,7 +505,7 @@
       "Model": "DGX_GB300",
       "Name": "gb300-r02-0001",
       "Redfish": {
-        "URL": "https://10.6.131.43:18461",
+        "URL": "https://BMC_HOST:BMC_PORT",
         "SecretName": "bmc-shared-secret"
       }
     },
@@ -514,7 +514,7 @@
       "Model": "DGX_GB300",
       "Name": "gb300-r02-0002",
       "Redfish": {
-        "URL": "https://10.6.131.43:18462",
+        "URL": "https://BMC_HOST:BMC_PORT",
         "SecretName": "bmc-shared-secret"
       }
     },
@@ -523,7 +523,7 @@
       "Model": "DGX_GB300",
       "Name": "gb300-r02-0003",
       "Redfish": {
-        "URL": "https://10.6.131.43:18463",
+        "URL": "https://BMC_HOST:BMC_PORT",
         "SecretName": "bmc-shared-secret"
       }
     },
@@ -532,7 +532,7 @@
       "Model": "DGX_GB300",
       "Name": "gb300-r02-0004",
       "Redfish": {
-        "URL": "https://10.6.131.43:18464",
+        "URL": "https://BMC_HOST:BMC_PORT",
         "SecretName": "bmc-shared-secret"
       }
     },
@@ -541,7 +541,7 @@
       "Model": "DGX_GB300",
       "Name": "gb300-r02-0005",
       "Redfish": {
-        "URL": "https://10.6.131.43:18465",
+        "URL": "https://BMC_HOST:BMC_PORT",
         "SecretName": "bmc-shared-secret"
       }
     },
@@ -550,7 +550,7 @@
       "Model": "DGX_GB300",
       "Name": "gb300-r02-0006",
       "Redfish": {
-        "URL": "https://10.6.131.43:18466",
+        "URL": "https://BMC_HOST:BMC_PORT",
         "SecretName": "bmc-shared-secret"
       }
     },
@@ -559,7 +559,7 @@
       "Model": "DGX_GB300",
       "Name": "gb300-r02-0007",
       "Redfish": {
-        "URL": "https://10.6.131.43:18467",
+        "URL": "https://BMC_HOST:BMC_PORT",
         "SecretName": "bmc-shared-secret"
       }
     },
@@ -568,7 +568,7 @@
       "Model": "DGX_GB300",
       "Name": "gb300-r02-0008",
       "Redfish": {
-        "URL": "https://10.6.131.43:18468",
+        "URL": "https://BMC_HOST:BMC_PORT",
         "SecretName": "bmc-shared-secret"
       }
     },
@@ -577,7 +577,7 @@
       "Model": "DGX_GB300",
       "Name": "gb300-r02-0009",
       "Redfish": {
-        "URL": "https://10.6.131.43:18469",
+        "URL": "https://BMC_HOST:BMC_PORT",
         "SecretName": "bmc-shared-secret"
       }
     },
@@ -586,7 +586,7 @@
       "Model": "DGX_GB300",
       "Name": "gb300-r02-0010",
       "Redfish": {
-        "URL": "https://10.6.131.43:18470",
+        "URL": "https://BMC_HOST:BMC_PORT",
         "SecretName": "bmc-shared-secret"
       }
     },
@@ -595,7 +595,7 @@
       "Model": "DGX_GB300",
       "Name": "gb300-r02-0011",
       "Redfish": {
-        "URL": "https://10.6.131.43:18471",
+        "URL": "https://BMC_HOST:BMC_PORT",
         "SecretName": "bmc-shared-secret"
       }
     },
@@ -604,7 +604,7 @@
       "Model": "DGX_GB300",
       "Name": "gb300-r02-0012",
       "Redfish": {
-        "URL": "https://10.6.131.43:18472",
+        "URL": "https://BMC_HOST:BMC_PORT",
         "SecretName": "bmc-shared-secret"
       }
     },
@@ -613,7 +613,7 @@
       "Model": "DGX_GB300",
       "Name": "gb300-r02-0013",
       "Redfish": {
-        "URL": "https://10.6.131.43:18473",
+        "URL": "https://BMC_HOST:BMC_PORT",
         "SecretName": "bmc-shared-secret"
       }
     },
@@ -622,7 +622,7 @@
       "Model": "DGX_GB300",
       "Name": "gb300-r02-0014",
       "Redfish": {
-        "URL": "https://10.6.131.43:18474",
+        "URL": "https://BMC_HOST:BMC_PORT",
         "SecretName": "bmc-shared-secret"
       }
     },
@@ -631,7 +631,7 @@
       "Model": "DGX_GB300",
       "Name": "gb300-r02-0015",
       "Redfish": {
-        "URL": "https://10.6.131.43:18475",
+        "URL": "https://BMC_HOST:BMC_PORT",
         "SecretName": "bmc-shared-secret"
       }
     },
@@ -640,7 +640,7 @@
       "Model": "DGX_GB300",
       "Name": "gb300-r02-0016",
       "Redfish": {
-        "URL": "https://10.6.131.43:18476",
+        "URL": "https://BMC_HOST:BMC_PORT",
         "SecretName": "bmc-shared-secret"
       }
     },
@@ -649,7 +649,7 @@
       "Model": "DGX_GB300",
       "Name": "gb300-r02-0017",
       "Redfish": {
-        "URL": "https://10.6.131.43:18477",
+        "URL": "https://BMC_HOST:BMC_PORT",
         "SecretName": "bmc-shared-secret"
       }
     },
@@ -658,7 +658,7 @@
       "Model": "DGX_GB300",
       "Name": "gb300-r02-0018",
       "Redfish": {
-        "URL": "https://10.6.131.43:18478",
+        "URL": "https://BMC_HOST:BMC_PORT",
         "SecretName": "bmc-shared-secret"
       }
     },
@@ -667,7 +667,7 @@
       "Model": "DGX_GB300",
       "Name": "gb300-r03-0001",
       "Redfish": {
-        "URL": "https://10.6.131.43:18479",
+        "URL": "https://BMC_HOST:BMC_PORT",
         "SecretName": "bmc-shared-secret"
       }
     },
@@ -676,7 +676,7 @@
       "Model": "DGX_GB300",
       "Name": "gb300-r03-0002",
       "Redfish": {
-        "URL": "https://10.6.131.43:18480",
+        "URL": "https://BMC_HOST:BMC_PORT",
         "SecretName": "bmc-shared-secret"
       }
     },
@@ -685,7 +685,7 @@
       "Model": "DGX_GB300",
       "Name": "gb300-r03-0003",
       "Redfish": {
-        "URL": "https://10.6.131.43:18481",
+        "URL": "https://BMC_HOST:BMC_PORT",
         "SecretName": "bmc-shared-secret"
       }
     },
@@ -694,7 +694,7 @@
       "Model": "DGX_GB300",
       "Name": "gb300-r03-0004",
       "Redfish": {
-        "URL": "https://10.6.131.43:18482",
+        "URL": "https://BMC_HOST:BMC_PORT",
         "SecretName": "bmc-shared-secret"
       }
     },
@@ -703,7 +703,7 @@
       "Model": "DGX_GB300",
       "Name": "gb300-r03-0005",
       "Redfish": {
-        "URL": "https://10.6.131.43:18483",
+        "URL": "https://BMC_HOST:BMC_PORT",
         "SecretName": "bmc-shared-secret"
       }
     },
@@ -712,7 +712,7 @@
       "Model": "DGX_GB300",
       "Name": "gb300-r03-0006",
       "Redfish": {
-        "URL": "https://10.6.131.43:18484",
+        "URL": "https://BMC_HOST:BMC_PORT",
         "SecretName": "bmc-shared-secret"
       }
     },
@@ -721,7 +721,7 @@
       "Model": "DGX_GB300",
       "Name": "gb300-r03-0007",
       "Redfish": {
-        "URL": "https://10.6.131.43:18485",
+        "URL": "https://BMC_HOST:BMC_PORT",
         "SecretName": "bmc-shared-secret"
       }
     },
@@ -730,7 +730,7 @@
       "Model": "DGX_GB300",
       "Name": "gb300-r03-0008",
       "Redfish": {
-        "URL": "https://10.6.131.43:18486",
+        "URL": "https://BMC_HOST:BMC_PORT",
         "SecretName": "bmc-shared-secret"
       }
     },
@@ -739,7 +739,7 @@
       "Model": "DGX_GB300",
       "Name": "gb300-r03-0009",
       "Redfish": {
-        "URL": "https://10.6.131.43:18487",
+        "URL": "https://BMC_HOST:BMC_PORT",
         "SecretName": "bmc-shared-secret"
       }
     },
@@ -748,7 +748,7 @@
       "Model": "DGX_GB300",
       "Name": "gb300-r03-0010",
       "Redfish": {
-        "URL": "https://10.6.131.43:18488",
+        "URL": "https://BMC_HOST:BMC_PORT",
         "SecretName": "bmc-shared-secret"
       }
     },
@@ -757,7 +757,7 @@
       "Model": "DGX_GB300",
       "Name": "gb300-r03-0011",
       "Redfish": {
-        "URL": "https://10.6.131.43:18489",
+        "URL": "https://BMC_HOST:BMC_PORT",
         "SecretName": "bmc-shared-secret"
       }
     },
@@ -766,7 +766,7 @@
       "Model": "DGX_GB300",
       "Name": "gb300-r03-0012",
       "Redfish": {
-        "URL": "https://10.6.131.43:18490",
+        "URL": "https://BMC_HOST:BMC_PORT",
         "SecretName": "bmc-shared-secret"
       }
     },
@@ -775,7 +775,7 @@
       "Model": "DGX_GB300",
       "Name": "gb300-r03-0013",
       "Redfish": {
-        "URL": "https://10.6.131.43:18491",
+        "URL": "https://BMC_HOST:BMC_PORT",
         "SecretName": "bmc-shared-secret"
       }
     },
@@ -784,7 +784,7 @@
       "Model": "DGX_GB300",
       "Name": "gb300-r03-0014",
       "Redfish": {
-        "URL": "https://10.6.131.43:18492",
+        "URL": "https://BMC_HOST:BMC_PORT",
         "SecretName": "bmc-shared-secret"
       }
     },
@@ -793,7 +793,7 @@
       "Model": "DGX_GB300",
       "Name": "gb300-r03-0015",
       "Redfish": {
-        "URL": "https://10.6.131.43:18493",
+        "URL": "https://BMC_HOST:BMC_PORT",
         "SecretName": "bmc-shared-secret"
       }
     },
@@ -802,7 +802,7 @@
       "Model": "DGX_GB300",
       "Name": "gb300-r03-0016",
       "Redfish": {
-        "URL": "https://10.6.131.43:18494",
+        "URL": "https://BMC_HOST:BMC_PORT",
         "SecretName": "bmc-shared-secret"
       }
     },
@@ -811,7 +811,7 @@
       "Model": "DGX_GB300",
       "Name": "gb300-r03-0017",
       "Redfish": {
-        "URL": "https://10.6.131.43:18495",
+        "URL": "https://BMC_HOST:BMC_PORT",
         "SecretName": "bmc-shared-secret"
       }
     },
@@ -820,7 +820,7 @@
       "Model": "DGX_GB300",
       "Name": "gb300-r03-0018",
       "Redfish": {
-        "URL": "https://10.6.131.43:18496",
+        "URL": "https://BMC_HOST:BMC_PORT",
         "SecretName": "bmc-shared-secret"
       }
     },
@@ -829,7 +829,7 @@
       "Model": "DGX_GB300",
       "Name": "gb300-r04-0001",
       "Redfish": {
-        "URL": "https://10.6.131.43:18497",
+        "URL": "https://BMC_HOST:BMC_PORT",
         "SecretName": "bmc-shared-secret"
       }
     },
@@ -838,7 +838,7 @@
       "Model": "DGX_GB300",
       "Name": "gb300-r04-0002",
       "Redfish": {
-        "URL": "https://10.6.131.43:18498",
+        "URL": "https://BMC_HOST:BMC_PORT",
         "SecretName": "bmc-shared-secret"
       }
     },
@@ -847,7 +847,7 @@
       "Model": "DGX_GB300",
       "Name": "gb300-r04-0003",
       "Redfish": {
-        "URL": "https://10.6.131.43:18499",
+        "URL": "https://BMC_HOST:BMC_PORT",
         "SecretName": "bmc-shared-secret"
       }
     },
@@ -856,7 +856,7 @@
       "Model": "DGX_GB300",
       "Name": "gb300-r04-0004",
       "Redfish": {
-        "URL": "https://10.6.131.43:18500",
+        "URL": "https://BMC_HOST:BMC_PORT",
         "SecretName": "bmc-shared-secret"
       }
     },
@@ -865,7 +865,7 @@
       "Model": "DGX_GB300",
       "Name": "gb300-r04-0005",
       "Redfish": {
-        "URL": "https://10.6.131.43:18501",
+        "URL": "https://BMC_HOST:BMC_PORT",
         "SecretName": "bmc-shared-secret"
       }
     },
@@ -874,7 +874,7 @@
       "Model": "DGX_GB300",
       "Name": "gb300-r04-0006",
       "Redfish": {
-        "URL": "https://10.6.131.43:18502",
+        "URL": "https://BMC_HOST:BMC_PORT",
         "SecretName": "bmc-shared-secret"
       }
     },
@@ -883,7 +883,7 @@
       "Model": "DGX_GB300",
       "Name": "gb300-r04-0007",
       "Redfish": {
-        "URL": "https://10.6.131.43:18503",
+        "URL": "https://BMC_HOST:BMC_PORT",
         "SecretName": "bmc-shared-secret"
       }
     },
@@ -892,7 +892,7 @@
       "Model": "DGX_GB300",
       "Name": "gb300-r04-0008",
       "Redfish": {
-        "URL": "https://10.6.131.43:18504",
+        "URL": "https://BMC_HOST:BMC_PORT",
         "SecretName": "bmc-shared-secret"
       }
     },
@@ -901,7 +901,7 @@
       "Model": "DGX_GB300",
       "Name": "gb300-r04-0009",
       "Redfish": {
-        "URL": "https://10.6.131.43:18505",
+        "URL": "https://BMC_HOST:BMC_PORT",
         "SecretName": "bmc-shared-secret"
       }
     },
@@ -910,7 +910,7 @@
       "Model": "DGX_GB300",
       "Name": "gb300-r04-0010",
       "Redfish": {
-        "URL": "https://10.6.131.43:18506",
+        "URL": "https://BMC_HOST:BMC_PORT",
         "SecretName": "bmc-shared-secret"
       }
     },
@@ -919,7 +919,7 @@
       "Model": "DGX_GB300",
       "Name": "gb300-r04-0011",
       "Redfish": {
-        "URL": "https://10.6.131.43:18507",
+        "URL": "https://BMC_HOST:BMC_PORT",
         "SecretName": "bmc-shared-secret"
       }
     },
@@ -928,7 +928,7 @@
       "Model": "DGX_GB300",
       "Name": "gb300-r04-0012",
       "Redfish": {
-        "URL": "https://10.6.131.43:18508",
+        "URL": "https://BMC_HOST:BMC_PORT",
         "SecretName": "bmc-shared-secret"
       }
     },
@@ -937,7 +937,7 @@
       "Model": "DGX_GB300",
       "Name": "gb300-r04-0013",
       "Redfish": {
-        "URL": "https://10.6.131.43:18509",
+        "URL": "https://BMC_HOST:BMC_PORT",
         "SecretName": "bmc-shared-secret"
       }
     },
@@ -946,7 +946,7 @@
       "Model": "DGX_GB300",
       "Name": "gb300-r04-0014",
       "Redfish": {
-        "URL": "https://10.6.131.43:18510",
+        "URL": "https://BMC_HOST:BMC_PORT",
         "SecretName": "bmc-shared-secret"
       }
     },
@@ -955,7 +955,7 @@
       "Model": "DGX_GB300",
       "Name": "gb300-r04-0015",
       "Redfish": {
-        "URL": "https://10.6.131.43:18511",
+        "URL": "https://BMC_HOST:BMC_PORT",
         "SecretName": "bmc-shared-secret"
       }
     },
@@ -964,7 +964,7 @@
       "Model": "DGX_GB300",
       "Name": "gb300-r04-0016",
       "Redfish": {
-        "URL": "https://10.6.131.43:18512",
+        "URL": "https://BMC_HOST:BMC_PORT",
         "SecretName": "bmc-shared-secret"
       }
     },
@@ -973,7 +973,7 @@
       "Model": "DGX_GB300",
       "Name": "gb300-r04-0017",
       "Redfish": {
-        "URL": "https://10.6.131.43:18513",
+        "URL": "https://BMC_HOST:BMC_PORT",
         "SecretName": "bmc-shared-secret"
       }
     },
@@ -982,7 +982,7 @@
       "Model": "DGX_GB300",
       "Name": "gb300-r04-0018",
       "Redfish": {
-        "URL": "https://10.6.131.43:18514",
+        "URL": "https://BMC_HOST:BMC_PORT",
         "SecretName": "bmc-shared-secret"
       }
     }
@@ -1809,291 +1809,291 @@
       },
       {
         "Name": "gb300-r01-0001",
-        "AgentId": "gb300-lab-agent"
+        "AgentId": "AGENT_ID"
       },
       {
         "Name": "gb300-r01-0002",
-        "AgentId": "gb300-lab-agent"
+        "AgentId": "AGENT_ID"
       },
       {
         "Name": "gb300-r01-0003",
-        "AgentId": "gb300-lab-agent"
+        "AgentId": "AGENT_ID"
       },
       {
         "Name": "gb300-r01-0004",
-        "AgentId": "gb300-lab-agent"
+        "AgentId": "AGENT_ID"
       },
       {
         "Name": "gb300-r01-0005",
-        "AgentId": "gb300-lab-agent"
+        "AgentId": "AGENT_ID"
       },
       {
         "Name": "gb300-r01-0006",
-        "AgentId": "gb300-lab-agent"
+        "AgentId": "AGENT_ID"
       },
       {
         "Name": "gb300-r01-0007",
-        "AgentId": "gb300-lab-agent"
+        "AgentId": "AGENT_ID"
       },
       {
         "Name": "gb300-r01-0008",
-        "AgentId": "gb300-lab-agent"
+        "AgentId": "AGENT_ID"
       },
       {
         "Name": "gb300-r01-0009",
-        "AgentId": "gb300-lab-agent"
+        "AgentId": "AGENT_ID"
       },
       {
         "Name": "gb300-r01-0010",
-        "AgentId": "gb300-lab-agent"
+        "AgentId": "AGENT_ID"
       },
       {
         "Name": "gb300-r01-0011",
-        "AgentId": "gb300-lab-agent"
+        "AgentId": "AGENT_ID"
       },
       {
         "Name": "gb300-r01-0012",
-        "AgentId": "gb300-lab-agent"
+        "AgentId": "AGENT_ID"
       },
       {
         "Name": "gb300-r01-0013",
-        "AgentId": "gb300-lab-agent"
+        "AgentId": "AGENT_ID"
       },
       {
         "Name": "gb300-r01-0014",
-        "AgentId": "gb300-lab-agent"
+        "AgentId": "AGENT_ID"
       },
       {
         "Name": "gb300-r01-0015",
-        "AgentId": "gb300-lab-agent"
+        "AgentId": "AGENT_ID"
       },
       {
         "Name": "gb300-r01-0016",
-        "AgentId": "gb300-lab-agent"
+        "AgentId": "AGENT_ID"
       },
       {
         "Name": "gb300-r01-0017",
-        "AgentId": "gb300-lab-agent"
+        "AgentId": "AGENT_ID"
       },
       {
         "Name": "gb300-r01-0018",
-        "AgentId": "gb300-lab-agent"
+        "AgentId": "AGENT_ID"
       },
       {
         "Name": "gb300-r02-0001",
-        "AgentId": "gb300-lab-agent"
+        "AgentId": "AGENT_ID"
       },
       {
         "Name": "gb300-r02-0002",
-        "AgentId": "gb300-lab-agent"
+        "AgentId": "AGENT_ID"
       },
       {
         "Name": "gb300-r02-0003",
-        "AgentId": "gb300-lab-agent"
+        "AgentId": "AGENT_ID"
       },
       {
         "Name": "gb300-r02-0004",
-        "AgentId": "gb300-lab-agent"
+        "AgentId": "AGENT_ID"
       },
       {
         "Name": "gb300-r02-0005",
-        "AgentId": "gb300-lab-agent"
+        "AgentId": "AGENT_ID"
       },
       {
         "Name": "gb300-r02-0006",
-        "AgentId": "gb300-lab-agent"
+        "AgentId": "AGENT_ID"
       },
       {
         "Name": "gb300-r02-0007",
-        "AgentId": "gb300-lab-agent"
+        "AgentId": "AGENT_ID"
       },
       {
         "Name": "gb300-r02-0008",
-        "AgentId": "gb300-lab-agent"
+        "AgentId": "AGENT_ID"
       },
       {
         "Name": "gb300-r02-0009",
-        "AgentId": "gb300-lab-agent"
+        "AgentId": "AGENT_ID"
       },
       {
         "Name": "gb300-r02-0010",
-        "AgentId": "gb300-lab-agent"
+        "AgentId": "AGENT_ID"
       },
       {
         "Name": "gb300-r02-0011",
-        "AgentId": "gb300-lab-agent"
+        "AgentId": "AGENT_ID"
       },
       {
         "Name": "gb300-r02-0012",
-        "AgentId": "gb300-lab-agent"
+        "AgentId": "AGENT_ID"
       },
       {
         "Name": "gb300-r02-0013",
-        "AgentId": "gb300-lab-agent"
+        "AgentId": "AGENT_ID"
       },
       {
         "Name": "gb300-r02-0014",
-        "AgentId": "gb300-lab-agent"
+        "AgentId": "AGENT_ID"
       },
       {
         "Name": "gb300-r02-0015",
-        "AgentId": "gb300-lab-agent"
+        "AgentId": "AGENT_ID"
       },
       {
         "Name": "gb300-r02-0016",
-        "AgentId": "gb300-lab-agent"
+        "AgentId": "AGENT_ID"
       },
       {
         "Name": "gb300-r02-0017",
-        "AgentId": "gb300-lab-agent"
+        "AgentId": "AGENT_ID"
       },
       {
         "Name": "gb300-r02-0018",
-        "AgentId": "gb300-lab-agent"
+        "AgentId": "AGENT_ID"
       },
       {
         "Name": "gb300-r03-0001",
-        "AgentId": "gb300-lab-agent"
+        "AgentId": "AGENT_ID"
       },
       {
         "Name": "gb300-r03-0002",
-        "AgentId": "gb300-lab-agent"
+        "AgentId": "AGENT_ID"
       },
       {
         "Name": "gb300-r03-0003",
-        "AgentId": "gb300-lab-agent"
+        "AgentId": "AGENT_ID"
       },
       {
         "Name": "gb300-r03-0004",
-        "AgentId": "gb300-lab-agent"
+        "AgentId": "AGENT_ID"
       },
       {
         "Name": "gb300-r03-0005",
-        "AgentId": "gb300-lab-agent"
+        "AgentId": "AGENT_ID"
       },
       {
         "Name": "gb300-r03-0006",
-        "AgentId": "gb300-lab-agent"
+        "AgentId": "AGENT_ID"
       },
       {
         "Name": "gb300-r03-0007",
-        "AgentId": "gb300-lab-agent"
+        "AgentId": "AGENT_ID"
       },
       {
         "Name": "gb300-r03-0008",
-        "AgentId": "gb300-lab-agent"
+        "AgentId": "AGENT_ID"
       },
       {
         "Name": "gb300-r03-0009",
-        "AgentId": "gb300-lab-agent"
+        "AgentId": "AGENT_ID"
       },
       {
         "Name": "gb300-r03-0010",
-        "AgentId": "gb300-lab-agent"
+        "AgentId": "AGENT_ID"
       },
       {
         "Name": "gb300-r03-0011",
-        "AgentId": "gb300-lab-agent"
+        "AgentId": "AGENT_ID"
       },
       {
         "Name": "gb300-r03-0012",
-        "AgentId": "gb300-lab-agent"
+        "AgentId": "AGENT_ID"
       },
       {
         "Name": "gb300-r03-0013",
-        "AgentId": "gb300-lab-agent"
+        "AgentId": "AGENT_ID"
       },
       {
         "Name": "gb300-r03-0014",
-        "AgentId": "gb300-lab-agent"
+        "AgentId": "AGENT_ID"
       },
       {
         "Name": "gb300-r03-0015",
-        "AgentId": "gb300-lab-agent"
+        "AgentId": "AGENT_ID"
       },
       {
         "Name": "gb300-r03-0016",
-        "AgentId": "gb300-lab-agent"
+        "AgentId": "AGENT_ID"
       },
       {
         "Name": "gb300-r03-0017",
-        "AgentId": "gb300-lab-agent"
+        "AgentId": "AGENT_ID"
       },
       {
         "Name": "gb300-r03-0018",
-        "AgentId": "gb300-lab-agent"
+        "AgentId": "AGENT_ID"
       },
       {
         "Name": "gb300-r04-0001",
-        "AgentId": "gb300-lab-agent"
+        "AgentId": "AGENT_ID"
       },
       {
         "Name": "gb300-r04-0002",
-        "AgentId": "gb300-lab-agent"
+        "AgentId": "AGENT_ID"
       },
       {
         "Name": "gb300-r04-0003",
-        "AgentId": "gb300-lab-agent"
+        "AgentId": "AGENT_ID"
       },
       {
         "Name": "gb300-r04-0004",
-        "AgentId": "gb300-lab-agent"
+        "AgentId": "AGENT_ID"
       },
       {
         "Name": "gb300-r04-0005",
-        "AgentId": "gb300-lab-agent"
+        "AgentId": "AGENT_ID"
       },
       {
         "Name": "gb300-r04-0006",
-        "AgentId": "gb300-lab-agent"
+        "AgentId": "AGENT_ID"
       },
       {
         "Name": "gb300-r04-0007",
-        "AgentId": "gb300-lab-agent"
+        "AgentId": "AGENT_ID"
       },
       {
         "Name": "gb300-r04-0008",
-        "AgentId": "gb300-lab-agent"
+        "AgentId": "AGENT_ID"
       },
       {
         "Name": "gb300-r04-0009",
-        "AgentId": "gb300-lab-agent"
+        "AgentId": "AGENT_ID"
       },
       {
         "Name": "gb300-r04-0010",
-        "AgentId": "gb300-lab-agent"
+        "AgentId": "AGENT_ID"
       },
       {
         "Name": "gb300-r04-0011",
-        "AgentId": "gb300-lab-agent"
+        "AgentId": "AGENT_ID"
       },
       {
         "Name": "gb300-r04-0012",
-        "AgentId": "gb300-lab-agent"
+        "AgentId": "AGENT_ID"
       },
       {
         "Name": "gb300-r04-0013",
-        "AgentId": "gb300-lab-agent"
+        "AgentId": "AGENT_ID"
       },
       {
         "Name": "gb300-r04-0014",
-        "AgentId": "gb300-lab-agent"
+        "AgentId": "AGENT_ID"
       },
       {
         "Name": "gb300-r04-0015",
-        "AgentId": "gb300-lab-agent"
+        "AgentId": "AGENT_ID"
       },
       {
         "Name": "gb300-r04-0016",
-        "AgentId": "gb300-lab-agent"
+        "AgentId": "AGENT_ID"
       },
       {
         "Name": "gb300-r04-0017",
-        "AgentId": "gb300-lab-agent"
+        "AgentId": "AGENT_ID"
       },
       {
         "Name": "gb300-r04-0018",
-        "AgentId": "gb300-lab-agent"
+        "AgentId": "AGENT_ID"
       }
     ]
   }

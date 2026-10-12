@@ -4,12 +4,16 @@
 This entry point downloads/caches artifacts only. It does not start containers,
 modify Kubernetes, initialize identities, or tag the running LDAP image.
 """
+import sys
+sys.dont_write_bytecode = True
 import argparse
 import base64
 import hashlib
 import json
 import os
 from pathlib import Path
+from deployment_context import context_from_cli
+ctx = context_from_cli()
 import re
 import shutil
 import ssl
@@ -245,6 +249,17 @@ def json_state(path, value):
 
 def ldap_build(root, spec):
     build = relative(root, spec["build_directory"])
+    public_build = ctx.source_path(spec["build_directory"])
+    build.mkdir(parents=True, exist_ok=True)
+    for filename in spec["recipe_sha256"]:
+        original = public_build / filename
+        target = build / filename
+        regular(original); regular(target)
+        if not original.is_file() or digest_file(original) != spec["recipe_sha256"][filename]:
+            raise ArtifactError("Public LDAP recipe does not match its pinned checksum: " + filename)
+        if target.exists() and digest_file(target) != digest_file(original):
+            raise ArtifactError("Existing runtime LDAP recipe differs: " + filename)
+        if not target.exists(): shutil.copy2(original, target)
     recipes = spec["recipe_sha256"]
     for name, expected in recipes.items():
         path = build / name
@@ -327,18 +342,15 @@ def ldap_build(root, spec):
 
 
 def main():
-    default_root = Path(__file__).resolve().parents[2]
+    default_root = ctx.runtime_root
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, default=default_root)
     parser.add_argument("--component", choices=("chart", "images", "ldap", "all"), default="all")
     parser.add_argument("--chart-file", help="Validate and cache an existing pinned DPS 0.9.0 chart")
     args = parser.parse_args()
     root = args.root.expanduser().resolve()
-    if not root.is_dir():
-        raise ArtifactError(f"Repository root does not exist: {root}")
-    source = root / "dps-install/config/artifact-sources.json"
-    if not source.is_file():
-        source = default_root / "dps-install/config/artifact-sources.json"
+    root.mkdir(parents=True, exist_ok=True)
+    source = ctx.source_path("dps-install/config/artifact-sources.json")
     spec = json.loads(source.read_text())
     if spec.get("schema_version") != 1:
         raise ArtifactError("Unsupported artifact source schema")

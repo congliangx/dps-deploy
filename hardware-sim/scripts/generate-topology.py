@@ -1,5 +1,13 @@
 #!/usr/bin/env python3
 """Derive a DPS 0.9 four-rack GB300 simulation topology without contacting DPS."""
+
+import sys
+sys.dont_write_bytecode = True
+from pathlib import Path as _DeploymentPath
+sys.path.insert(0, str(_DeploymentPath(__file__).resolve().parents[2] / 'dps-install/scripts'))
+from deployment_context import context_from_cli
+CTX = context_from_cli()
+SETTINGS = CTX.settings
 import argparse
 from collections import Counter
 from copy import deepcopy
@@ -21,20 +29,23 @@ def save_json(path, value):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--source", type=Path, default=Path("/raid/vince/deploy/hardware-sim/dps-sdk/sim/topology.json"))
-    parser.add_argument("--output-dir", type=Path, default=Path("/raid/vince/deploy/hardware-sim/runtime"))
-    parser.add_argument("--dps-config-dir", type=Path, default=Path("/raid/vince/deploy/dps-install/config"))
-    parser.add_argument("--report-dir", type=Path, default=Path("/raid/vince/deploy/verification/reports"))
-    parser.add_argument("--bmc-host", default="10.6.131.43")
-    parser.add_argument("--start-port", type=int, default=18443)
+    parser.add_argument("--source", type=Path, default=CTX.source_path("dps-install/config/topology-4rack-dps09.json"))
+    parser.add_argument("--output-dir", type=Path, default=CTX.runtime_path("hardware-sim/runtime"))
+    parser.add_argument("--dps-config-dir", type=Path, default=CTX.runtime_path("dps-install/config"))
+    parser.add_argument("--report-dir", type=Path, default=CTX.runtime_path("verification/reports"))
+    parser.add_argument("--bmc-host", default=SETTINGS["host_ip"])
+    parser.add_argument("--start-port", type=int, default=SETTINGS["bmc_start_port"])
     parser.add_argument("--secret-name", default="bmc-shared-secret")
-    parser.add_argument("--topology-name", default="dps-gb300-4rack")
-    parser.add_argument("--agent-id", default="gb300-lab-agent")
+    parser.add_argument("--topology-name", default=SETTINGS["topology_name"])
+    parser.add_argument("--agent-id", default=SETTINGS["agent_id"])
     args = parser.parse_args()
     require(bool(args.agent_id.strip()), "Agent ID must be non-empty")
+    for output in (args.output_dir, args.dps_config_dir, args.report_dir):
+        require(output.resolve().is_relative_to(CTX.runtime_root),
+                "All generated files must remain under the selected runtime directory")
     source_bytes = args.source.read_bytes()
     source = json.loads(source_bytes)
-    require(set(source) == {"Entities", "Topology", "Policies"}, "Unexpected source top-level schema")
+    require(set(source) in ({"Entities", "Topology"}, {"Entities", "Topology", "Policies"}), "Unexpected source top-level schema")
     require(isinstance(source["Entities"], list), "Entities must be an array")
     require(isinstance(source["Topology"], dict) and isinstance(source["Topology"]["Entities"], list),
             "Topology.Entities must be an array")
@@ -55,7 +66,7 @@ def main():
     require(retained.issubset(by_name), "Source is missing required four-rack entities")
     require(len(retained) == 110, "Expected 110 retained entities")
     result = deepcopy(source)
-    legacy_policies = result.pop("Policies")
+    legacy_policies = result.pop("Policies", [])
     result["Entities"] = [e for e in result["Entities"] if e["Name"] in retained]
     for entity in result["Entities"]:
         entity.pop("AgentId", None)
@@ -202,7 +213,7 @@ def main():
         "agent_id": args.agent_id,
         "agent_assignment_location": "Topology.Entities",
         "agent_assigned_compute_nodes": len(routed),
-        "validation_scope": "Offline JSON shape and graph checks; derived from SDK upstream topology.",
+        "validation_scope": "Offline JSON shape and graph checks; derived from the public GB300 topology blueprint.",
         "dps_server_schema_validation": "Offline generator does not contact DPS; server validation is a separate install step.",
         "schema_caveats": [
             "Physical racks are represented by stable node/PSU identifiers and floor-PDU grouping, not separate Rack entities.",

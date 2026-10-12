@@ -1,0 +1,434 @@
+[
+  {
+    "rack_id": "gb300-rack-01",
+    "node_id": "gb300-r01-0001",
+    "node_index": 1,
+    "model": "DGX_GB300"
+  },
+  {
+    "rack_id": "gb300-rack-01",
+    "node_id": "gb300-r01-0002",
+    "node_index": 2,
+    "model": "DGX_GB300"
+  },
+  {
+    "rack_id": "gb300-rack-01",
+    "node_id": "gb300-r01-0003",
+    "node_index": 3,
+    "model": "DGX_GB300"
+  },
+  {
+    "rack_id": "gb300-rack-01",
+    "node_id": "gb300-r01-0004",
+    "node_index": 4,
+    "model": "DGX_GB300"
+  },
+  {
+    "rack_id": "gb300-rack-01",
+    "node_id": "gb300-r01-0005",
+    "node_index": 5,
+    "model": "DGX_GB300"
+  },
+  {
+    "rack_id": "gb300-rack-01",
+    "node_id": "gb300-r01-0006",
+    "node_index": 6,
+    "model": "DGX_GB300"
+  },
+  {
+    "rack_id": "gb300-rack-01",
+    "node_id": "gb300-r01-0007",
+    "node_index": 7,
+    "model": "DGX_GB300"
+  },
+  {
+    "rack_id": "gb300-rack-01",
+    "node_id": "gb300-r01-0008",
+    "node_index": 8,
+    "model": "DGX_GB300"
+  },
+  {
+    "rack_id": "gb300-rack-01",
+    "node_id": "gb300-r01-0009",
+    "node_index": 9,
+    "model": "DGX_GB300"
+  },
+  {
+    "rack_id": "gb300-rack-01",
+    "node_id": "gb300-r01-0010",
+    "node_index": 10,
+    "model": "DGX_GB300"
+  },
+  {
+    "rack_id": "gb300-rack-01",
+    "node_id": "gb300-r01-0011",
+    "node_index": 11,
+    "model": "DGX_GB300"
+  },
+  {
+    "rack_id": "gb300-rack-01",
+    "node_id": "gb300-r01-0012",
+    "node_index": 12,
+    "model": "DGX_GB300"
+  },
+  {
+    "rack_id": "gb300-rack-01",
+    "node_id": "gb300-r01-0013",
+    "node_index": 13,
+    "model": "DGX_GB300"
+  },
+  {
+    "rack_id": "gb300-rack-01",
+    "node_id": "gb300-r01-0014",
+    "node_index": 14,
+    "model": "DGX_GB300"
+  },
+  {
+    "rack_id": "gb300-rack-01",
+    "node_id": "gb300-r01-0015",
+    "node_index": 15,
+    "model": "DGX_GB300"
+  },
+  {
+    "rack_id": "gb300-rack-01",
+    "node_id": "gb300-r01-0016",
+    "node_index": 16,
+    "model": "DGX_GB300"
+  },
+  {
+    "rack_id": "gb300-rack-01",
+    "node_id": "gb300-r01-0017",
+    "node_index": 17,
+    "model": "DGX_GB300"
+  },
+  {
+    "rack_id": "gb300-rack-01",
+    "node_id": "gb300-r01-0018",
+    "node_index": 18,
+    "model": "DGX_GB300"
+  },
+  {
+    "rack_id": "gb300-rack-02",
+    "node_id": "gb300-r02-0001",
+    "node_index": 1,
+    "model": "DGX_GB300"
+  },
+  {
+    "rack_id": "gb300-rack-02",
+    "node_id": "gb300-r02-0002",
+    "node_index": 2,
+    "model": "DGX_GB300"
+  },
+  {
+    "rack_id": "gb300-rack-02",
+    "node_id": "gb300-r02-0003",
+    "node_index": 3,
+    "model": "DGX_GB300"
+  },
+  {
+    "rack_id": "gb300-rack-02",
+    "node_id": "gb300-r02-0004",
+    "node_index": 4,
+    "model": "DGX_GB300"
+  },
+  {
+    "rack_id": "gb300-rack-02",
+    "node_id": "gb300-r02-0005",
+    "node_index": 5,
+    "model": "DGX_GB300"
+  },
+  {
+    "rack_id": "gb300-rack-02",
+    "node_id": "gb300-r02-0006",
+    "node_index": 6,
+    "model": "DGX_GB300"
+  },
+  {
+    "rack_id": "gb300-rack-02",
+    "node_id": "gb300-r02-0007",
+    "node_index": 7,
+    "model": "DGX_GB300"
+  },
+  {
+    "rack_id": "gb300-rack-02",
+    "node_id": "gb300-r02-0008",
+    "node_index": 8,
+    "model": "DGX_GB300"
+  },
+  {
+    "rack_id": "gb300-rack-02",
+    "node_id": "gb300-r02-0009",
+    "node_index": 9,
+    "model": "DGX_GB300"
+  },
+  {
+    "rack_id": "gb300-rack-02",
+    "node_id": "gb300-r02-0010",
+    "node_index": 10,
+    "model": "DGX_GB300"
+  },
+  {
+    "rack_id": "gb300-rack-02",
+    "node_id": "gb300-r02-0011",
+    "node_index": 11,
+    "model": "DGX_GB300"
+  },
+  {
+    "rack_id": "gb300-rack-02",
+    "node_id": "gb300-r02-0012",
+    "node_index": 12,
+    "model": "DGX_GB300"
+  },
+  {
+    "rack_id": "gb300-rack-02",
+    "node_id": "gb300-r02-0013",
+    "node_index": 13,
+    "model": "DGX_GB300"
+  },
+  {
+    "rack_id": "gb300-rack-02",
+    "node_id": "gb300-r02-0014",
+    "node_index": 14,
+    "model": "DGX_GB300"
+  },
+  {
+    "rack_id": "gb300-rack-02",
+    "node_id": "gb300-r02-0015",
+    "node_index": 15,
+    "model": "DGX_GB300"
+  },
+  {
+    "rack_id": "gb300-rack-02",
+    "node_id": "gb300-r02-0016",
+    "node_index": 16,
+    "model": "DGX_GB300"
+  },
+  {
+    "rack_id": "gb300-rack-02",
+    "node_id": "gb300-r02-0017",
+    "node_index": 17,
+    "model": "DGX_GB300"
+  },
+  {
+    "rack_id": "gb300-rack-02",
+    "node_id": "gb300-r02-0018",
+    "node_index": 18,
+    "model": "DGX_GB300"
+  },
+  {
+    "rack_id": "gb300-rack-03",
+    "node_id": "gb300-r03-0001",
+    "node_index": 1,
+    "model": "DGX_GB300"
+  },
+  {
+    "rack_id": "gb300-rack-03",
+    "node_id": "gb300-r03-0002",
+    "node_index": 2,
+    "model": "DGX_GB300"
+  },
+  {
+    "rack_id": "gb300-rack-03",
+    "node_id": "gb300-r03-0003",
+    "node_index": 3,
+    "model": "DGX_GB300"
+  },
+  {
+    "rack_id": "gb300-rack-03",
+    "node_id": "gb300-r03-0004",
+    "node_index": 4,
+    "model": "DGX_GB300"
+  },
+  {
+    "rack_id": "gb300-rack-03",
+    "node_id": "gb300-r03-0005",
+    "node_index": 5,
+    "model": "DGX_GB300"
+  },
+  {
+    "rack_id": "gb300-rack-03",
+    "node_id": "gb300-r03-0006",
+    "node_index": 6,
+    "model": "DGX_GB300"
+  },
+  {
+    "rack_id": "gb300-rack-03",
+    "node_id": "gb300-r03-0007",
+    "node_index": 7,
+    "model": "DGX_GB300"
+  },
+  {
+    "rack_id": "gb300-rack-03",
+    "node_id": "gb300-r03-0008",
+    "node_index": 8,
+    "model": "DGX_GB300"
+  },
+  {
+    "rack_id": "gb300-rack-03",
+    "node_id": "gb300-r03-0009",
+    "node_index": 9,
+    "model": "DGX_GB300"
+  },
+  {
+    "rack_id": "gb300-rack-03",
+    "node_id": "gb300-r03-0010",
+    "node_index": 10,
+    "model": "DGX_GB300"
+  },
+  {
+    "rack_id": "gb300-rack-03",
+    "node_id": "gb300-r03-0011",
+    "node_index": 11,
+    "model": "DGX_GB300"
+  },
+  {
+    "rack_id": "gb300-rack-03",
+    "node_id": "gb300-r03-0012",
+    "node_index": 12,
+    "model": "DGX_GB300"
+  },
+  {
+    "rack_id": "gb300-rack-03",
+    "node_id": "gb300-r03-0013",
+    "node_index": 13,
+    "model": "DGX_GB300"
+  },
+  {
+    "rack_id": "gb300-rack-03",
+    "node_id": "gb300-r03-0014",
+    "node_index": 14,
+    "model": "DGX_GB300"
+  },
+  {
+    "rack_id": "gb300-rack-03",
+    "node_id": "gb300-r03-0015",
+    "node_index": 15,
+    "model": "DGX_GB300"
+  },
+  {
+    "rack_id": "gb300-rack-03",
+    "node_id": "gb300-r03-0016",
+    "node_index": 16,
+    "model": "DGX_GB300"
+  },
+  {
+    "rack_id": "gb300-rack-03",
+    "node_id": "gb300-r03-0017",
+    "node_index": 17,
+    "model": "DGX_GB300"
+  },
+  {
+    "rack_id": "gb300-rack-03",
+    "node_id": "gb300-r03-0018",
+    "node_index": 18,
+    "model": "DGX_GB300"
+  },
+  {
+    "rack_id": "gb300-rack-04",
+    "node_id": "gb300-r04-0001",
+    "node_index": 1,
+    "model": "DGX_GB300"
+  },
+  {
+    "rack_id": "gb300-rack-04",
+    "node_id": "gb300-r04-0002",
+    "node_index": 2,
+    "model": "DGX_GB300"
+  },
+  {
+    "rack_id": "gb300-rack-04",
+    "node_id": "gb300-r04-0003",
+    "node_index": 3,
+    "model": "DGX_GB300"
+  },
+  {
+    "rack_id": "gb300-rack-04",
+    "node_id": "gb300-r04-0004",
+    "node_index": 4,
+    "model": "DGX_GB300"
+  },
+  {
+    "rack_id": "gb300-rack-04",
+    "node_id": "gb300-r04-0005",
+    "node_index": 5,
+    "model": "DGX_GB300"
+  },
+  {
+    "rack_id": "gb300-rack-04",
+    "node_id": "gb300-r04-0006",
+    "node_index": 6,
+    "model": "DGX_GB300"
+  },
+  {
+    "rack_id": "gb300-rack-04",
+    "node_id": "gb300-r04-0007",
+    "node_index": 7,
+    "model": "DGX_GB300"
+  },
+  {
+    "rack_id": "gb300-rack-04",
+    "node_id": "gb300-r04-0008",
+    "node_index": 8,
+    "model": "DGX_GB300"
+  },
+  {
+    "rack_id": "gb300-rack-04",
+    "node_id": "gb300-r04-0009",
+    "node_index": 9,
+    "model": "DGX_GB300"
+  },
+  {
+    "rack_id": "gb300-rack-04",
+    "node_id": "gb300-r04-0010",
+    "node_index": 10,
+    "model": "DGX_GB300"
+  },
+  {
+    "rack_id": "gb300-rack-04",
+    "node_id": "gb300-r04-0011",
+    "node_index": 11,
+    "model": "DGX_GB300"
+  },
+  {
+    "rack_id": "gb300-rack-04",
+    "node_id": "gb300-r04-0012",
+    "node_index": 12,
+    "model": "DGX_GB300"
+  },
+  {
+    "rack_id": "gb300-rack-04",
+    "node_id": "gb300-r04-0013",
+    "node_index": 13,
+    "model": "DGX_GB300"
+  },
+  {
+    "rack_id": "gb300-rack-04",
+    "node_id": "gb300-r04-0014",
+    "node_index": 14,
+    "model": "DGX_GB300"
+  },
+  {
+    "rack_id": "gb300-rack-04",
+    "node_id": "gb300-r04-0015",
+    "node_index": 15,
+    "model": "DGX_GB300"
+  },
+  {
+    "rack_id": "gb300-rack-04",
+    "node_id": "gb300-r04-0016",
+    "node_index": 16,
+    "model": "DGX_GB300"
+  },
+  {
+    "rack_id": "gb300-rack-04",
+    "node_id": "gb300-r04-0017",
+    "node_index": 17,
+    "model": "DGX_GB300"
+  },
+  {
+    "rack_id": "gb300-rack-04",
+    "node_id": "gb300-r04-0018",
+    "node_index": 18,
+    "model": "DGX_GB300"
+  }
+]

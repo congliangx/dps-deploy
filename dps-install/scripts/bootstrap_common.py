@@ -1,13 +1,16 @@
 #!/usr/bin/env python3
 """Small, secret-safe helpers shared by the cold-install entrypoints."""
+import sys
+sys.dont_write_bytecode = True
 import base64, hashlib, ipaddress, json, os, re, subprocess
 from pathlib import Path
 import yaml
 
 def repo_root(value=None):
-    p = Path(value).resolve() if value else Path(__file__).resolve().parents[2]
+    from deployment_context import load_context
+    p = load_context(runtime_root=value).runtime_root
     if not re.fullmatch(r"[A-Za-z0-9_./-]+", str(p)):
-        raise ValueError("Repository path must contain only letters, digits, /, _, . and -")
+        raise ValueError("Runtime path must contain only letters, digits, /, _, . and -")
     return p
 
 def private(path, value):

@@ -4,6 +4,8 @@
 Requires only Python's standard library and openssl. Repeated preparation keeps
 passwords and signing identities. Existing incomplete identities fail closed.
 """
+import sys
+sys.dont_write_bytecode = True
 import argparse
 import base64
 import hashlib
@@ -11,6 +13,8 @@ import ipaddress
 import json
 import os
 from pathlib import Path
+from deployment_context import context_from_cli
+ctx = context_from_cli()
 import re
 import secrets
 import shutil
@@ -90,15 +94,15 @@ def secret(namespace, name, values):
 
 def parse():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--root", type=Path, default=Path(__file__).resolve().parents[2])
-    parser.add_argument("--host-ip", default="10.6.131.43")
-    parser.add_argument("--host-name", default="L20-12")
-    parser.add_argument("--port", type=int, default=15432)
-    parser.add_argument("--container-name", default="dps-postgresql")
-    parser.add_argument("--network-name", default="dps-postgresql-net")
-    parser.add_argument("--subnet", default="172.30.90.0/24")
-    parser.add_argument("--pod-cidr", default="10.42.0.0/16")
-    parser.add_argument("--namespace", default="dps")
+    parser.add_argument("--root", type=Path, default=ctx.runtime_root)
+    parser.add_argument("--host-ip", default=ctx.settings["host_ip"])
+    parser.add_argument("--host-name", default=ctx.settings["host_name"])
+    parser.add_argument("--port", type=int, default=ctx.settings["pg_port"])
+    parser.add_argument("--container-name", default=ctx.settings["pg_container"])
+    parser.add_argument("--network-name", default=ctx.settings["pg_network"])
+    parser.add_argument("--subnet", default=ctx.settings["pg_subnet"])
+    parser.add_argument("--pod-cidr", default=ctx.settings["pod_cidr"])
+    parser.add_argument("--namespace", default=ctx.settings["namespace"])
     args = parser.parse_args()
     args.root = args.root.expanduser().resolve()
     try:

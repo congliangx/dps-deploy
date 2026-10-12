@@ -1,48 +1,95 @@
-# DPS 0.9 安装文件与运行环境
+# DPS 0.9 手工安装与独立前置组件
 
-首次新实例部署见 [从零部署](from-zero.md)。该入口下载资源并生成新密码、CA/证书、JWT 和 Secret；本页以下描述 L20-12 已运行实例的维护配置。
+首次部署先读根 [installstep.md](../installstep.md)。这里只使用手工原生命令：配置和下载→独立 PG/LDAP→13 Secret→values/Helm→真实 LDAP登录→inactive 拓扑/PRS。长步骤分别在 [主机/K3s](manual-prerequisites.md)、[PG](manual-postgresql.md)、[LDAP](manual-ldap.md)、[DPS](manual-install.md)。
 
-远端工作目录 `/raid/vince/deploy/dps-install`。DPS 0.9.0 通过手动 Helm 部署在物理节点上，release `dps`、namespace `dps`、context `dps-l20-12`。2026-10-10 上午（Asia/Shanghai）接入独立 OpenLDAP 2.6.10；10:52:29 的 DPS LDAP 身份/授权、令牌和 UI session API 验收为 28/28。UI 验证基于会话 API，未进行浏览器视觉验收。SDK 没有安装 DPS。
+## 路径与配置
 
-2026-10-10（Asia/Shanghai）PRS 已通过手动 Helm 升级启用，当前 release 为 revision 5、deployed，9 个 workload Ready。17:05:41 的 PRS 验收为 35/35，覆盖部署、实际 Pod 严格数据库 TLS、S3、Controller 的 LDAP/DPS TLS 连接与登录回归。DPS 已持久化 `prs_enabled=true`、headroom `-15%` 和 scheduler `5 秒`；实际 PowerSteering 为 2.1.0，SeaweedFS 为 4.18。
+唯一可编辑的部署参数是源码根 [deployment.yaml](../deployment.yaml)。读取：
 
-4-rack 拓扑 `dps-gb300-4rack` 已导入，110 个实体、72 个计算节点在 UI 可见，保持 inactive。2026-10-09 实际 Agent Pod 网络 namespace 到 72 BMC 的 HTTPS/CA、288 GPU/144 CPU 清单与功率遥测检查通过，共 1152 次只读 GET，未修改 Pod spec 或 BMC。该检查不证明 Core→Agent→BMC 派发。官方 API 与当前 hash 校验更新后已回读确认 72 条节点关联的 AgentId。Agent 已通过 mTLS 连接；inactive 拓扑尚不下发设备配置。DPS 拓扑连接和深层 BMC 健康检查需激活后执行，本次没有应用激活时的 MaxLPS 功率策略，相关验收延后。
+~~~bash
+# 先进入实际 clone 的仓库根目录。
+DPS_SOURCE_ROOT=$(git rev-parse --show-toplevel)
+source "$DPS_SOURCE_ROOT/dps-install/scripts/deployment-env.sh"
+~~~
 
-当前状态报告为 `../verification/reports/dps-current-state.json` 和 `dps-delivery-status.json`；备份校验为 `dps-post-ldap-backup.json`。初始服务/UI/Agent Pod 网络结果保留为 2026-10-09 历史，保留其当时验证范围。
+源码 dps-install 保留公开 config 模板、artifact-sources.json、LDAP 构建配方与脚本。运行时输入是 $DPS_RUNTIME_ROOT/dps-install/config；下载包是 runtime/dps-install/packages；数据库、K3s、备份是 runtime/dps-install/data。源码中没有 live values/真实 Secret、密码、证书/私钥或 kubeconfig。
 
-访问与登录见 [dps-access.md](dps-access.md)，前置安装和维护见 [prerequisites.md](prerequisites.md)，实际操作记录见 [installstep.md](../installstep.md)。
+## 1. 下载与物理集群
 
-| 路径 | 用途 |
-|---|---|
-| `packages/dps-0.9.0.tgz` | 已复用的 DPS 0.9 Helm chart |
-| `packages/tools/` | 官方下载包、校验材料和 Helm/kubectl/dpsctl 二进制 |
-| `config/values.yaml` | 已安装的 Core/Agent/UI、PRS/PowerSteering 和 S3 values，仅引用 Secret |
-| `config/dps-env.sh` | Kubernetes/Helm/dpsctl 项目环境 |
-| `config/dps-access.json` | DPS 管理员 `dps-lab` 的真实 LDAP 登录凭据，权限 600 |
-| `config/dpsctl/credentials.yaml` | CLI 登录凭据，文件 600、目录 700 |
-| `config/kubernetes/k3s.yaml` | 物理机原生 K3s 配置 |
-| `config/kubernetes/k3s-admin.yaml`、`kubeconfig.yaml` | 原始/项目管理员配置，权限 600；项目 context 为 `dps-l20-12` |
-| `config/postgresql/`、`config/postgresql-*.yaml` | 独立数据库配置、初始化、证书、凭据 Secret 和 values overlay |
-| `config/postgresql-credentials.json` | 数据库专用凭据，权限 600 |
-| `config/ldap/` | 独立 OpenLDAP Compose、初始化目录、受限凭据、LDAPS TLS、bind/CA/client TLS Secret |
-| `config/ldap-auth-migration.json` | LDAP 配置和一次性 JWT 签名身份轮换状态 |
-| `config/prs/prepare-databases.sql`、`databases.json` | 独立 PG 的三个 PRS 库、角色/ACL 与严格 TLS 准备输入 |
-| `config/prs/database-prerequisites.md` | PRS 独立数据库维护与备份说明 |
-| `config/prs/runtime-images.json`、`enablement.json` | 固定 PRS/S3 镜像和启用配置记录 |
-| `config/prs/s3-credentials.json`、`s3-secret.yaml` | S3 私密凭据和外部 Secret `dps-prs-s3`，权限 600 |
-| `config/prs/dps-auth-secret.yaml` | PRS Controller 使用真实 LDAP 用户登录 DPS 的 JSON Secret `dps-prs-dps-auth`，权限 600 |
-| `config/tls/` | Core/Agent/Ingress TLS、公开 CA、JWT 和 Secret；私钥权限 600 |
-| `config/topology-4rack-dps09.json` | 当前 DPS 0.9 导入/更新输入；去除旧 Policies，72 节点 AgentId 位于 Topology.Entities |
-| `config/gb300-power-shelf-devices.yaml` | GB300 33kW、效率 0.95 电源架设备注册输入 |
-| `config/bmc-endpoints.csv`、`bmc-credentials.json`、`bmc-shared-secret.yaml` | BMC 地址和共享凭据，权限 600 |
-| `config/simulator-ca.crt`、`bmc-ca-secret.yaml` | 模拟器公开 CA 和 Kubernetes 信任 Secret |
-| `config/runtime-images.json` | 固定 Core/Agent/UI 和 PostgreSQL migration 客户端镜像 digest |
-| `scripts/` | 前置安装、手动 Helm 安装、拓扑接入和维护脚本 |
-| `data/postgresql`、`data/postgresql-backups` | 独立数据库数据和备份 |
-| `data/ldap`、`data/ldap-backups` | 独立目录数据和权限 600 的 LDIF 备份 |
-| `packages/ldap/openldap-2.6.10-runtime.tar` | 固定 Debian 13/OpenLDAP 2.6.10 离线运行镜像 |
-| `data/kubernetes/{k3s,kubelet,storage}` | 原生 Kubernetes 和 local-path 持久数据 |
+[完整下载命令](manual-prerequisites.md) 用 curl/SHA 获取 chart 0.9.0、工具和 K3s；用 docker pull 固定 digest，Docker save / k3s ctr import 供 chart 使用；OpenLDAP 从固定 Debian base + 17 deb docker build。必要原生检查：
 
-原生 K3s/Kubernetes 为 1.34.12+k3s1/1.34.12，物理节点 `l20-12`，containerd 2.2.7-k3s1。Kubernetes API 是 `https://10.6.131.43:6443`；DPS gRPC/TLS API 是 `https://api.dps.lab:443`。独立 PostgreSQL 17.11 位于 `10.6.131.43:15432`，不属于 DPS Helm release。Core PVC 已 Bound。
+~~~bash
+helm show chart "$DPS_RUNTIME_ROOT/dps-install/packages/dps-0.9.0.tgz"
+docker image ls --digests
+systemctl is-active k3s
+kubectl --context "$DPS_KUBE_CONTEXT" get nodes -o wide
+kubectl get storageclass
+~~~
 
-当前功能范围为 Core、Agent、UI、直接 BMC 和 PRS/PowerSteering 2.1.0 部署。LDAP 使用独立 OpenLDAP 2.6.10，`dcpower-users` 组映射 admin；PRS 与 PowerSteering 已启用，三个 PG 库独立于 Helm release；SeaweedFS 4.18 的集群内 S3 bucket 为 `dps-prs`。OIDC、Zapp、chart 内置 PostgreSQL 保持关闭，拓扑未激活，无资源组或 PRS domain，动态功率尚未验证。安装、启停和拓扑输入不依赖 `../verification/` 中的验收报告。
+预期原生物理节点 Ready，K3s v1.34.12+k3s1、Helm 3.22.0、kubectl 1.34.12、local-path；不用 k3d/kind。chart SHA 为 2fc7b6e098b17085bf9aaf010d86dfeaf62677fd0f80bb4c2702e91b0b3fd6ef。
+
+## 2. 独立 PostgreSQL 与 OpenLDAP
+
+分别按 [PG 手册](manual-postgresql.md)、[LDAP 手册](manual-ldap.md) 执行 openssl CA/leaf、随机密码、CREATE ROLE/DATABASE、slappasswd/LDIF/ACL、Compose 明确配置。下面是启动与检查入口，不能替代首次配置步骤：
+
+~~~bash
+docker compose -p "$DPS_PG_PROJECT" \
+  -f "$DPS_RUNTIME_ROOT/dps-install/config/postgresql/compose.yaml" up -d --wait
+docker exec -u postgres "$DPS_PG_CONTAINER" psql -d postgres -Atc \
+  "select datname,pg_get_userbyid(datdba) from pg_database where datname like 'dps%';"
+docker compose -p "$DPS_LDAP_PROJECT" \
+  -f "$DPS_RUNTIME_ROOT/dps-install/config/ldap/compose.yaml" up -d --wait
+LDAPTLS_CACERT="$DPS_RUNTIME_ROOT/dps-install/config/ldap/tls/ca.crt" LDAPTLS_REQCERT=demand \
+  ldapwhoami -x -H "ldaps://$DPS_HOST_IP:$DPS_LDAP_PORT" \
+  -D "uid=dps-lab,ou=users,dc=dps,dc=lab" \
+  -y "$DPS_RUNTIME_ROOT/dps-install/config/ldap/user.password"
+~~~
+
+预期 PG17.11 四库 Owner dps/非 superuser，TLS verify-full/SCRAM；LDAP2.6.10 真实用户/授权组、只读 bind、仅 LDAPS。Core/PowerSteering 两层内建 PostgreSQL 关闭。LDAP 用户与 BMC 凭据分开；组外身份可登录取得无角色 token，但受保护接口拒绝。
+
+## 3. 原生 Secret、values 和 Helm
+
+[DPS 手册](manual-install.md) 完整列出 13 个 kubectl create secret --from-file 命令与每个键，CA/Agent mTLS/JWT/S3，以及 source values.example.yaml 的显式参数渲染。密码不入 values、argv 或日志。
+
+~~~bash
+kubectl -n "$DPS_NAMESPACE" get secret
+helm lint "$DPS_RUNTIME_ROOT/dps-install/packages/dps-0.9.0.tgz" \
+  -f "$DPS_RUNTIME_ROOT/dps-install/config/values.yaml"
+helm template "$DPS_RELEASE" "$DPS_RUNTIME_ROOT/dps-install/packages/dps-0.9.0.tgz" \
+  -n "$DPS_NAMESPACE" -f "$DPS_RUNTIME_ROOT/dps-install/config/values.yaml" \
+  > "$DPS_RUNTIME_ROOT/verification/logs/dps-rendered.yaml"
+helm upgrade --install "$DPS_RELEASE" "$DPS_RUNTIME_ROOT/dps-install/packages/dps-0.9.0.tgz" \
+  --kube-context "$DPS_KUBE_CONTEXT" -n "$DPS_NAMESPACE" \
+  -f "$DPS_RUNTIME_ROOT/dps-install/config/values.yaml" --wait --timeout 20m --history-max 10
+kubectl -n "$DPS_NAMESPACE" get pods,pvc
+~~~
+
+先检查 API/UI Host 路由归属，另一 namespace/release 占用时拒绝部署。预期 deployed，Core/Agent/UI、Power Config/Controller2.1.0、SeaweedFS4.18 共9工作负载 Ready；Core1PVC、S3三PVC（1Gi/1Gi/10Gi）Bound。实际 logs emptyDir。Template成功与运行验收分别记录。
+
+## 4. 登录、注册、inactive 拓扑与 PRS
+
+~~~bash
+dpsctl --output json login --username dps-lab --password-stdin \
+  < "$DPS_RUNTIME_ROOT/dps-install/config/ldap/user.password" \
+  > "$DPS_RUNTIME_ROOT/verification/logs/dps-login.json"
+jq '.status' "$DPS_RUNTIME_ROOT/verification/logs/dps-login.json"
+dpsctl server-version
+dpsctl agent list
+dpsctl device upsert "$DPS_SOURCE_ROOT/dps-install/config/gb300-power-shelf-devices.yaml"
+dpsctl topology validate "$DPS_RUNTIME_ROOT/dps-install/config/topology-4rack-dps09.json"
+dpsctl topology import "$DPS_RUNTIME_ROOT/dps-install/config/topology-4rack-dps09.json"
+dpsctl settings update --set prs_enabled=true \
+  --set prs_headroom_percent=-15 --set prs_scheduler_interval_seconds=5
+dpsctl topology list
+dpsctl settings list
+~~~
+
+预期真实 LDAP admin、Agent connected、110 实体/72计算节点/4rack、inactive、PRS=true。安装新客户端与 DNS/CA 操作见手册。AgentId 在 Topology.Entities，必须用官方 GetTopologyModel 回读72条；CLI export省字段、CLI update实测缺陷的安全手工 current hash 更新也在手册。
+
+默认不 activate、不建资源组、不写 BMC；无活跃PRS domain不能宣称动态功率控制通过。独立网络/身份/S3/PG检查与备份见 [verification](../verification/README.md)。
+
+## 现有实例维护与历史
+
+现有身份/data保留，跳过全部首次创建；日常使用 docker compose ps、kubectl/helm status、dpsctl 查询即可。旧 LDAP迁移/PRS启用/故障修复/验收日期完整在 [operation-history](../docs/operation-history.md)。可选工具 [scripts](scripts/README.md) 不作为手工安装依赖；验证报告也不作为安装输入。
+
+当前新实例生产/维护与 [from-zero.md](from-zero.md) 的验证边界分开。访问账号的私密文件为 runtime/config/dps-access.json，DPSCTL token为 runtime/config/dpsctl/credentials.yaml，目录700/文件600。客户端API/UI解析到deployment host_ip并信任 runtime/config/tls/ca.crt。

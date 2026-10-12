@@ -1,19 +1,23 @@
 #!/usr/bin/env python3
 """Prepare DPS directly with LDAP, stable fresh JWT/TLS and PRS/S3 inputs."""
+import sys
+sys.dont_write_bytecode = True
 import argparse, copy, ipaddress, json, os, secrets
 from pathlib import Path
+from deployment_context import context_from_cli
+ctx = context_from_cli()
 import yaml
 from bootstrap_common import repo_root, private, pair, secret, bind_settings, command, validate_host, require_existing_identity
 
 def main():
     p=argparse.ArgumentParser(description=__doc__)
-    p.add_argument("--root"); p.add_argument("--host-ip",required=True)
-    p.add_argument("--host-name",default="dps-lab");p.add_argument("--namespace",default="dps")
-    p.add_argument("--release",default="dps");p.add_argument("--agent-id",default="gb300-lab-agent")
-    p.add_argument("--api-name",default="api.dps.lab");p.add_argument("--ui-name",default="ui.dps.lab")
-    p.add_argument("--pg-port",type=int,default=15432);p.add_argument("--ldap-port",type=int,default=1636)
-    p.add_argument("--pg-subnet",default="172.30.90.0/24")
-    p.add_argument("--kube-api-ip");p.add_argument("--kube-api-port",type=int,default=6443)
+    p.add_argument("--root"); p.add_argument("--host-ip",default=ctx.settings["host_ip"])
+    p.add_argument("--host-name",default=ctx.settings["host_name"]);p.add_argument("--namespace",default=ctx.settings["namespace"])
+    p.add_argument("--release",default=ctx.settings["release"]);p.add_argument("--agent-id",default=ctx.settings["agent_id"])
+    p.add_argument("--api-name",default=ctx.settings["api_name"]);p.add_argument("--ui-name",default=ctx.settings["ui_name"])
+    p.add_argument("--pg-port",type=int,default=ctx.settings["pg_port"]);p.add_argument("--ldap-port",type=int,default=ctx.settings["ldap_port"])
+    p.add_argument("--pg-subnet",default=ctx.settings["pg_subnet"])
+    p.add_argument("--kube-api-ip");p.add_argument("--kube-api-port",type=int,default=ctx.settings["kube_api_port"])
     a=p.parse_args();os.umask(0o077);r=repo_root(a.root);validate_host(a.host_ip,a.host_name)
     c=r/"dps-install/config";t=c/"tls"
     desired={k:getattr(a,k)for k in ["host_ip","host_name","namespace","release","agent_id","api_name",
@@ -54,7 +58,7 @@ def main():
         "admin_secret_access_key":s3["admin_secret_access_key"],"seaweedfs_s3_config":json.dumps(identity)})
     secret(prs/"dps-auth-secret.yaml","dps-prs-dps-auth",a.namespace,
            {"ldap-credentials":json.dumps({"username":account["username"],"password":account["password"]})})
-    v=yaml.safe_load((c/"values.example.yaml").read_text())
+    v=yaml.safe_load(ctx.source_path("dps-install/config/values.example.yaml").read_text())
     v["fullnameOverride"]=full
     v["global"]["postgresql"]["host"]=a.host_ip
     v["global"]["postgresql"]["service"]["ports"]["postgresql"]=str(a.pg_port)

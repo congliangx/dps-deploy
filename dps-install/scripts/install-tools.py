@@ -1,15 +1,19 @@
 #!/usr/bin/env python3
 """Install official Helm/kubectl using SHA256/version checks and atomic replacement."""
+import sys
+sys.dont_write_bytecode = True
 from pathlib import Path
+from deployment_context import context_from_cli
+ctx = context_from_cli()
 from concurrent.futures import ThreadPoolExecutor
 import argparse, hashlib, json, subprocess, tarfile, shutil, tempfile, os
 
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument("--only", choices=("helm", "kubectl"), help="Install one missing tool; preserve the other tool")
 args = parser.parse_args()
-B = Path('/raid/vince/deploy')
+B = ctx.runtime_root
 P = B/'dps-install/packages/tools'
-V = json.loads((B/'dps-install/config/kubernetes/tool-versions.json').read_text())
+V = {'helm':ctx.settings['helm_version'],'kubectl':ctx.settings['kubectl_version']}
 names = [args.only] if args.only else ['kubectl', 'helm']
 
 def check_links():
@@ -90,6 +94,7 @@ report = {
     'official_urls': urls, 'installed': {name:str(P/'bin'/name) for name in names},
     'atomic_replacement': True, 'kubernetes_distribution': 'Native K3s installed separately',
 }
+(B/'verification/reports').mkdir(parents=True,exist_ok=True)
 (B/'verification/reports/tool-installation.json').write_text(json.dumps(report, indent=2)+'\n')
 print(json.dumps(actual))
 print('Helm/kubectl checksum/version checks passed; selected tools atomically installed. Native Kubernetes is installed separately.')

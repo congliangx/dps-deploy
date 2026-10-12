@@ -1,19 +1,23 @@
 #!/usr/bin/env python3
 """Refresh the project kubeconfig from native K3s without exposing credentials."""
+import sys
+sys.dont_write_bytecode = True
 from pathlib import Path
+from deployment_context import context_from_cli
+ctx = context_from_cli()
 import os
 import tempfile
 import yaml
 
-DIRECTORY = Path('/raid/vince/deploy/dps-install/config/kubernetes')
+DIRECTORY = ctx.runtime_path('dps-install/config/kubernetes')
 SOURCE = DIRECTORY / 'k3s-admin.yaml'
 TARGET = DIRECTORY / 'kubeconfig.yaml'
-NAME = 'dps-l20-12'
-ENDPOINT = 'https://10.6.131.43:6443'
+NAME = ctx.settings['kube_context']
+ENDPOINT = f"https://{ctx.settings['host_ip']}:{ctx.settings['kube_api_port']}"
 
 def main():
     if os.geteuid() != 0:
-        raise SystemExit('Run as root on L20-12.')
+        raise SystemExit('Run as root on the configured physical host.')
     if SOURCE.is_symlink() or not SOURCE.is_file():
         raise SystemExit('Native K3s admin kubeconfig is missing or is not a regular file.')
     data = yaml.safe_load(SOURCE.read_text())
@@ -51,7 +55,7 @@ def main():
     finally:
         if os.path.exists(staged):
             os.unlink(staged)
-    print('Project kubeconfig refreshed: context dps-l20-12; endpoint https://10.6.131.43:6443; mode 600.')
+    print('Runtime kubeconfig refreshed: context '+NAME+'; endpoint '+ENDPOINT+'; mode 600.')
 
 if __name__ == '__main__':
     main()
