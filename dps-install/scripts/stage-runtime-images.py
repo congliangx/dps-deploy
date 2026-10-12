@@ -1,27 +1,47 @@
 #!/usr/bin/env python3
-"""Stage pinned DPS images into native K3s containerd without deploying workloads."""
+"""Stage pinned DPS images into native K3s without deploying workloads."""
+IMAGE_NAMES = {'dps-ui', 'dps-core-agent', 'postgresql-server-and-migration-client'}
 import sys
 sys.dont_write_bytecode = True
-from pathlib import Path
+import argparse
+parser = argparse.ArgumentParser(description=__doc__, epilog="Shared deployment options: --config FILE, --runtime-root DIR and deployment overrides.")
+if any(arg in ("--help", "-h") for arg in sys.argv[1:]):
+    parser.print_help()
+    raise SystemExit(0)
 from deployment_context import context_from_cli
 ctx = context_from_cli()
-import json,subprocess,os
-B=ctx.runtime_root;P=B/'dps-install/packages/images';P.mkdir(parents=True,exist_ok=True)
-def run(*args):subprocess.run(args,check=True)
-def image_id(name):
- p=subprocess.run(['docker','image','inspect',name,'--format','{{.Id}}'],capture_output=True,text=True)
- return p.stdout.strip() if p.returncode==0 else None
-run('systemctl','is-active','--quiet','k3s')
-images=json.loads(ctx.source_path('dps-install/config/runtime-images.json').read_text())
-for item in images:
- if not image_id(item['digest']):run('docker','pull',item['digest'])
- tag_id=image_id(item['name']);target_id=image_id(item['digest'])
- if tag_id and tag_id!=target_id:raise RuntimeError('Existing image tag differs: '+item['name']+'; review before changing.')
- run('docker','tag',item['digest'],item['name'])
-archive=P/'dps-0.9.0-runtime.tar';stage=P/'.dps-0.9.0-runtime.tar.tmp'
+parser.parse_args()
+import importlib.util
+import json
+import os
+import subprocess
+import tempfile
+from pathlib import Path
+os.umask(0o077)
+sources = json.loads(ctx.source_path("dps-install/config/artifact-sources.json").read_text())
+selected = [item for item in sources["images"] if item["name"] in IMAGE_NAMES]
+if len(selected) != len(IMAGE_NAMES):
+    raise RuntimeError("Required image pins are missing from artifact-sources.json")
+loader = importlib.util.spec_from_file_location("dps_artifact_download", ctx.source_path("dps-install/scripts/download-artifacts.py"))
+acquisition = importlib.util.module_from_spec(loader)
+loader.loader.exec_module(acquisition)
+acquisition.ctx = ctx
+subprocess.run(["systemctl", "is-active", "--quiet", "k3s"], check=True)
+records = acquisition.image_set(selected)
+tags = [row["tag"] for row in records]
+
+package = ctx.runtime_path("dps-install/packages/images")
+package.mkdir(parents=True, exist_ok=True)
+archive = package / "dps-0.9.0-runtime.tar"
+if archive.is_symlink():
+    raise RuntimeError("Image archive is a symlink; preserve and review")
+with tempfile.NamedTemporaryFile(dir=package, suffix=".tar", delete=False) as stream:
+    temporary = Path(stream.name)
 try:
- run('docker','save','--output',str(stage),*[i['name'] for i in images]);stage.chmod(0o600);os.replace(stage,archive)
- run('/usr/local/bin/k3s','ctr','--namespace','k8s.io','images','import',str(archive))
+    subprocess.run(["docker", "save", "--output", str(temporary), *tags], check=True)
+    temporary.chmod(0o600)
+    temporary.replace(archive)
+    subprocess.run(["k3s", "ctr", "--namespace", "k8s.io", "images", "import", str(archive)], check=True)
 finally:
- if stage.exists():stage.unlink()
-print('Pinned DPS Core/Agent/UI 0.9.0 images staged in native containerd; no Helm install performed.')
+    temporary.unlink(missing_ok=True)
+print("Pinned DPS images imported into native containerd; no workloads deployed.")

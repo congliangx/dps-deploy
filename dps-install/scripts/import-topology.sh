@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
 # Explicit DPS 0.9 topology registration only. Leaves topology inactive.
 set -euo pipefail
+for dps_arg in "$@"; do
+  if [[ "$dps_arg" == --help || "$dps_arg" == -h ]]; then
+    printf '%s\n' 'Usage: import-topology.sh [deployment options]'
+    exit 0
+  fi
+done
 source "$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)/deployment-env.sh" "$@"
 set -- "${DPS_DEPLOY_ARGS[@]}"
 umask 077

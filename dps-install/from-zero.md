@@ -1,38 +1,36 @@
-# 从空源码到完整 Lab：脚本与手工部署
+# 从零搭建完整 Lab
 
-本页复现完整 Lab，包含缺少硬件时的模拟器和独立基础设施。已有客户集群、真实 BMC、数据库或身份服务按 [组件选择](../README.md) 和 [对接指南](existing-infrastructure.md) 跳过相应新建；此页的 13 Secret/9 工作负载/4 PVC 仅指 Lab 组合。
+本页说明完整 Lab 脚本的范围和验证边界。具体执行入口在 [installstep.md](../installstep.md)，脚本阶段与逐步原生命令在各 manual。客户已有基础设施按 [组件选择](../README.md) 和 [对接指南](existing-infrastructure.md) 跳过新建。
 
-首次新实例在 [installstep.md](../installstep.md) 选择一条整套脚本、分阶段脚本或逐步手工方式；具体脚本动作、产物及对应原生命令都在各 manual，不必把同一安装重复执行两遍。Lab 脚本的统一参数 [deployment.yaml](../deployment.yaml) 中的 runtime_root 由用户选择：支持绝对路径（如 /srv/dps-lab），或相对该配置文件目录的路径（如 .runtime）；填写 . 可与源码同根，运行目录也可以在源码的上级目录。所有下载/生成输入/data/logs/reports/archive 写入 DPS_RUNTIME_ROOT 并排除 Git。源码根由实际 clone 位置推导；L20-12 当前使用 /raid/vince/deploy 与 /raid/vince/deployed-test，是本实例的目录安排。
+## 完整 Lab 安装什么
 
-## 原生步骤与输出
+| 阶段 | 内容 | 详细手册 |
+| --- | --- | --- |
+| 主机与包 | OS 依赖、固定 chart/镜像/工具、OpenLDAP 镜像构建 | [前置要求](manual-prerequisites.md) |
+| 物理集群 | 原生 K3s、local-path、Traefik、containerd 镜像导入 | [主机/K3s](manual-prerequisites.md) |
+| 模拟硬件 | 4 rack/72 BMC、URL、密码、CA、nginx/Compose | [BMC](../hardware-sim/manual-install.md) |
+| 数据库 | 独立 PG、应用角色、Core/PRS 四库、TLS/SCRAM | [PG](manual-postgresql.md) |
+| 身份服务 | 独立 LDAP、真实用户/组/只读 bind、LDAPS | [LDAP](manual-ldap.md) |
+| DPS / PRS | TLS/JWT/13 Secret、values/Helm、真实登录、72 AgentId inactive 拓扑、PRS=true | [DPS](manual-install.md) |
 
-| 顺序 | 命令/动作 | 详细手册 | 预期 |
-| --- | --- | --- | --- |
-| 1 | apt / curl / sha256sum / docker pull/build | [前置](manual-prerequisites.md) | 官方固定chart/digests/17deb、工具、LDAP2.6.10 |
-| 2 | K3s原生systemd / kubectl / docker save / k3s ctr | [前置](manual-prerequisites.md) | 物理节点Ready、local-path/Traefik |
-| 3 | openssl / JSON模板 / nginx / docker compose | [BMC](../hardware-sim/manual-install.md) | 新CA/PW，4rack72BMC |
-| 4 | openssl / psql CREATE ROLE/4DB / Compose | [PG](manual-postgresql.md) | 独立PG17.11、SCRAM/verify-full |
-| 5 | openssl / slappasswd / LDIF/ACL / Compose | [LDAP](manual-ldap.md) | 新真实用户/组/bind、仅LDAPS |
-| 6 | openssl / kubectl create secret --from-file | [DPS](manual-install.md) | 新JWT/TLS/13Secrets、无密码values |
-| 7 | helm lint/template/upgrade --install | [DPS](manual-install.md) | 9工作负载/4PVC |
-| 8 | dpsctl LDAP login/device/topology/settings | [DPS](manual-install.md) | 72AgentId、inactive、PRS=true |
+完整组合为 9 工作负载/4 PVC；客户按需选择的部署不必满足这些数量。脚本与手工安装二选一。独立组件入口不是整套脚本的暂停模式，组件先启动后按 DPS 手册或对接指南继续。
 
-源码提供固定下载来源和公开模板，能够生成全新的安装身份与数据，不依赖L20-12旧密码、CA、旧tar/SHA或旧LDAPimageID。source/env仅解析deployment.yaml；配置渲染内联代码及所有原生命令都在手册完整展示。
+## 新实例与维护
 
-## 首次安装与已有实例不同
+新实例先修改 [deployment.yaml](../deployment.yaml)，确认数据目录空，端口、Compose project、Docker 网段、namespace/release、Ingress 域名未与其他实例冲突。脚本生成新密码、CA、JWT、Secret 和空数据，不依赖 L20-12 旧凭据或旧下载缓存。
 
-新实例先确认数据目录空、容器/端口/Docker子网/namespace/release/Ingress域名未被其他实例占用。Kubernetes直接安装于物理OS，BMC/PG/LDAP独立Docker服务；不创建容器模拟节点。
+显式复用仅接受本仓库支持的本机原生 K3s：固定 v1.34.12+k3s1、/usr/local/bin/k3s server --config 启动，配置 node IP/API 端口/Pod 与 Service CIDR、集群 CA、物理 Node UID 和显式 context 均须匹配。提供管理员 kubeconfig，选择独立 namespace/release、prefix、AgentId、域名、端口、网段和 runtime；操作见 [installstep 的 B 分支](../installstep.md)。其他已有 K3s/Kubernetes 按 [客户对接指南](existing-infrastructure.md) 手工安装 DPS。
 
-已有实例保留密码/CA/JWT/Secret、LDAP data.mdb、PGDATA、PVC。跳过身份生成与初始化，使用原values做必要维护；日常查询不要运行install/upgrade。官方API拓扑更新使用当前hash、forceUpdate=false，不删除重建/激活。旧LDAP认证迁移不是新装前置。
+已有实例维护保留密码、CA、JWT、Secret、PG/LDAP 数据与 PVC，跳过身份生成和初始化。使用现有 values；日常查询无需 install/upgrade。拓扑更新使用当前 hash、forceUpdate=false，不删除重建或激活。
 
-复用现有原生K3s时，使用现有管理员kubeconfig对应context，并在deployment.yaml选择新的namespace/release/prefix/AgentId/域名/端口/子网/runtime_root。API/UI域名已被另一安装路由占用时拒绝部署。默认物理首次分支与显式集群复用分支的操作在installstep中分开。
+运行目录由用户选择，可与源码同根、位于源码内部或外部，布局及相对路径规则见 [根 README](../README.md)。下载/生成物和验证报告不提交 Git，也不把验证报告当作安装依赖。
 
-默认拓扑inactive，PRS开启但0活跃ResourceGroup/domain；不写BMC功率。mockbackend自行生成TLS，nginx外部leaf由新的项目CA签发；私有backend proxy_ssl_verify off与外部strictCA分别说明，不能声称backend使用项目leaf/key。
+## 模拟与验收边界
 
-## 已执行的验证范围
+拓扑保持 inactive，PRS 开启但无活跃 ResourceGroup/domain；安装不写 BMC 功率。模拟器 backend 自生成 TLS，外部 nginx leaf 由项目 CA 签发。私有 backend 的 proxy_ssl_verify off 与外部严格 CA 校验分别说明，见 [BMC 手册](../hardware-sim/manual-install.md)。
 
-2026-10-12（Asia/Shanghai）已在空源码副本生成全新密码/CA/JWT/13Secrets与新数据，独立PG33/33、LDAP24/24，全栈44/44（10:25:25+08），9工作负载Ready/0restart、4Docker服务、72BMC strictCA/288GPU144CPU、Controller真实LDAP/TLS、PRS两Pod PGverify-full、S3签名读写/匿名拒绝、CLI/UI会话正负及原始72AgentId/inactive通过。UI通过session API检查，未做浏览器视觉验收。
+2026-10-12 已在空源码副本、新身份和新数据的隔离实例验证 PG 33/33、LDAP 24/24、全栈 44/44，以及完整入口重入后 46 份身份文件与数据库内容保留。该轮复用了 L20-12 既有物理 K3s，没有另一台空白 OS/K3s 首装实测；UI 使用 session API，未做浏览器视觉验收。
 
-该轮显式复用L20-12既有物理原生K3s，没有另一台空白OS/K3s首次安装实测。完整入口重入于10:28:56+08退出0；46份证书/密钥/凭据/Secret文件内容不变，数据库sentinel保留后清理。证据在runtime/verification/reports及runtime/verification/archive，日期与完整记录见 [operation-history](../docs/operation-history.md)。
+完整范围、时间与证据位置见 [操作历史](../docs/operation-history.md)。结果只代表当轮环境，当前部署变化后需按 [验证指南](../verification/README.md) 复查；真实 GB300 固件、多节点 HA 和动态功率控制尚未验证。
 
-自动化与维护实现索引在 [scripts/README.md](scripts/README.md)，执行示例集中在 installstep，动作展开在 manual。所有安装后验证材料与生产输入分离，安装不会读取verification报告。
+安装/维护脚本见 [scripts/README.md](scripts/README.md)，安装后的访问和维护从 [dps-access.md](dps-access.md) 开始。

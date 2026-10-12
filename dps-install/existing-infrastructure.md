@@ -123,7 +123,59 @@ kubectl --context "$KUBE_CONTEXT" -n "$DPS_NAMESPACE" label secret bmc-rack-a \
 
 重复创建每组所需 BMC 凭据，拓扑 Redfish.SecretName 引用其名称。如果实际使用 bearerToken，则按 chart 的 bearerToken.existingSecret/existingSecretKey 配置其载体，不把 username/password JSON 当 token。
 
-Core/Agent 使用独立于客户 BMC/PG/LDAP 的 DPS 身份。可直接引用 PKI/cert-manager 已提供的 Secret；也可把签发文件置于 inputs/server、inputs/agent 后创建。本例 Core/Agent 由同一 DPS 信任链签发；Core SAN 包含其 service DNS 和 API 域名；Agent 证书用途 clientAuth，其 CN 等于 agent.agentID，并出现在 dps.grpcServiceMTLSCN 的 Agent Service 允许列表中。缺少 DPS 身份才按 [首次 DPS 证书步骤](manual-install.md) 创建/申请，不重建客户服务 CA。
+Core/Agent 使用独立于客户 BMC/PG/LDAP 的 DPS 身份。已有匹配的 namespace Secret 时直接引用，跳过本节生成和创建；已有 PKI/cert-manager 时按客户流程取得证书文件，放入 inputs/server、inputs/agent 后执行下面的 Secret 创建命令。本例 Core/Agent 由同一 DPS 信任链签发，Core SAN 包含其 service DNS 和 API 域名；Agent 为 clientAuth，CN 等于 agent.agentID，并出现在 dps.grpcServiceMTLSCN 的 Agent Service 允许列表中。
+
+**可选：新的实验实例缺少全部 DPS TLS/JWT 身份时，使用本地 DPS CA。** 此分支保留当前客户 KUBECONFIG/context，不 source Lab 的 deployment-env.sh，不改变客户 PG/LDAP/BMC 的 CA。仅用于新建 DPS 身份；已有任一相关 key/证书/Secret 时保留原身份，按实际 PKI 单独补齐缺项，不能整段重跑。
+
+先明确这份客户 values 的证书参数；下面与本页示例对应。更改 release/fullnameOverride、namespace、API/UI 域名或 AgentId 时同步修改。DPS_HOST_IP 在此仅作为 DPS leaf 的 IP SAN；192.0.2.10 是文档地址，替换为实际入口 IP：
+
+~~~bash
+export DPS_RUNTIME_ROOT DPS_NAMESPACE
+export DPS_FULLNAME=dps
+export DPS_API_NAME=api.dps.customer.example
+export DPS_UI_NAME=ui.dps.customer.example
+export DPS_AGENT_ID=customer-agent
+export DPS_HOST_IP=192.0.2.10
+~~~
+
+保持此会话，仅执行 [manual-install.md 第 1 节](manual-install.md) 的 openssl 证书/JWT代码块；不要执行该手册的 Lab 环境加载、服务生成或后续固定 Lab Secret/values。该代码块使用上面明确的参数，把新 Core/Agent/Ingress leaf 与 JWT 保存到 config/tls。再将同一身份映射到本页的输入布局：
+
+~~~bash
+tls="$config/tls"
+mkdir -p "$inputs/server" "$inputs/agent" "$inputs/api-ingress" \
+  "$inputs/ui-ingress" "$inputs/api-backend"
+for identity in server agent; do
+  test ! -e "$inputs/$identity/tls.key"
+  install -m 644 "$tls/ca.crt" "$inputs/$identity/ca.crt"
+  install -m 644 "$tls/$identity.crt" "$inputs/$identity/tls.crt"
+  install -m 600 "$tls/$identity.key" "$inputs/$identity/tls.key"
+done
+for ingress in api-ingress ui-ingress; do
+  test ! -e "$inputs/$ingress/tls.key"
+  install -m 644 "$tls/ingress.crt" "$inputs/$ingress/tls.crt"
+  install -m 600 "$tls/ingress.key" "$inputs/$ingress/tls.key"
+done
+test ! -e "$inputs/jwt-private-key.pem"
+install -m 600 "$tls/jwt-private-key.pem" "$inputs/jwt-private-key.pem"
+# NGINX 后端认证使用独立 clientAuth leaf，保留 Core/Agent 私钥各自用途。
+test ! -e "$inputs/api-backend/tls.key"
+openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:3072 \
+  -out "$inputs/api-backend/tls.key"
+openssl req -new -key "$inputs/api-backend/tls.key" \
+  -out "$inputs/api-backend/client.csr" -subj "/CN=$DPS_FULLNAME-ingress-client"
+printf '%s\n' 'basicConstraints=critical,CA:FALSE' \
+  'keyUsage=critical,digitalSignature,keyEncipherment' 'extendedKeyUsage=clientAuth' \
+  > "$inputs/api-backend/client.ext"
+openssl x509 -req -in "$inputs/api-backend/client.csr" \
+  -CA "$tls/ca.crt" -CAkey "$tls/ca.key" -CAcreateserial -sha256 -days 825 \
+  -extfile "$inputs/api-backend/client.ext" -out "$inputs/api-backend/tls.crt"
+install -m 644 "$tls/ca.crt" "$inputs/api-backend/ca.crt"
+chmod 600 "$inputs/api-backend/tls.key"
+openssl verify -CAfile "$inputs/api-backend/ca.crt" -purpose sslclient \
+  "$inputs/api-backend/tls.crt"
+~~~
+
+上述本地 CA 分支生成的 API/UI ingress leaf 同时包含两域名，后端 leaf 由同一 DPS CA 签发；JWT 后续直接复用 inputs/jwt-private-key.pem。客户 PKI 分支跳过上面整个本地 CA 生成与映射流程，并按实际方案提供同名输入或已有匹配 Secret。
 
 ~~~bash
 for identity in server agent; do

@@ -1,8 +1,15 @@
 #!/usr/bin/env bash
 # Manually install the saved DPS 0.9 chart; never invoke the SDK.
 set -euo pipefail
+for arg in "$@"; do
+  if [[ "$arg" == --help || "$arg" == -h ]]; then
+    printf '%s\n' "Usage: bash install-dps.sh [deployment overrides]" "Install/upgrade the prepared Lab DPS Helm release."
+    exit 0
+  fi
+done
 source "$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)/deployment-env.sh" "$@"
 set -- "${DPS_DEPLOY_ARGS[@]}"
+[[ $# -eq 0 ]] || { echo "Unexpected parameter: $1; use --help." >&2; exit 2; }
 umask 077
 cd "$DPS_RUNTIME_ROOT"
 systemctl is-active --quiet k3s

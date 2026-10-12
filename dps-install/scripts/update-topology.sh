@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
 # Update an existing inactive topology with the server's current optimistic-lock hash.
 set -euo pipefail
+for dps_arg in "$@"; do
+  if [[ "$dps_arg" == --help || "$dps_arg" == -h ]]; then
+    printf '%s\n' 'Usage: update-topology.sh [deployment options]'
+    exit 0
+  fi
+done
 source "$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)/deployment-env.sh" "$@"
 set -- "${DPS_DEPLOY_ARGS[@]}"
 umask 077

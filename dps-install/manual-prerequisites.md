@@ -145,7 +145,7 @@ helm version --short
 kubectl version --client=true -o json | jq '.clientVersion.gitVersion'
 ~~~
 
-预期 Helm v3.22.0、kubectl v1.34.12。下载文件放在所选 DPS_RUNTIME_ROOT 的 packages 子目录，不覆盖公开模板，也不提交 Git。
+预期 Helm v3.22.0、kubectl v1.34.12。下载文件放在所选 DPS_RUNTIME_ROOT 的 packages 子目录，不覆盖公开模板，也不提交 Git。 新开 Bash/SSH 会话时按 [访问说明](dps-access.md) 加载 deployment-env.sh；环境加载会优先使用本实例 packages/tools/bin 中已有的工具，当前 export PATH 只作用于本次会话。
 
 ## 3. 固定 DPS chart 与全部镜像
 
@@ -191,6 +191,7 @@ chart SHA256 必须为 2fc7b6e098b17085bf9aaf010d86dfeaf62677fd0f80bb4c2702e91b0
 从 Debian 官方快照下载 17 个固定 .deb，再使用公开配方离线构建，不依赖旧 image ID 或旧 tar SHA。源码与运行目录同根时，三份配方文件跳过复制到自身，仍执行固定 SHA 校验；下载的 deb 和生成镜像包不提交 Git。已用于运行实例的 LDAP image ID 不替换。
 
 ~~~bash
+manifest="$DPS_SOURCE_ROOT/dps-install/config/artifact-sources.json"
 ldap_build="$DPS_RUNTIME_ROOT/dps-install/packages/ldap/build"
 mkdir -p "$ldap_build/debs"
 for recipe in Dockerfile entrypoint.sh SHA256SUMS; do
@@ -344,6 +345,7 @@ kubectl -n kube-system rollout status deployment/traefik --timeout=180s
 Docker 与 K3s containerd 缓存独立。带 tag 的清单包括 chart 工作负载及 postgres:17 迁移客户端。
 
 ~~~bash
+manifest="$DPS_SOURCE_ROOT/dps-install/config/artifact-sources.json"
 images_tar="$DPS_RUNTIME_ROOT/dps-install/packages/runtime-images.tar"
 mapfile -t chart_tags < <(jq -r '.images[] | select(.tag != null) | .tag' "$manifest")
 docker save "${chart_tags[@]}" -o "$images_tar"

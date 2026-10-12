@@ -1,8 +1,15 @@
 #!/usr/bin/env bash
 # Authenticate the documented LDAP account without putting passwords on argv.
 set -euo pipefail
+for dps_arg in "$@"; do
+  if [[ "$dps_arg" == --help || "$dps_arg" == -h ]]; then
+    printf '%s\n' 'Usage: dps-login.sh [deployment options]'
+    exit 0
+  fi
+done
 source "$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)/deployment-env.sh" "$@"
 set -- "${DPS_DEPLOY_ARGS[@]}"
+[[ $# -eq 0 ]] || { printf '%s\n' 'Unexpected argument; use --help.' >&2; exit 2; }
 umask 077
 python3 - <<'PYTHON'
 import json, os, subprocess

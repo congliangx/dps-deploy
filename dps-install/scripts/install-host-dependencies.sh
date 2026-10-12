@@ -1,6 +1,13 @@
 #!/usr/bin/env bash
 # Host bootstrap; matching existing Docker/Compose is reused without upgrading it.
 set -euo pipefail
+for arg in "$@"; do
+  if [[ "$arg" == --help || "$arg" == -h ]]; then
+    printf '%s\n' "Usage: bash install-host-dependencies.sh" "Install shared Lab host prerequisites on Ubuntu/Debian."
+    exit 0
+  fi
+done
+[[ $# -eq 0 ]] || { echo 'Usage: install-host-dependencies.sh (no parameters)' >&2; exit 2; }
 [ "$(id -u)" -eq 0 ] || { echo 'Run as root.' >&2; exit 1; }
 [ "$(uname -m)" = x86_64 ] || { echo 'This deployment pins amd64 artifacts.' >&2; exit 1; }
 need=0

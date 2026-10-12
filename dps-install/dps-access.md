@@ -22,7 +22,7 @@ source dps-install/scripts/deployment-env.sh --config "$PWD/deployment.yaml"
 
 source 让脚本导出的变量在**当前 Bash 会话**中生效。新开终端、重新 SSH 或切换用户后，需要重新加载；不需要在启动每条 kubectl 命令前重复加载。指定其他公开配置文件时，将 --config 的参数替换为该文件路径。配置中的相对 runtime_root 按 deployment.yaml 所在目录解析。
 
-环境脚本只解析公开配置及派生路径，不安装服务、不读取密码，也**不会自动登录 DPS**。全量 install-from-zero 还会保存 runtime/dps-install/config/dps-env.sh；手工或组件独立安装不保证存在这个副本，因此统一使用仓库内的 deployment-env.sh 加载环境。
+环境脚本解析公开配置及派生路径，并在运行目录已存在 packages/tools/bin 时将它加入 PATH，优先使用本实例已安装的工具；重复加载不会重复添加该路径。它不安装服务、不读取密码，也**不会自动登录 DPS**。全量 install-from-zero 还会保存 runtime/dps-install/config/dps-env.sh；手工或组件独立安装不保证存在这个副本，因此统一使用仓库内的 deployment-env.sh 加载环境。
 
 查看公共地址、路径和集群选择：
 

@@ -13,8 +13,11 @@
 | prepare-dps-fresh.py | 根据已生成的 PG/BMC/LDAP 输入创建或复用 DPS CA/Core/Agent/UI leaf、持久 JWT、S3/Controller 凭据和 Secret YAML；渲染 Lab values | 第 1–4 节 |
 | install-from-zero.py 完整模式 | 创建/核对归属 namespace，apply 13 个外部 Secret；解析 chart 镜像并核对固定 digest，导入本机 K3s containerd，直接执行 Helm upgrade --install | 第 3–5 节 |
 | 同一完整入口 | 使用真实 LDAP 账号通过 stdin 登录；注册电源类型，首次导入 inactive 四 rack 拓扑，核对/更新 Agent 路由，写 PRS=true/-15/5 | 第 6–8 节 |
+| prepare-namespace.sh | 写入前核对域名、namespace 读取权限及既有 Secret 数据/类型；冲突则拒绝 apply，不隐式更换保留身份 | 第 3 节 |
 | install-dps.sh | 已完成 Lab 前置、values/Secret/镜像准备时，核对 chart SHA、K3s/node、LDAP 和 PRS 配置后仅执行 Helm upgrade --install | 第 5 节 |
 | dps-login.sh / register-devices.sh / update-topology.sh | 单独的 Lab 登录/设备注册/安全路由更新入口；不意味着已经完成整套安装 | 第 6–8 节 |
+
+prepare-namespace.sh 的保护针对脚本 apply；手工 kubectl 步骤由用户明确管理创建或身份变更，脚本不会接管这类变更。
 
 整套脚本固定启用 PRS 和独立 Lab PG/LDAP/模拟器。prepare-only 生成输入，尚未 apply Secret 或执行 Helm；安装脚本本身不会自动运行 verification 全栈验收。install-dps.sh 不创建密码/证书/namespace Secret，不安装 PG、LDAP 或 BMC，也不执行后续登录/拓扑/PRS 开关；它仍按本机原生 K3s + LDAP + Lab PRS 库名校验，不能作为任意客户环境的通用 Helm 包装。
 
@@ -234,17 +237,20 @@ PY
 
 ## 5. 检查域名归属、渲染 chart、手动 Helm 安装
 
-API/UI 域名已被另一 namespace/release 路由占用时必须换 deployment.yaml 中域名，不能抢占现有路由。原生只读清点：
+API/UI 域名已被另一 namespace/release 路由占用时必须换 deployment.yaml 中域名，不能抢占现有路由。清点普通 Ingress、Traefik HTTP 路由与 TCP HostSNI 路由；本 Lab 的 API TLS passthrough 使用 IngressRouteTCP。原生只读清点：
 
 ~~~bash
 kubectl get ingress -A -o json |
   jq -r '.items[] | [.metadata.namespace,.metadata.name,
     ([.spec.rules[]?.host]|join(","))] | @tsv'
-if kubectl api-resources --api-group=traefik.io -o name | grep -q '^ingressroutes'; then
-  kubectl get ingressroutes.traefik.io -A -o json |
-    jq -r '.items[] | [.metadata.namespace,.metadata.name,
-      ([.spec.routes[]?.match]|join(","))] | @tsv'
-fi
+traefik_resources=$(kubectl api-resources --api-group=traefik.io -o name)
+for route_resource in ingressroutes.traefik.io ingressroutetcps.traefik.io; do
+  if printf '%s\n' "$traefik_resources" | grep -Fxq "$route_resource"; then
+    kubectl get "$route_resource" -A -o json |
+      jq -r '.items[] | [.kind,.metadata.namespace,.metadata.name,
+        ([.spec.routes[]?.match]|join(","))] | @tsv'
+  fi
+done
 chart="$DPS_RUNTIME_ROOT/dps-install/packages/dps-0.9.0.tgz"
 values="$config/values.yaml"
 helm lint "$chart" --values "$values"

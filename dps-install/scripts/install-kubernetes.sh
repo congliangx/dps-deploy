@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
 # Install native K3s on the configured physical host. --download-only never changes system services.
 set -euo pipefail
+for dps_arg in "$@"; do
+  if [[ "$dps_arg" == --help || "$dps_arg" == -h ]]; then
+    printf '%s\n' 'Usage: install-kubernetes.sh [deployment options]'
+    exit 0
+  fi
+done
 source "$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)/deployment-env.sh" "$@"
 set -- "${DPS_DEPLOY_ARGS[@]}"
 umask 077

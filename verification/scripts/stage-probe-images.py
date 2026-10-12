@@ -6,8 +6,14 @@ import sys as _deployment_sys
 from pathlib import Path as _DeploymentPath
 _deployment_sys.dont_write_bytecode = True
 _deployment_sys.path.insert(0, str(_DeploymentPath(__file__).resolve().parents[2] / 'dps-install/scripts'))
+import argparse as _probe_argparse
+_probe_parser = _probe_argparse.ArgumentParser(description=__doc__)
+if any(arg in ("--help", "-h") for arg in _deployment_sys.argv[1:]):
+    _probe_parser.print_help()
+    raise SystemExit(0)
 from deployment_context import context_from_cli as _deployment_context
 CTX = _deployment_context()
+_probe_parser.parse_args()
 SETTINGS = CTX.settings
 SOURCE_ROOT = CTX.source_root
 RUNTIME_ROOT = CTX.runtime_root

@@ -1,9 +1,16 @@
 #!/usr/bin/env bash
 set -euo pipefail
+for dps_arg in "$@"; do
+  if [[ "$dps_arg" == --help || "$dps_arg" == -h ]]; then
+    printf '%s\n' 'Usage: bmc-simulator.sh [deployment options] [start|stop|restart|status|logs]'
+    exit 0
+  fi
+done
 umask 077
 script_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 source "$script_dir/../../dps-install/scripts/deployment-env.sh" "$@"
 set -- "${DPS_DEPLOY_ARGS[@]}"
+[[ $# -le 1 ]] || { printf '%s\n' 'Unexpected arguments; use --help.' >&2; exit 2; }
 bmc_action=${1:-status}
 bmc_compose=(docker compose -p "$DPS_BMC_PROJECT" -f "$DPS_RUNTIME_ROOT/hardware-sim/runtime/compose.yaml")
 case "$bmc_action" in

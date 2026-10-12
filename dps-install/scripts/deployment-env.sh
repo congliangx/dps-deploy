@@ -17,6 +17,18 @@ dps_context_exports=$(PYTHONDONTWRITEBYTECODE=1 python3 "$dps_context_dir/deploy
 # Values are produced using Python shlex.quote from public settings, never credentials.
 eval "$dps_context_exports"
 unset dps_context_exports dps_context_options dps_context_dir
+# Native manual installs keep matching tools in runtime; each new shell needs this path.
+dps_tools_dir="$DPS_RUNTIME_ROOT/dps-install/packages/tools/bin"
+if [[ -d "$dps_tools_dir" ]]; then
+  IFS=: read -r -a dps_path_parts <<< "${PATH:-}"
+  dps_tools_path="$dps_tools_dir"
+  for dps_path_part in "${dps_path_parts[@]}"; do
+    [[ "$dps_path_part" == "$dps_tools_dir" ]] && continue
+    dps_tools_path+=":$dps_path_part"
+  done
+  export PATH="$dps_tools_path"
+fi
+unset dps_tools_dir dps_path_parts dps_tools_path dps_path_part
 
 # Require the configured Compose project to match an existing migrated instance.
 dps_compose_project() {

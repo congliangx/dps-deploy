@@ -27,11 +27,9 @@
 /dps-install/config/*
 !/dps-install/config/artifact-sources.json
 !/dps-install/config/values.example.yaml
-!/dps-install/config/runtime-images.json
 !/dps-install/config/gb300-power-shelf-devices.yaml
 !/dps-install/config/prs/
 /dps-install/config/prs/*
-!/dps-install/config/prs/runtime-images.json
 # Our LDAP build recipe is source; downloaded packages and image archives are output.
 /dps-install/packages/*
 !/dps-install/packages/ldap/

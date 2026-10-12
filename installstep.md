@@ -100,7 +100,7 @@ bash dps-install/scripts/install-from-zero.sh \
 
 ### B. 复用本机原生 K3s，安装一套新的完整 Lab
 
-仅当本机已有可用的原生 K3s 时，可显式传入其外部管理员 kubeconfig，跳过 K3s 服务初始化。该入口仍通过本机 k3s ctr 导入镜像，仍依赖 Traefik CRD/Ingress 与合适的 StorageClass；管理员 kubeconfig 必须指向这台物理机的集群，当前 context 必须正确，并具备 namespace、Secret、Ingress 和 Helm 安装权限。这不是复用任意远程企业集群的通用入口。
+此分支仅复用本仓库支持的本机原生 K3s：固定 v1.34.12+k3s1，服务以 /usr/local/bin/k3s server --config 启动。预检核对 native 配置的 node IP/API 端口/Pod 与 Service CIDR、集群 CA、物理 Node UID 和显式 context 一致后，才跳过 K3s 初始化；其他已有 K3s/Kubernetes 按 [客户对接指南](dps-install/existing-infrastructure.md) 手工接入。该入口仍通过本机 k3s ctr 导入镜像，仍依赖 Traefik CRD/Ingress 与合适的 StorageClass；管理员 kubeconfig 必须指向这台物理机的集群，当前 context 必须正确，并具备 namespace、Secret、Ingress 和 Helm 安装权限。这不是复用任意远程企业集群的通用入口。
 
 先读取外部 kubeconfig 的 current-context，并将 deployment.yaml 的 kube_context 设置成该相同名称，确保安装后第 0.2 节重新加载的环境与实际集群一致。再在配置中选择独立的新 namespace/release、instance_prefix、Compose project、AgentId、API/UI 域名、端口、子网和空运行目录，核对不会占用现有实例，再执行：
 

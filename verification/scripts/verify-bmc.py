@@ -6,8 +6,17 @@ import sys as _deployment_sys
 from pathlib import Path as _DeploymentPath
 _deployment_sys.dont_write_bytecode = True
 _deployment_sys.path.insert(0, str(_DeploymentPath(__file__).resolve().parents[2] / 'dps-install/scripts'))
+import argparse as _control_argparse
+_control_parser = _control_argparse.ArgumentParser(description=__doc__)
+_control_parser.add_argument("--control", action="store_true", help="Explicitly write and restore simulator power limits")
+if any(arg in ("--help", "-h") for arg in _deployment_sys.argv[1:]):
+    _control_parser.print_help()
+    raise SystemExit(0)
 from deployment_context import context_from_cli as _deployment_context
 CTX = _deployment_context()
+_control_args = _control_parser.parse_args()
+if not _control_args.control:
+    _control_parser.error("This test writes power limits; pass --control explicitly.")
 SETTINGS = CTX.settings
 SOURCE_ROOT = CTX.source_root
 RUNTIME_ROOT = CTX.runtime_root
@@ -19,7 +28,7 @@ from pathlib import Path
 BASE=CTX.runtime_root
 nodes=json.loads((BASE/'hardware-sim/runtime/nodes.json').read_text())
 creds=json.loads((BASE/'dps-install/config/bmc-credentials.json').read_text())
-context=ssl._create_unverified_context()
+context=ssl.create_default_context(cafile=str(BASE/'dps-install/config/simulator-ca.crt'))
 header='Basic '+base64.b64encode((creds['username']+':'+creds['password']).encode()).decode()
 PATH='/redfish/v1/Systems/HGX_Baseboard_0/Processors/GPU_0/EnvironmentMetrics'
 def request(node,path,method='GET',body=None,auth=header):
@@ -37,7 +46,7 @@ def request(node,path,method='GET',body=None,auth=header):
 def metric(node):
  code,_,d=request(node,PATH);assert code==200,(node['node_id'],code)
  return d['PowerLimitWatts']['SetPoint']
-report={'time_utc':datetime.now(timezone.utc).isoformat(),'rack_count':4,'nodes':72,'tls':'self-signed','checks':{}}
+report={'time_utc':datetime.now(timezone.utc).isoformat(),'rack_count':4,'nodes':72,'tls':'strict-ca','checks':{}}
 for label,auth in [('without_auth',None),('configured_credentials',header),('wrong_credentials','Basic '+base64.b64encode(b'wrong:wrong').decode())]:
  report['checks'][label]={'http_status':request(nodes[0],'/redfish/v1/',auth=auth)[0]}
 report['authentication_enforced']=report['checks']['wrong_credentials']['http_status'] in [401,403]
@@ -66,10 +75,14 @@ try:
  assert observed==expected,'Node Host state isolation failed'
 finally:
  for n in modified:
-  status,_,_=request(n,PATH,'PATCH',{'PowerLimitWatts':{'SetPoint':original[n['node_id']]}})
-  got=metric(n)
-  restore.append({'node_id':n['node_id'],'http_status':status,'restored':got==original[n['node_id']]})
+  try:
+   status,_,_=request(n,PATH,'PATCH',{'PowerLimitWatts':{'SetPoint':original[n['node_id']]}})
+   got=metric(n)
+   restore.append({'node_id':n['node_id'],'http_status':status,'restored':status in [200,202,204] and got==original[n['node_id']]})
+  except Exception as error:
+   restore.append({'node_id':n['node_id'],'restored':False,'error_type':type(error).__name__})
  report['checks']['power_restore']={'all_restored':all(r['restored'] for r in restore),'details':restore}
  (BASE/'verification/reports/verification-control.json').write_text(json.dumps(report,indent=2)+'\n')
+ (BASE/'verification/reports/verification-control.json').chmod(0o600)
 assert all(r['restored'] for r in restore),'Power limit restoration failed'
 print(json.dumps({'power_control_passed':len(power),'node_state_isolation':report['checks']['node_state_isolation']['pass'],'all_restored':report['checks']['power_restore']['all_restored'],'authentication_enforced':report['authentication_enforced'],'session_create_status':code}))

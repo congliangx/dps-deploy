@@ -1,7 +1,14 @@
 #!/usr/bin/env bash
 set -euo pipefail
+for dps_arg in "$@"; do
+  if [[ "$dps_arg" == --help || "$dps_arg" == -h ]]; then
+    printf '%s\n' 'Usage: kubernetes.sh [deployment options] [status|start|stop]'
+    exit 0
+  fi
+done
 source "$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)/deployment-env.sh" "$@"
 set -- "${DPS_DEPLOY_ARGS[@]}"
+[[ $# -le 1 ]] || { printf '%s\n' 'Unexpected arguments; use --help.' >&2; exit 2; }
 cd "$DPS_RUNTIME_ROOT"
 case "${1:-status}" in
  status)

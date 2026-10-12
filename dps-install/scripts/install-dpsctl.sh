@@ -1,7 +1,14 @@
 #!/usr/bin/env bash
 set -euo pipefail
+for arg in "$@"; do
+  if [[ "$arg" == --help || "$arg" == -h ]]; then
+    printf '%s\n' "Usage: bash install-dpsctl.sh [deployment overrides]" "Install the pinned DPS 0.9.0 CLI binary."
+    exit 0
+  fi
+done
 source "$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)/deployment-env.sh" "$@"
 set -- "${DPS_DEPLOY_ARGS[@]}"
+[[ $# -eq 0 ]] || { echo "Unexpected parameter: $1; use --help." >&2; exit 2; }
 cd "$DPS_RUNTIME_ROOT"
 dpsctl_image=nvcr.io/nvidia/dpsctl@sha256:27fa8297f0efc18a0d22a6822c812347a7706bb2fc19f4d5c901f7125361bfdb
 dpsctl_target="$DPS_RUNTIME_ROOT/dps-install/packages/tools/bin/dpsctl"
