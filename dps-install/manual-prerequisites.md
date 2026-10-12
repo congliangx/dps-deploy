@@ -17,7 +17,7 @@ ip -4 address show dev "$DPS_INTERFACE"
 df -h "$DPS_RUNTIME_ROOT"
 ~~~
 
-预期为 Ubuntu 22.04/24.04 amd64、systemd、配置中的实际管理网卡/IP。源码必须在 runtime_root 外。L20-12 已有运行数据，维护时直接使用原配置与身份，跳过本文“首次创建”。
+预期为 Ubuntu 22.04/24.04 amd64、systemd、配置中的实际管理网卡/IP。源码位置由当前仓库决定，runtime_root 可与源码同根（.）、选择仓库内专用子目录（.runtime）或其他目录（如 /srv/dps-lab）；配置中的相对路径按 deployment.yaml 所在目录解析。L20-12 的外置 runtime 是当前布局，已有运行数据，维护时直接使用原配置与身份，跳过本文“首次创建”。
 
 ## 1. 安装 OS 依赖和 Docker Compose v2
 
@@ -73,7 +73,7 @@ helm version --short
 kubectl version --client=true -o json | jq '.clientVersion.gitVersion'
 ~~~
 
-预期 Helm v3.22.0、kubectl v1.34.12。不要把下载文件写入源码目录。
+预期 Helm v3.22.0、kubectl v1.34.12。下载文件放在所选 DPS_RUNTIME_ROOT 的 packages 子目录，不覆盖公开模板，也不提交 Git。
 
 ## 3. 固定 DPS chart 与全部镜像
 
@@ -116,14 +116,19 @@ chart SHA256 必须为 2fc7b6e098b17085bf9aaf010d86dfeaf62677fd0f80bb4c2702e91b0
 
 ## 4. 构建独立 OpenLDAP 2.6.10 镜像
 
-从 Debian 官方快照下载 17 个固定 .deb，再使用公开配方离线构建，不依赖旧 image ID 或旧 tar SHA。已用于运行实例的 LDAP image ID 不替换。
+从 Debian 官方快照下载 17 个固定 .deb，再使用公开配方离线构建，不依赖旧 image ID 或旧 tar SHA。源码与运行目录同根时，三份配方文件跳过复制到自身，仍执行固定 SHA 校验；下载的 deb 和生成镜像包不提交 Git。已用于运行实例的 LDAP image ID 不替换。
 
 ~~~bash
 ldap_build="$DPS_RUNTIME_ROOT/dps-install/packages/ldap/build"
 mkdir -p "$ldap_build/debs"
-cp "$DPS_SOURCE_ROOT/dps-install/packages/ldap/build/Dockerfile" "$ldap_build/Dockerfile"
-cp "$DPS_SOURCE_ROOT/dps-install/packages/ldap/build/entrypoint.sh" "$ldap_build/entrypoint.sh"
-cp "$DPS_SOURCE_ROOT/dps-install/packages/ldap/build/SHA256SUMS" "$ldap_build/SHA256SUMS"
+for recipe in Dockerfile entrypoint.sh SHA256SUMS; do
+  recipe_source="$DPS_SOURCE_ROOT/dps-install/packages/ldap/build/$recipe"
+  recipe_runtime="$ldap_build/$recipe"
+  # 同根布局时，配方已位于目标目录，不复制到自身。
+  if ! test "$recipe_source" -ef "$recipe_runtime"; then
+    cp "$recipe_source" "$recipe_runtime"
+  fi
+done
 jq -r '.ldap.debs[] | [.filename,.url,.sha256] | @tsv' "$manifest" |
 while IFS="$(printf '\t')" read -r name url sha; do
   file="$ldap_build/debs/$name"

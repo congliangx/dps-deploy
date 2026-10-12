@@ -1,6 +1,6 @@
 # 4 rack GB300 BMC 访问与接入说明
 
-首次安装见 [硬件手工步骤](manual-install.md)，整个部署见 [installstep](../installstep.md)。远端ssh root@L20-12；源码 /raid/vince/deploy，运行 /raid/vince/deployed-test，由根 [deployment.yaml](../deployment.yaml) 的runtime_root/host_ip/bmc_start_port决定。
+首次安装见 [硬件手工步骤](manual-install.md)，整个部署见 [installstep](../installstep.md)。SOURCE_ROOT是实际Git仓库位置；RUNTIME_ROOT由 [deployment.yaml](../deployment.yaml) 的runtime_root选择，host_ip/bmc_start_port决定对外入口。当前L20-12通过ssh root@L20-12连接，源码 /raid/vince/deploy、运行 /raid/vince/deployed-test；这些路径只是现有实例布局。其他用户可自选运行目录，如.runtime（仓库内专用子目录）、.（与源码同根）或/srv/dps-lab（绝对目录），上级目录也可用；配置中的相对路径按deployment.yaml所在目录解析，生成物不提交Git。
 
 ~~~bash
 # 先进入实际 clone 的仓库根目录。
@@ -31,7 +31,7 @@ source "$DPS_SOURCE_ROOT/dps-install/scripts/deployment-env.sh"
 | runtime/dps-install/config/topology-4rack-dps09.json | 当前有效拓扑，72AgentId在Topology.Entities |
 | source/dps-install/config/gb300-power-shelf-devices.yaml | 33kW/95%PowerSupply注册 |
 
-source与runtime是上文两个绝对根；下载chart在runtime/dps-install/packages。公开nodes模板在source/hardware-sim/templates/nodes.json。旧SDK/vendor下载不是当前启动依赖，旧拓扑文件仅属于归档，不是安装输入。
+本文source与runtime分别指SOURCE_ROOT与RUNTIME_ROOT，不固定绝对位置；下载chart在runtime/dps-install/packages。公开nodes模板在source/hardware-sim/templates/nodes.json。旧SDK/vendor下载不是当前启动依赖，旧拓扑文件仅属于归档，不是安装输入。
 
 ## TLS与认证的真实范围
 

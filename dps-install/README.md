@@ -12,7 +12,7 @@ DPS_SOURCE_ROOT=$(git rev-parse --show-toplevel)
 source "$DPS_SOURCE_ROOT/dps-install/scripts/deployment-env.sh"
 ~~~
 
-源码 dps-install 保留公开 config 模板、artifact-sources.json、LDAP 构建配方与脚本。运行时输入是 $DPS_RUNTIME_ROOT/dps-install/config；下载包是 runtime/dps-install/packages；数据库、K3s、备份是 runtime/dps-install/data。源码中没有 live values/真实 Secret、密码、证书/私钥或 kubeconfig。
+Git 跟踪 dps-install 的公开 config 模板、artifact-sources.json、LDAP 构建配方与脚本。运行时输入是 $DPS_RUNTIME_ROOT/dps-install/config；下载包是 runtime/dps-install/packages；数据库、K3s、备份是 runtime/dps-install/data。runtime_root由用户选择：.runtime为仓库内专用子目录，.为源码与运行材料同根，/srv/dps-lab为自选绝对目录，源码上级目录也可用。配置中的相对路径按deployment.yaml所在目录解析；live values/真实 Secret、密码、证书/私钥和 kubeconfig 均排除 Git。
 
 ## 1. 下载与物理集群
 

@@ -75,9 +75,16 @@ def load_context(source_root=None, runtime_root=None, config_path=None, override
         if s["instance_prefix"] != defaults["instance_prefix"] and s.get(key) == defaults.get(key) and (overrides or {}).get(key) is None:
             s[key] = s["instance_prefix"] + "-" + suffix
         s.setdefault(key, s["instance_prefix"] + "-" + suffix)
-    runtime = Path(runtime_root or (os.environ.get("DPS_RUNTIME_ROOT") if inherited_valid else None) or s["runtime_root"]).expanduser().resolve()
-    if runtime == source or source in runtime.parents or runtime in source.parents:
-        raise ValueError("Runtime and source directories must be separate without nesting")
+    # YAML paths belong to the configuration file; explicit CLI paths use the cwd.
+    # Placement is a user choice, including the source root or a directory beneath it.
+    selected_runtime = runtime_root or (os.environ.get("DPS_RUNTIME_ROOT") if inherited_valid else None)
+    if selected_runtime:
+        runtime = Path(selected_runtime).expanduser().resolve()
+    else:
+        runtime = Path(s["runtime_root"]).expanduser()
+        if not runtime.is_absolute():
+            runtime = config.parent / runtime
+        runtime = runtime.resolve()
     if not re.fullmatch(r"[A-Za-z0-9_./-]+", str(runtime)):
         raise ValueError("Runtime path must contain only letters, digits, /, _, . and -")
     ipaddress.IPv4Address(s["host_ip"])

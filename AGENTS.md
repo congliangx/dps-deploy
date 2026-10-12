@@ -2,12 +2,12 @@
 
 ## 当前任务与目录
 
-用户要求源码仓库保持干净，全部下载、生成配置、证书、密码、Secret、data、日志、报告与历史归档放在 /raid/vince/deployed-test。源码仓库当前在远端 /raid/vince/deploy，使用 ssh root@L20-12；源码根必须从脚本位置推导，运行参数由唯一的 [deployment.yaml](deployment.yaml) 读取，不在各脚本固定主机/IP/端口/目录。
+当前 L20-12 实例按用户要求保持仓库工作目录干净：源码在 /raid/vince/deploy，下载、生成配置、证书、密码、Secret、data、日志、报告与历史归档在 /raid/vince/deployed-test，使用 ssh root@L20-12。这组路径只描述当前实例，不限制其他用户的安装目录。源码根从脚本位置推导；运行参数由唯一的 [deployment.yaml](deployment.yaml) 读取，不在各脚本固定主机/IP/端口/目录。runtime_root 支持绝对路径或相对 deployment.yaml 所在目录的路径，可与源码同根、位于源码子目录、源码外部或其上级目录；CLI --runtime-root 的相对路径按执行目录解析。
 
 所有实际部署与验证均在远端执行。本机只连接并同步本约定。系统服务/二进制按系统机制放在标准路径；系统单元的配置副本和服务数据仍属于 runtime。当前运行目录与默认设置以 deployment.yaml 为准。
 
 - dps-install/scripts/deployment_context.py 提供 source_path、runtime_path 和统一设置；shell 通过 deployment-env.sh 加载同一配置。
-- source 保存脚本、公开模板/资源清单、节点蓝图和文档；不得把 runtime 嵌套到 source、保留 source 内运行目录 symlink/bind mount 或把下载数据复制回来。
+- Git 跟踪脚本、公开模板/资源清单、节点蓝图和文档；用户可以选择同根、仓库内专用 runtime 子目录或其他位置，生成物均不提交。公开模板与生成配置路径必须区分，支持同根部署时不得覆盖源模板。本实例继续使用现有外置 runtime，不为改进通用目录配置而搬迁服务或数据；不通过 symlink/bind mount 把其运行材料放回当前仓库。
 - 必要安装输入/数据分别在 runtime/dps-install/config、packages、data；硬件模拟输出在 runtime/hardware-sim；报告/log/archive 在 runtime/verification。
 - 更改 host/runtime/namespace/project 等设置时先评估既有实例；fresh 入口不能接管无归属的旧 namespace、复用其他实例的域名或重置现有身份。
 - 维护脚本是可选便利入口。installstep.md 和组件 README 必须给下载、配置、证书/密码、Secret、原生 docker/kubectl/helm/dpsctl 命令、解释与预期结果，不能只列自编脚本调用。

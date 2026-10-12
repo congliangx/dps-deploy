@@ -27,7 +27,7 @@ def main():
     s.mkdir(parents=True,exist_ok=True)
     nodes=json.loads(ctx.source_path("hardware-sim/templates/nodes.json").read_text())
     if len(nodes)!=72: raise ValueError("Expected tracked four-rack node mapping")
-    topology=json.loads(ctx.source_path("dps-install/config/topology-4rack-dps09.json").read_text())
+    topology=json.loads(ctx.source_path("dps-install/templates/topology-4rack-dps09.json").read_text())
     for i,n in enumerate(nodes):
         n["port"]=a.start_port+i; n["bmc_url"]=f"https://{a.host_ip}:{n['port']}"; n["secret_name"]="bmc-shared-secret"
     by_name={n["node_id"]:n for n in nodes}

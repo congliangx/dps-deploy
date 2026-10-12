@@ -12,7 +12,7 @@ DPS_SOURCE_ROOT=$(git rev-parse --show-toplevel)
 source "$DPS_SOURCE_ROOT/dps-install/scripts/deployment-env.sh"
 ~~~
 
-部署参数从根 [deployment.yaml](../deployment.yaml) 读取。公开节点模板 [templates/nodes.json](templates/nodes.json)、DPS拓扑 [topology-4rack-dps09.json](../dps-install/config/topology-4rack-dps09.json) 在源码。生成Compose/nginx/nodes/TLS在runtime/hardware-sim/runtime，必要凭据/URL/CA/拓扑在runtime/dps-install/config；验证在runtime/verification。
+部署参数从根 [deployment.yaml](../deployment.yaml) 读取，runtime_root由用户选择：.runtime为仓库内专用子目录，.为源码与运行材料同根，/srv/dps-lab为自选绝对目录，源码上级目录也可用。配置中的相对路径按deployment.yaml所在目录解析，生成物不提交Git。公开节点模板 [templates/nodes.json](templates/nodes.json)、DPS拓扑 [topology-4rack-dps09.json](../dps-install/templates/topology-4rack-dps09.json) 在源码。生成Compose/nginx/nodes/TLS在runtime/hardware-sim/runtime，必要凭据/URL/CA/拓扑在runtime/dps-install/config；验证在runtime/verification。
 
 ## 1. 下载固定镜像
 

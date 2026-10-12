@@ -1,6 +1,6 @@
 # 独立验证与证据目录
 
-安装步骤在 [installstep.md](../installstep.md)。本目录只有可选验收脚本与说明；所有报告、日志、archive和临时文件写入deployment.yaml定义的runtime_root/verification。安装不会读取verification报告，不把验证脚本当作必需部署文件。
+安装步骤在 [installstep.md](../installstep.md)。Git跟踪本目录的可选验收脚本与说明；所有报告、日志、archive和临时文件写入deployment.yaml定义的runtime_root/verification，并排除Git。runtime_root由用户选择：.runtime为仓库内专用子目录，.为源码与运行材料同根，/srv/dps-lab为自选绝对目录，源码上级目录也可用。配置中的相对路径按deployment.yaml所在目录解析。安装不会读取verification报告，不把验证脚本当作必需部署文件。
 
 ## 原生只读检查顺序
 

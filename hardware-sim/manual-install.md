@@ -61,7 +61,7 @@ from pathlib import Path
 source=Path(os.environ["DPS_SOURCE_ROOT"]); root=Path(os.environ["DPS_RUNTIME_ROOT"])
 sim=root/"hardware-sim/runtime"; c=root/"dps-install/config"
 nodes=json.loads((source/"hardware-sim/templates/nodes.json").read_text())
-topology=json.loads((source/"dps-install/config/topology-4rack-dps09.json").read_text())
+topology=json.loads((source/"dps-install/templates/topology-4rack-dps09.json").read_text())
 assert len(nodes)==72 and not topology.get("Policies")
 for i,n in enumerate(nodes):
  n["port"]=int(os.environ["DPS_BMC_START_PORT"])+i

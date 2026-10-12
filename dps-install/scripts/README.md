@@ -15,7 +15,7 @@ dpsctl agent list
 dpsctl topology list
 ~~~
 
-deployment-env.sh / deployment_context.py只解析源码根deployment.yaml，导出DPS_SOURCE_ROOT/DPS_RUNTIME_ROOT、host/namespace/release/AgentId/域名/端口/网段/版本、3个Compose project及kubeconfig/DPSCTL路径。公开源码只放模板/固定清单；实际生成、downloads/data/logs/reports/archive全部在runtime。源码与runtime不是同一目录。
+deployment-env.sh / deployment_context.py读取deployment.yaml，导出DPS_SOURCE_ROOT/DPS_RUNTIME_ROOT、host/namespace/release/AgentId/域名/端口/网段/版本、3个Compose project及kubeconfig/DPSCTL路径。源码根从脚本位置推导，runtime_root由用户设置，支持绝对路径或相对配置文件目录的路径。例如.runtime是仓库内专用子目录，.是源码与运行材料同根，/srv/dps-lab是自选绝对目录；源码上级目录也可用。CLI --runtime-root的相对路径按执行目录解析。Git跟踪公开模板/固定清单，实际生成、downloads/data/logs/reports/archive写入runtime并排除Git。当前L20-12继续使用既有外置runtime。
 
 ## 首次新实例可选实现
 

@@ -21,7 +21,7 @@ NVIDIA0.9要求Kubernetes≥1.31、PowerSteering使用Helm≥3.12及PG≥17；�
 
 源码根deployment.yaml规定runtime_root、主机、网卡、命名、端口/网段与版本；用deployment-env.sh导出，不另维护host/IP脚本常量。公开chart/images/deb校验清单在artifact-sources.json，values.example.yaml与topology公开模板只读。
 
-下载包、生成config/tls/Secret/kubeconfig、数据/备份、日志/报告/archive写runtime_root。所有安装输入在runtime/dps-install/config或runtime/hardware-sim/runtime；验证报告不是前置依赖。文档中的默认地址10.6.131.43/15432/1636/18443只是当前deployment例，实际取环境变量。
+下载包、生成config/tls/Secret/kubeconfig、数据/备份、日志/报告/archive写用户选择的runtime_root；可使用绝对路径（如/srv/dps-lab）或相对deployment.yaml目录的路径（如.runtime）；.表示源码与运行材料同根，上级目录也可用。Git不提交这些生成物。所有安装输入在runtime/dps-install/config或runtime/hardware-sim/runtime；验证报告不是前置依赖。文档中的地址10.6.131.43/15432/1636/18443与L20-12目录只是当前deployment例，实际取环境变量。
 
 ## 手工前置 gate
 

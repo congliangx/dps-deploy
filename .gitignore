@@ -16,6 +16,9 @@
 !/dps-install/*.md
 !/dps-install/scripts/
 !/dps-install/config/
+!/dps-install/templates/
+/dps-install/templates/*
+!/dps-install/templates/topology-4rack-dps09.json
 !/dps-install/packages/
 /dps-install/scripts/*
 !/dps-install/scripts/*.py
@@ -25,7 +28,6 @@
 !/dps-install/config/artifact-sources.json
 !/dps-install/config/values.example.yaml
 !/dps-install/config/runtime-images.json
-!/dps-install/config/topology-4rack-dps09.json
 !/dps-install/config/gb300-power-shelf-devices.yaml
 !/dps-install/config/prs/
 /dps-install/config/prs/*

@@ -31,7 +31,6 @@ import os
 from pathlib import Path
 source=Path(os.environ["DPS_SOURCE_ROOT"]).resolve()
 runtime=Path(os.environ["DPS_RUNTIME_ROOT"]).resolve()
-assert source!=runtime and source not in runtime.parents and runtime not in source.parents, "源码/运行目录不得相同或嵌套"
 print("source:",source,"runtime:",runtime)
 PY
 mkdir -p "$DPS_RUNTIME_ROOT"
@@ -43,9 +42,9 @@ systemctl is-active k3s || true
 ss -ltn
 ~~~
 
-默认源码 /raid/vince/deploy，运行 /raid/vince/deployed-test。其他主机只改 deployment.yaml 的 runtime_root/host/网卡/命名/端口等，无需改其他文档的源码绝对路径；不要把实例配置改在多份脚本里。Compose project 读取 DPS_BMC_PROJECT、DPS_PG_PROJECT、DPS_LDAP_PROJECT。
+源码根从实际 clone 位置推导；runtime_root 由用户在 deployment.yaml 选择。可以填写绝对路径（如 /srv/dps-lab），也可以填写相对 deployment.yaml 所在目录的路径（如 .runtime）；填写 . 表示与源码同根。运行目录也可以在源码的上级目录。公开模板与生成配置使用不同文件，不因选择同根而覆盖模板，生成物始终由 .gitignore 排除。可选 CLI --runtime-root 的相对路径按执行目录解析。L20-12 当前的 /raid/vince/deploy 与 /raid/vince/deployed-test 是本实例布局，后续步骤只使用 DPS_SOURCE_ROOT/DPS_RUNTIME_ROOT，无需改其他文档的源码绝对路径。主机/网卡/命名/端口等也只改这一份配置。Compose project 读取 DPS_BMC_PROJECT、DPS_PG_PROJECT、DPS_LDAP_PROJECT。
 
-检查 runtime 中已有 PGDATA、LDAP data.mdb、证书/密码、kubeconfig 与 Helm release。已有部署进入“维护”分支，保留原身份和数据库，跳过所有首次生成/初始化。不能复制本文直接覆盖 L20-12 的现有数据。源码内只有公开模板与配方；下载、生成配置、runtime、data、日志、报告、archive 一律进入 runtime_root。
+检查 runtime 中已有 PGDATA、LDAP data.mdb、证书/密码、kubeconfig 与 Helm release。已有部署进入“维护”分支，保留原身份和数据库，跳过所有首次生成/初始化。不能复制本文直接覆盖 L20-12 的现有数据。Git 跟踪公开模板与配方；下载、生成配置、data、日志、报告、archive 进入所选 runtime_root，不提交 Git。改变 runtime_root 只是选择路径，不会自动迁移已有服务或数据库；已有实例须继续使用原目录，另行安排迁移时保留原身份与数据。
 
 ## 1. 主机依赖、Helm/kubectl 与固定包下载
 

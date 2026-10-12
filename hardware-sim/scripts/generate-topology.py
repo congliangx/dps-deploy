@@ -29,7 +29,7 @@ def save_json(path, value):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--source", type=Path, default=CTX.source_path("dps-install/config/topology-4rack-dps09.json"))
+    parser.add_argument("--source", type=Path, default=CTX.source_path("dps-install/templates/topology-4rack-dps09.json"))
     parser.add_argument("--output-dir", type=Path, default=CTX.runtime_path("hardware-sim/runtime"))
     parser.add_argument("--dps-config-dir", type=Path, default=CTX.runtime_path("dps-install/config"))
     parser.add_argument("--report-dir", type=Path, default=CTX.runtime_path("verification/reports"))

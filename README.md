@@ -8,16 +8,28 @@
 
 只编辑根 [deployment.yaml](deployment.yaml)：主机/IP/网卡、namespace/release、域名/AgentId、端口/子网、固定版本及 Compose project 都从这里读取。
 
-| 位置 | 内容 |
+| 逻辑位置 | 内容 |
 | --- | --- |
-| /raid/vince/deploy | Git 源码、公开模板、固定包来源/SHA/digest、文档、安装/维护/验证脚本 |
-| /raid/vince/deployed-test | deployment.yaml 的 runtime_root：下载包、生成配置/证书/密码/Secret、数据、systemd 副本、日志/报告/archive |
-| runtime/hardware-sim/runtime | 独立 BMC config、nodes、nginx、Compose、TLS |
-| runtime/dps-install/config | values、拓扑、PG/LDAP/TLS/PRS 输入、kubeconfig 与私密访问凭据 |
-| runtime/dps-install/data | 独立数据库、K3s/containerd/kubelet/local-path、备份 |
-| runtime/verification | 可复验结果、日志、历史和临时材料 |
+| SOURCE_ROOT | Git 仓库根：公开模板、固定包来源/SHA/digest、文档、安装/维护/验证脚本 |
+| RUNTIME_ROOT | deployment.yaml 的 runtime_root：下载包、生成配置/证书/密码/Secret、数据、systemd 副本、日志/报告/archive |
+| RUNTIME_ROOT/hardware-sim/runtime | 独立 BMC config、nodes、nginx、Compose、TLS |
+| RUNTIME_ROOT/dps-install/config | values、拓扑、PG/LDAP/TLS/PRS 输入、kubeconfig 与私密访问凭据 |
+| RUNTIME_ROOT/dps-install/data | 独立数据库、K3s/containerd/kubelet/local-path、备份 |
+| RUNTIME_ROOT/verification | 可复验结果、日志、历史和临时材料 |
 
-源码与 runtime_root 不能相同。系统软件按机制使用 /usr/local/bin 与 /etc/systemd，副本/缓存/数据在 runtime；不用 k3d/kind 节点容器。
+SOURCE_ROOT 从脚本或当前 Git 工作区推导；RUNTIME_ROOT 由用户选择，允许与源码同根、位于源码子目录、源码外部或其上级目录。runtime_root 可以使用绝对路径，也可以使用相对 deployment.yaml 所在目录的路径：
+
+| runtime_root 示例 | 布局 |
+| --- | --- |
+| .runtime | 仓库内的专用运行子目录 |
+| . | 源码与运行材料同根；公开模板与生成配置分别使用不同文件 |
+| /srv/dps-lab | 自选绝对运行目录 |
+
+Git 只跟踪公开源码，生成物在任何布局下都不应提交。可选命令参数 --runtime-root 的相对路径按命令执行目录解析。
+
+L20-12 当前采用 SOURCE_ROOT=/raid/vince/deploy、RUNTIME_ROOT=/raid/vince/deployed-test，以保持该仓库工作目录干净。这是当前实例的布局，其他用户可选择自己的目录。修改配置不会自动搬迁已有实例；本次文档调整继续使用当前目录与数据。
+
+系统软件按机制使用 /usr/local/bin 与 /etc/systemd，副本/缓存/数据在 RUNTIME_ROOT；不用 k3d/kind 节点容器。
 
 ~~~bash
 ssh root@L20-12
@@ -52,6 +64,6 @@ L20-12 为实际单节点 Kubernetes；DPS 0.9.0、Power Steering 2.1.0、Seawee
 
 ## Git 与私密输入
 
-Git 保留必需脚本、公开拓扑/values 模板、deployment.yaml、固定下载清单与 LDAP 构建配方；网络下载包、SDK/vendor、运行数据、密码/Secret、证书/私钥/kubeconfig、日志/报告/archive 均留 runtime。报告是验收证据，不是安装依赖。
+Git 保留必需脚本、公开拓扑/values 模板、deployment.yaml、固定下载清单与 LDAP 构建配方；网络下载包、SDK/vendor、运行数据、密码/Secret、证书/私钥/kubeconfig、日志/报告/archive 均留 RUNTIME_ROOT。仓库内的专用运行子目录由 .gitignore 排除；报告是验收证据，不是安装依赖。
 
 新实例按手工步骤生成新身份与空数据；已有实例使用其保存的身份、values 和数据，不重建 CA/JWT/账号或重播历史迁移。当前跟踪范围以根 [.gitignore](.gitignore) 为准。
