@@ -4,6 +4,14 @@
 
 安装前先读 [前置要求与手工安装](dps-install/manual-prerequisites.md)：同一页先列准备项和新建/复用选择，再给出版本说明、具体安装命令与状态检查。固定版本及完整 Lab 检查单只描述本仓库实验环境，客户可以复用满足要求的现有服务。
 
+## 安装完成后：访问与日常维护
+
+**安装完成后，请按 [dps-access.md：Kubernetes / DPS 访问与维护](dps-install/dps-access.md) 的步骤开始使用和维护。**
+
+该文档说明每次新 SSH/Bash 会话如何加载环境变量、选择 Kubernetes context/namespace、查询 Pod 与 Helm 状态、使用真实 LDAP 账号登录 DPS CLI，以及在自己的电脑上配置域名/CA 后访问 UI；同时列出 kubeconfig、账号、证书、CLI 会话、日志与数据的位置，并链接状态查询、备份和启停入口。
+
+日常访问从这份维护文档进入；首次安装与维护的动作分别说明，保留已有密码、证书和数据。复用客户已有 Kubernetes/身份服务时，使用客户实际 kubeconfig、values 和凭据，按 [已有基础设施对接指南](dps-install/existing-infrastructure.md) 选择环境。
+
 ## 安装内容与组件选择
 
 先填写自己的环境清单，再选择下面需要新装的部分。已有服务应对接其地址、访问权限和证书，无需为使用本仓库再部署一套。

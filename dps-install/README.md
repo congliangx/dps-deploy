@@ -6,6 +6,12 @@
 
 本页后续命令是完整 Lab 示例：配置和下载→独立 PG/LDAP→13 Secret→values/Helm→真实 LDAP 登录→inactive 模拟拓扑/PRS。完整顺序在根 [installstep.md](../installstep.md)，原生命令的长步骤分别在 [主机/K3s](manual-prerequisites.md)、[PG](manual-postgresql.md)、[LDAP](manual-ldap.md)、[DPS](manual-install.md)。只新装缺少的组件即可；以下 Docker 容器名、目录、账号、Secret/Pod/PVC 数量均属于该 Lab 配置。
 
+## 安装完成后：访问与日常维护
+
+**DPS 安装完成后，继续阅读 [dps-access.md](dps-access.md)。** 按该文档加载本实例环境、访问 Kubernetes/Helm、登录 DPS CLI、配置浏览器电脑的域名与 CA，并找到账号/证书/会话文件和状态、日志、备份及启停入口。
+
+每次新的 SSH/Bash 会话都需重新加载环境；维护使用现有配置、身份与数据。下文首次安装章节与维护步骤分开，完成安装后按访问文档进行日常操作。
+
 ## 路径与配置
 
 [deployment.yaml](../deployment.yaml) 统一设置本仓库 Lab 脚本参数；它不是任意客户环境的 DPS Helm values。客户对接信息应写入自己的 values，并使用目标集群的 kubeconfig/context。下列 source 命令只用于本仓库 Lab：

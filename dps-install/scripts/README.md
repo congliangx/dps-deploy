@@ -38,7 +38,8 @@ bash dps-install/scripts/install-ldap.sh --config deployment.yaml
 
 | 工具 | 用途 |
 | --- | --- |
-| install-component.py + install-bmc.sh / install-postgresql.sh / install-ldap.sh | 各组件独立下载、生成、启动与自检；Secret 只落盘，后续按手册对接 DPS |\n| install-from-zero.sh / install-from-zero.py | 可选自动化链；下载/生成新身份→物理K3s→独立Docker→手动Helm→LDAP→inactive拓扑/PRS |
+| install-component.py + install-bmc.sh / install-postgresql.sh / install-ldap.sh | 各组件独立下载、生成、启动与自检；Secret 只落盘，后续按手册对接 DPS |
+| install-from-zero.sh / install-from-zero.py | 可选自动化链；下载/生成新身份→物理K3s→独立Docker→手动Helm→LDAP→inactive拓扑/PRS |
 | install-host-dependencies.sh | OS依赖、Docker/Composev2/PythonYAML/OpenSSL |
 | download-artifacts.py | 官方chart/11镜像digest/17固定deb、LDAP构建与本次ID；拒绝冲突缓存 |
 | prepare-bmc-fresh.py | 公开nodes/topology→新密码/CA/72路由/Compose，无SDK/vendor依赖 |

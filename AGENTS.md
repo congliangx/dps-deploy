@@ -13,7 +13,9 @@
 - 必要安装输入/数据分别在 runtime/dps-install/config、packages、data；硬件模拟输出在 runtime/hardware-sim；报告/log/archive 在 runtime/verification。
 - 更改 host/runtime/namespace/project 等设置时先评估既有实例；fresh 入口不能接管无归属的旧 namespace、复用其他实例的域名或重置现有身份。
 - installstep.md 保留完整 Lab 一条脚本与分阶段执行入口，同时可按手工路线安装；各 manual 解释脚本阶段、产物及完整原生命令。脚本/手工路线无需重复执行，不能再把脚本示例从主安装入口完全移除。客户已有服务仍走对接指南，当前 Lab 脚本不变成任意企业环境的通用安装器。
-- 各节明确“脚本/手工安装二选一”和“安装后只读检查”，不把已在手册执行的 Compose/Helm/身份生成再次列成后续步骤。独立 BMC/PG/LDAP 入口只下载/配置/启动自身组件，Secret YAML 不自动 apply，后续走 DPS 手册或已有基础设施对接；独立组件启动后不承诺接续全套 fresh 链。\n- installstep.md 只记录可重复安装流程；实际迁移、故障、日期和验收记录追加 docs/operation-history.md。完整私密证据留 runtime/verification，不提交 Git。
+- 各节明确“脚本/手工安装二选一”和“安装后只读检查”，不把已在手册执行的 Compose/Helm/身份生成再次列成后续步骤。独立 BMC/PG/LDAP 入口只下载/配置/启动自身组件，Secret YAML 不自动 apply，后续走 DPS 手册或已有基础设施对接；独立组件启动后不承诺接续全套 fresh 链。
+- 根 README 与 dps-install/README 突出安装后访问/维护入口 dps-install/dps-access.md；该文档完整说明环境加载、Kubernetes/DPS CLI/UI、凭据与 CA 位置以及维护入口，日常操作保留原身份/数据。
+- installstep.md 只记录可重复安装流程；实际迁移、故障、日期和验收记录追加 docs/operation-history.md。完整私密证据留 runtime/verification，不提交 Git。
 - 修改前备份必要配置/数据库，并保留失败实录；历史不得伪装成当前结果。更新此文件后同步本机 deploy/AGENTS.md。
 
 ## 运行实例与边界
