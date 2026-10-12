@@ -1,10 +1,8 @@
-# L20-12 当前 DPS 0.9 部署的公开、主机特定配置示例。
-# 只包含 Secret 名称/key 引用；对应密码、JWT、TLS 私钥和 kubeconfig 不随 Git 交付。
-# 本文件不会创建 LDAP 用户、数据库、Secret 或现有部署的身份/持久化数据。
-# 使用前核对目标主机、域名/IP、namespace、存储和 Docker DNAT NetworkPolicy。
-# 按 AGENTS.md、installstep.md 与 dps-install/prerequisites.md 安全准备私密输入。
-# 在目标环境审阅后另行准备 values.yaml；不要覆盖 L20-12 的现行 values.yaml。
-# 克隆仓库不能直接恢复现有部署，不提供一键重建保证。
+# DPS 0.9 公开配置模板，只保存 Secret 名称/key 引用。
+# 新实例由 prepare-dps-fresh.py 读取此模板，按主机参数生成 values.yaml；
+# install-from-zero.sh 生成数据库、LDAP、证书、密码、JWT 和 Secret。
+# 首次部署见 dps-install/from-zero.md；旧实例维护见 AGENTS.md。
+# 私密输入与持久化数据不随 Git 交付，不能覆盖 L20-12 的现行身份/values。
 global:
   defaultStorageClass: local-path
   imagePullSecrets: []

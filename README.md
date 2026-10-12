@@ -1,5 +1,9 @@
 # DPS 0.9 与 GB300 模拟环境
 
+首次部署一个新实例见 [从零部署](dps-install/from-zero.md)：从空仓库获取固定资源并生成新的密码、CA/证书和 Secret，手动部署 DPS/PRS。2026-10-12 的隔离新实例完整验收 44/44，9 个工作负载 Ready、0 restart，生成新密码/CA/JWT/13 份 Secret；测试从空仓库部署并复用现有物理原生 K3s，未执行裸机 OS/K3s 首次安装或 BMC 功率控制。验收范围见 [从零部署](dps-install/from-zero.md)，结果见 [新实例验收摘要](verification/reports/from-zero-summary.json)。
+
+现有 L20-12 的运行维护快照与入口保留如下。
+
 主机 `root@L20-12`，项目目录 `/raid/vince/deploy`。DPS 0.9.0 通过保存的 Helm chart 手动运行在物理机原生 K3s，release `dps`、namespace `dps`、context `dps-l20-12`。2026-10-10 上午（Asia/Shanghai）接入独立 OpenLDAP 2.6.10；10:52:29 的 DPS LDAP 身份/授权、令牌和 UI session API 验收为 28/28。UI 验证基于会话 API，未进行浏览器视觉验收。
 
 2026-10-10（Asia/Shanghai）PRS 已通过手动 Helm 升级启用，当前 release 为 revision 5、deployed，9 个 workload Ready。17:05:41 的 PRS 验收为 35/35，覆盖部署、实际 Pod 严格数据库 TLS、S3、Controller 的 LDAP/DPS TLS 连接与登录回归。DPS 已持久化 `prs_enabled=true`、headroom `-15%` 和 scheduler `5 秒`；实际 PowerSteering 为 2.1.0，SeaweedFS 为 4.18。
@@ -8,6 +12,7 @@ SDK 独立模拟 4 个 GB300 rack、72 个计算节点、288 个 GPU；独立 Po
 
 | 目录 / 文件 | 用途 | 入口 |
 |---|---|---|
+| `dps-install/from-zero.md` | 新主机/空仓库首次部署与参数 | [从零部署](dps-install/from-zero.md) |
 | `hardware-sim/` | SDK 原件、BMC 配置和启停/生成脚本 | [硬件模拟说明](hardware-sim/bmc-access.md) |
 | `dps-install/` | DPS 安装包、安装/维护脚本、配置和持久数据 | [DPS 安装文件说明](dps-install/README.md) |
 | `dps-install/dps-access.md` | UI/API、登录、CA、环境变量和当前范围 | [DPS 访问说明](dps-install/dps-access.md) |
@@ -47,10 +52,10 @@ PRS 复用独立 PostgreSQL 17.11 的 `dps_prs_config`、`dps_prs_config_staged`
 
 ## Git 交付范围
 
-版本库保存必要安装/维护脚本、可复验的验证脚本、当前拓扑与电源架输入、经审查的普通配置、[公开 values 示例](dps-install/config/values.example.yaml)，以及 `verification/reports/` 中最新精简验收摘要。普通配置包括 Compose、原生 K3s 配置、数据库初始化/访问规则和固定镜像 manifest；实际交付以 Git 文件清单为准。
+版本库保存首次部署/维护脚本、可复验的验证脚本、当前拓扑与电源架输入、普通配置与 [公开 values 示例](dps-install/config/values.example.yaml)、[bootstrap 参数示例](dps-install/config/bootstrap.example.yaml)，以及最新精简验收摘要。[从零部署](dps-install/from-zero.md) 使用下载入口和新实例配置生成链，不需要旧评估认证、原 LDAP tar/镜像 ID 或旧私密输入。
 
-网络下载的镜像/安装包/工具、SDK/vendor、运行数据和数据库备份均不入 Git。真实 `values.yaml`、凭据/Secret、TLS 证书与私钥、JWT、kubeconfig、LDAP 密码哈希及本机迁移/部署状态只在远端保留。`verification/logs/`、`archive/`、旧报告、原始明细和渲染 YAML 也不默认追踪。精简报告或说明引用的这些文件，仍可在 L20-12 的 `/raid/vince/deploy` 查阅。
+[artifact-sources.json](dps-install/config/artifact-sources.json) 固定官方 chart、镜像 digest 和 LDAP deb 来源/校验值；下载器自动获取资源并从仓库保留的 LDAP Dockerfile/entrypoint/SHA256SUMS 构建本次运行镜像。默认 BMC 链使用固定模拟器镜像与仓库拓扑/配置，不依赖下载的 SDK/vendor，不执行 SDK deploy。
 
-`dps-install/packages/ldap/build/` 中本次编写的 Dockerfile、entrypoint.sh 与 SHA256SUMS 可作为构建配方/校验元数据保留；其依赖的 Debian 基础镜像和下载包仍需单独取得。其他安装包与 SDK/vendor 已在远端保留，克隆后须按固定版本来源、校验信息和镜像 manifest 准备，不能凭配置示例完成一键重建。
+网络下载的镜像/安装包/工具、SDK/vendor、运行数据和数据库备份不入 Git。真实 values.yaml、凭据/Secret、TLS 证书与私钥、JWT、kubeconfig、LDAP 密码哈希和本机 bootstrap/迁移状态在目标 root 本地生成或保留。verification/logs、archive、旧报告、原始明细及渲染 YAML 不默认追踪；文档或精简报告引用的未追踪材料仍可在 L20-12 的 /raid/vince/deploy 查阅。
 
-克隆后先阅读 [AGENTS.md](AGENTS.md)、[安装步骤](installstep.md)、[前置说明](dps-install/prerequisites.md) 和 [脚本入口](dps-install/scripts/README.md)，核对现有服务、依赖包和必要输入。示例保留 L20-12 的主机特定地址与 Secret 引用；私密输入须由相应脚本按文档生成，或从受控来源安全补充，且匹配 Secret 名称和 key。仓库不包含现有 LDAP 用户、数据库及签名/证书身份的完整恢复材料；不要为补齐克隆目录而重跑初始化、删除数据、轮换现有身份或重置正在运行的部署。
+首次部署按 [新实例入口](dps-install/from-zero.md) 准备主机和参数，匹配缓存可复用，不匹配缓存或既有非 bootstrap 身份拒绝覆盖。当前 L20-12 的运行环境继续按 [AGENTS.md](AGENTS.md)、[安装记录](installstep.md)、[维护说明](dps-install/prerequisites.md) 操作；仓库不包含它的完整身份和持久数据恢复材料，不应为新克隆目录重置原部署。旧 368f921 的缺失冷启动输入审计描述历史版本，当前源码已补齐获取资源和生成新实例输入的入口。

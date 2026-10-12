@@ -1,0 +1,136 @@
+{
+  "schema_version": 1,
+  "checked_at": "2026-10-12T10:35:26.441998+08:00",
+  "purpose": "Fresh checkout can generate and install a new four-rack BMC, PostgreSQL, LDAP and DPS/PRS instance without copying an existing identity.",
+  "versions": {
+    "dps": "0.9.0",
+    "postgresql": "17.11",
+    "openldap": "2.6.10",
+    "power_steering": "2.1.0",
+    "seaweedfs": "4.18",
+    "native_k3s": "v1.34.12+k3s1"
+  },
+  "artifact_acquisition": {
+    "chart": "Official NGC download from an initially empty package directory; version and pinned SHA256 verified",
+    "ldap_debs_downloaded": 17,
+    "ldap_build": "Pinned Debian base and verified packages; network disabled during build",
+    "external_image_digests_verified": 11,
+    "image_download_scope": "Matching Docker digest cache was reused; this run does not claim all image layers were freshly pulled",
+    "historical_ldap_runtime_tar_required": false,
+    "old_image_id_required": false,
+    "sdk_vendor_checkout_required": false
+  },
+  "checks": {
+    "independent_postgresql": {
+      "checked_at": "2026-10-12T09:54:36.293446+08:00",
+      "total": 33,
+      "passed": 33
+    },
+    "independent_ldap": {
+      "checked_at": "2026-10-12T09:50:41.935685+08:00",
+      "total": 24,
+      "passed": 24,
+      "all_passed": true
+    },
+    "full_new_stack": {
+      "checked_at": "2026-10-12T10:25:25.389759+08:00",
+      "total": 44,
+      "passed": 44,
+      "failed": 0,
+      "all_passed": true
+    },
+    "complete_install_rerun": {
+      "checked_at": "2026-10-12T10:28:56.572559+08:00",
+      "exit_code": 0,
+      "identity_files_compared": 46,
+      "identities_unchanged": true,
+      "database_sentinel_preserved": true,
+      "sentinel_removed": true
+    },
+    "native_configuration_and_host_protection": {
+      "native_yaml_is_mapping": true,
+      "rendered_native_install_preflight_matches_generated_configuration": true,
+      "nested_refresh_kubeconfig_relocated": true,
+      "own_instance_api_ui_routes_allowed": true,
+      "other_instance_api_ui_route_collision_rejected": true,
+      "inspection_only_no_system_service_change": true,
+      "existing_native_traefik_crd_and_rollout_readiness_gate_passed": true
+    },
+    "identity_loss_and_secret_conflict_protection": {
+      "checked_at": "2026-10-12T10:43:11.656474+08:00",
+      "total": 8,
+      "passed": 8,
+      "services_changed": false
+    },
+    "selected_missing_tool_install": {
+      "checked_at": "2026-10-12T10:44:59.601522+08:00",
+      "total": 2,
+      "passed": 2,
+      "actual_system_tool_paths_modified": false
+    },
+    "final_source_empty_identity_generation": {
+      "checked_at": "2026-10-12T10:45:58.755730+08:00",
+      "fresh_source_had_no_private_identity": true,
+      "four_final_source_producers_succeeded": true,
+      "external_secret_inputs": 13,
+      "new_credentials_and_jwt_differ_from_previous_test": true,
+      "services_started": false,
+      "source_only_generation_test": true
+    }
+  },
+  "generated_identity": {
+    "passwords": "Random and stable on rerun",
+    "certificate_authorities": "New per-instance DPS, PostgreSQL, LDAP and BMC CA/private key pairs",
+    "tls": "New server, Agent/client and ingress certificates; strict external TLS verification",
+    "jwt": "New RSA signing key",
+    "external_secret_inputs": 13,
+    "private_material_in_git": false
+  },
+  "tested_stack": {
+    "bmc_racks": 4,
+    "bmc_nodes": 72,
+    "gpus": 288,
+    "cpus": 144,
+    "docker_services": 4,
+    "ready_kubernetes_workloads": 9,
+    "stored_agent_routes": 72,
+    "topology_active": false,
+    "prs_enabled": true,
+    "headroom_percent": -15,
+    "scheduler_interval_seconds": 5,
+    "core_and_prs_databases": 4,
+    "production_instance_modified": false
+  },
+  "scope": {
+    "project_identity_and_application_data": "Fresh; no old password, CA, JWT, Secret or database copied",
+    "kubernetes": "Explicit reuse of existing physical single-node native K3s",
+    "fresh_os_dependencies_and_native_k3s_first_install_executed": false,
+    "native_first_install_review": "Generated YAML parsed as a mapping and matched the rendered installer preflight exactly; nested kubeconfig script relocated; first installation was not executed on a separate blank OS.",
+    "ui": "Actual HTTPS session APIs; no visual browser acceptance",
+    "bmc_authentication": "Upstream simulator accepts supplied credentials but does not enforce password checks",
+    "bmc_internal_tls": "Private mock backend generates its own certificate; nginx internal verify is off; external CA verification is strict",
+    "core_agent_bmc_dispatch_and_dynamic_power_control_verified": false
+  },
+  "history": {
+    "initial_bmc_backend_tls": "Unsupported external backend certificate mount removed; internal auto-generated certificate handled behind trusted external TLS",
+    "initial_ui_verifier": "Missing /api prefix corrected; targeted UI recheck passed; first check history retained privately"
+  },
+  "detailed_evidence": "Untracked verification reports/logs/archive on L20-12; runtime private identities and downloaded packages excluded from Git",
+  "test_cleanup": {
+    "checked_at": "2026-10-12T10:39:52.712725+08:00",
+    "test_release_removed": true,
+    "test_namespace_and_owned_pvc_removed": true,
+    "test_docker_containers_and_networks_removed": true,
+    "test_hosts_lines_removed": 1,
+    "detailed_evidence_and_private_test_data_archived": true,
+    "production_services_removed": false
+  },
+  "production_post_cleanup": {
+    "checked_at": "2026-10-12T10:48:43.712095+08:00",
+    "ready_workloads": 9,
+    "healthy_original_docker_services": 4,
+    "first_bmc_endpoint_strict_ca_readyz": true,
+    "maintained_scripts_syntax_passed": 56,
+    "whitespace_check_passed": true
+  }
+}

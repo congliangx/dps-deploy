@@ -1,5 +1,7 @@
 # DPS 0.9 安装文件与运行环境
 
+首次新实例部署见 [从零部署](from-zero.md)。该入口下载资源并生成新密码、CA/证书、JWT 和 Secret；本页以下描述 L20-12 已运行实例的维护配置。
+
 远端工作目录 `/raid/vince/deploy/dps-install`。DPS 0.9.0 通过手动 Helm 部署在物理节点上，release `dps`、namespace `dps`、context `dps-l20-12`。2026-10-10 上午（Asia/Shanghai）接入独立 OpenLDAP 2.6.10；10:52:29 的 DPS LDAP 身份/授权、令牌和 UI session API 验收为 28/28。UI 验证基于会话 API，未进行浏览器视觉验收。SDK 没有安装 DPS。
 
 2026-10-10（Asia/Shanghai）PRS 已通过手动 Helm 升级启用，当前 release 为 revision 5、deployed，9 个 workload Ready。17:05:41 的 PRS 验收为 35/35，覆盖部署、实际 Pod 严格数据库 TLS、S3、Controller 的 LDAP/DPS TLS 连接与登录回归。DPS 已持久化 `prs_enabled=true`、headroom `-15%` 和 scheduler `5 秒`；实际 PowerSteering 为 2.1.0，SeaweedFS 为 4.18。

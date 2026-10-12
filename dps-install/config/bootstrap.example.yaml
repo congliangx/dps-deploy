@@ -1,0 +1,13 @@
+host_ip: null
+host_name: dps-lab
+interface: bond0
+namespace: dps
+release: dps
+agent_id: gb300-lab-agent
+api_name: api.dps.lab
+ui_name: ui.dps.lab
+instance_prefix: dps
+pg_port: 15432
+ldap_port: 1636
+bmc_start_port: 18443
+pg_subnet: 172.30.90.0/24

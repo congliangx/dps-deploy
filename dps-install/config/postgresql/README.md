@@ -1,7 +1,7 @@
 # 独立 PostgreSQL（DPS 0.9 前置依赖）
 
 已部署官方 PostgreSQL 17.11，独立于 DPS Helm release。Compose 项目和容器名为
-`dps-postgresql`，镜像以 digest 固定在 `compose.yaml`。本次未安装 DPS，未运行 DPS migration。数据库保持原有独立服务；物理机原生 K3s 已 Ready，原生 Pod 到数据库连接已验收通过。
+`dps-postgresql`，镜像以 digest 固定在 `compose.yaml`。当前 DPS/PRS 已安装，Core 与三个 PRS 数据库的实际 Pod TLS 接入/迁移表已经验收。本页保存 L20-12 现有数据库维护输入；新实例使用 [从零部署](../../from-zero.md) 中的 prepare-postgresql.py 生成新身份和空数据目录。
 
 ## 接入信息
 
@@ -88,4 +88,4 @@ CA 与服务器证书到期前需要续期；保留同一 CA 可避免修改客�
 TLS 1.3 和 verify-full，数据库身份与事务内 DDL 回滚成功。以
 `verification/reports/prerequisite-check.json` 的时间、context `dps-l20-12` 和节点 `l20-12`
 为当前证据，日志见 `verification/logs/native-k3s-prerequisite-check.log`。测试资源已清理；旧集群中的 Pod 检查仅为历史证据。
-DPS migration 需 DPS 安装后验证。
+DPS/PRS 安装后的数据库集成结果见 ../../../verification/reports/prs-installation.json；前置检查的上述记录保留原执行范围。

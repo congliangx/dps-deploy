@@ -1,5 +1,19 @@
 # 安装步骤：原生 K3s、独立 PostgreSQL / LDAP、DPS 0.9 与 PRS
 
+## 新实例从零安装入口（2026-10-12）
+
+新的 Ubuntu 22.04/24.04 amd64、systemd 主机，使用干净仓库创建独立 BMC、PostgreSQL、OpenLDAP 和 DPS/PRS。所有首次步骤、参数及生成位置见 [从零部署](dps-install/from-zero.md)。现有 L20-12 原实例沿用下面的维护记录；不得对其重新初始化。
+
+~~~bash
+git clone https://gitlab-master.nvidia.com/congliangx/dps-deploy.git
+cd dps-deploy
+sudo bash dps-install/scripts/install-from-zero.sh \
+  --host-ip YOUR_HOST_IPV4 --host-name YOUR_HOST_NAME --interface YOUR_INTERFACE
+~~~
+
+入口准备主机依赖，下载并校验固定版本资源，生成新的密码、CA/叶证书、JWT 和 13 个 Secret，安装物理机原生 K3s，启动独立 BMC/PG/LDAP，然后执行 Helm、LDAP 登录、33kW 设备注册、inactive 拓扑导入/72 路由核对和 PRS 设置。无需复制旧密码、证书、Secret、LDAP tar 或旧镜像 ID。已有 bootstrap 身份只在参数一致时复用，不能删除身份/数据绕过冲突检查。
+
+
 更新时间：2026-10-10，Asia/Shanghai（UTC+08:00）。所有命令在 root@L20-12 的 /raid/vince/deploy 执行。
 
 当前为物理节点 l20-12，K3s v1.34.12+k3s1；DPS 0.9.0 手动 Helm revision 5 deployed。Core、Agent、UI、Power Config/Controller 2.1.0 和 SeaweedFS 4.18 共 9 个工作负载 Ready。DPS 持久化 prs_enabled=true，headroom -15%、调度间隔 5 秒；PRS 部署与实际 Pod 集成 35/35 通过。PostgreSQL 17.11 和 OpenLDAP 2.6.10 各自独立 Compose。上午 LDAP 18/18、CLI/UI 认证授权 28/28 的历史结果保留；本次 PRS 验收含实际 LDAP 登录回归。4 rack / 72 节点拓扑仍 inactive，没有资源组或 PRS domain，未向 BMC 写功率。
@@ -266,3 +280,35 @@ dpsctl --no-retry --grpc-timeout 20s check status
 - DPS 当前拓扑仍 inactive。实际连接诊断返回 INVALID_OPERATION / no agent configuration available；节点状态查询返回 SERVER_NOT_STARTED / the server has not been started。保存原结果，不把 Core→Agent→BMC 健康派发标为通过；独立端点/Agent 网络通过不等于该链路通过。
 - 独立 BMC 模拟器和 nginx 代理运行/健康、最近日志、Core/Agent Ready 另由 verification/reports/bmc-service-health.json 记录。最终分范围汇总见 verification/reports/bmc-health.json。细项在 verification-inventory.json、dps-pod-bmc-connectivity.json、bmc-dps-health-check.json。
 - 修改前库存检查脚本及旧检查结果已归档 verification/archive/bmc-health-check/20261010T172833+0800；现行库存脚本改用公开 simulator-ca.crt 严格 TLS，并新增 service/system/manager/chassis 状态记录。没有改模拟器运行配置、凭据、功率限制或 DPS 功能开关。
+
+## 2026-10-12 从零复现链补齐与隔离安装实录
+
+用户要求仓库从零搭建 BMC、PostgreSQL、DPS，并提供新证书、密码和 Secret 的生成步骤。先前 368f921 的缺失输入审计只描述旧版本；本次保留原 L20-12 运行身份/数据，新增从零下载、生成和安装链。修改前源文件与文档归档到 verification/archive/cold-bootstrap。
+
+1. 补充 artifact-sources.json、download-artifacts.py、bootstrap.example.yaml、共享生成助手与 BMC/PG/LDAP/DPS 四个生成入口。官方 NGC chart 首次从空包目录下载，SHA256 为 2fc7b6e098b17085bf9aaf010d86dfeaf62677fd0f80bb4c2702e91b0b3fd6ef；17 个固定 Debian deb 实际下载并逐项校验。11 个外部镜像 digest 实际核对，匹配 Docker 缓存复用；不能声称本轮重新下载了所有镜像层。LDAP 以固定 Debian 基础镜像及新下载包在 network none 下构建，不使用旧运行 tar 或旧镜像 ID。
+2. 09:50:41 +08：独立 LDAP 新建链 24/24，通过新随机用户/bind/管理密码、证书、ACL、严格 TLS、错误密码/无权限用户及重复准备保护。09:54:36 +08：独立 PostgreSQL 新建链 33/33，通过新随机身份、4 库/非 superuser、SCRAM/verify-full、权限、重启数据保留和冲突拒绝。初次 PG 准备文件权限不适合容器 UID 999，已修正数据根目录、服务端私钥和密码文件属主，并保留匹配配置的 bind-mounted inode；失败信息在组件报告留存。组件试验容器/网络清理，原服务保留。
+3. 建立仅含 Git 源码/公开输入的空身份副本 verification/archive/cold-bootstrap/fullstack/repo；先运行 --prepare-only 生成新 CA/证书、JWT、密码与 13 个 Secret，没有复制原实例私密文件或数据。
+4. 对该副本执行以下隔离安装命令。它显式复用现有原生 K3s，不能作为空白 OS 上的原生 K3s 首次安装验收：
+
+~~~bash
+python3 dps-install/scripts/install-from-zero.py \
+  --root /raid/vince/deploy/verification/archive/cold-bootstrap/fullstack/repo \
+  --host-ip 10.6.131.43 --host-name L20-12 --interface bond0 \
+  --namespace dps-cold-test --release dps-cold-test --agent-id gb300-cold-agent \
+  --api-name cold-api.dps.lab --ui-name cold-ui.dps.lab \
+  --instance-prefix dps-cold-full \
+  --pg-port 35432 --ldap-port 3636 --bmc-start-port 38443 \
+  --pg-subnet 172.30.93.0/24 \
+  --kubeconfig /raid/vince/deploy/dps-install/config/kubernetes/kubeconfig.yaml
+~~~
+
+5. 初次 BMC 内部 backend TLS 检查失败：固定 SDK mock 的 ssl/--ssl 自动生成内部证书，并不读取挂载的项目叶证书。移除无效 backend TLS 挂载；私有 Docker 内 nginx proxy_ssl_verify off，对外仍使用本实例 CA 签发证书并严格验证，CA 私钥不挂载容器。保留初次日志 first-backend-tls-attempt.log；修复后 72 入口正常。
+6. 完成 Docker 四服务与 Helm 新 release 安装：独立 PG/LDAP/BMC/backend proxy healthy，DPS/PRS/S3 9 workload Ready、3 个 S3 PVC Bound。首次 LDAP 登录成功；33kW 电源架注册、四 rack inactive 拓扑导入；官方 raw GetTopologyModel 回读确认 72 个 AgentId 全为 gb300-cold-agent。早期生成 helper 的字面 $base 子脚本路径仍指向原脚本，已修复为本副本子脚本；初次只读注册检查因旧 CLI 会话过期而失败，没有写原拓扑。
+7. 10:25:25 +08：新脚本 verify-cold-bootstrap.py 最终 44/44。覆盖 72 BMC 外部严格 CA/健康/288GPU144CPU/功率读数、Core/PRS 四库迁移、两 PRS 实际 Pod verify-full、Controller 自身 LDAP/严格 DPS TLS、CLI/UI 正负密码、真实 UI 会话/受保护读取/logout、S3 签名 Put/Get/Delete/匿名拒绝及真实拓扑路由。首次 UI 检查漏 /api RPC 前缀，修正验收脚本后只定向重查 UI；旧失败记录 retained in recheck_history。测试 CLI 会话另存后删除，默认 CLI 凭据保持不变，UI 会话注销，S3 对象删除。
+8. 10:28:56 +08：再次完整运行 install-from-zero.py 退出 0。46 个证书、密钥、凭据与 Secret 文件 hash 前后不变，隔离 PG 的 sentinel 数据保留后删除。没有重置密码、CA、JWT 或数据目录。
+9. 独立源码审查发现未在该全栈复用路径执行的原生首次安装 YAML 写出问题：字符串被二次序列化成 scalar。修复 private 对字符串原样写；隔离生成结果为 YAML mapping，与渲染 install-kubernetes.sh 中 preflight 的 desired 逐项相等，refresh-kubeconfig 子路径重定位通过。另加入集群 Ingress/Traefik Host 归属保护，真实只读检查允许本测试路由、拒绝新实例占用生产 API/UI Host。没有执行 K3s 首次安装、重启或系统软件升级。
+10. 更新从零说明、维护文档入口、AGENTS 与精简 from-zero-summary.json。完整日志、试验身份、下载/构建缓存、详细报告留在 verification 归档/排除范围；仅提交维护源码、公开输入/示例和摘要。拓扑始终 inactive；无资源组、PRS domain、Core→Agent 派发或动态功率闭环验收，未写 BMC 功率。
+
+11. 最终保护定向验证 8/8：缺失 JWT、S3、BMC 凭据或成对证书拒绝且不重新生成；已存在 Secret 与身份不一致拒绝覆盖；完整身份仍能重跑且所有文件恢复/保持一致。修复只缺 Helm/kubectl 单项时的成对安装器冲突，隔离系统工具目录的两种补装均通过，已有另一个工具字节不变，没有改实际系统工具路径。最终源码再次在另一份空身份副本生成四组件和 13 Secret，成功且密码/JWT 与前一测试不同；未启动该副本服务。
+12. 10:39:52 +08：按根路径 hash 检查归属后，清理仅本轮 dps-cold-test release/namespace/PVC、dps-cold-full 四容器/网络和精确标记的临时 hosts 行。试验身份/数据及详细证据保留于排除的归档，原生产实例未删除或重建。
+13. 补充原生 K3s 节点 Ready 后的 Traefik CRD Established 与 rollout 等待；现有真实集群只读检查通过，避免首次启动时路由 CRD 尚未安装的时间竞争。提交前实际原生产 9 workload Ready、四个 Docker 服务健康、首 BMC 严格 CA readyz 正常；56 份维护脚本语法与 Git whitespace 检查通过。

@@ -8,6 +8,18 @@ context `dps-l20-12`、namespace `dps`、release `dps`。Core/Agent/UI 均 1/1 R
 2026-10-10 上午（Asia/Shanghai）目录 18 项检查通过；10:52:29 的 DPS LDAP 身份/授权、令牌与 UI session API 验收为 28/28，UI 未进行浏览器视觉验收。4-rack 拓扑已导入、UI 可见、保持 inactive；
 Agent mTLS 已连接，inactive 时尚不下发设备配置。DPS 拓扑连接和深层 BMC 健康检查需要激活拓扑，而当前激活会应用 MaxLPS 功率策略，本次没有执行，完整硬件集成验收延后。
 
+## 新实例从零部署验收（2026-10-12）
+
+[从零安装入口](../dps-install/from-zero.md) 不自动执行验证。本次空源码副本生成的新密码/CA/JWT/13 Secret、独立 BMC/PG/LDAP 与 DPS/PRS 全栈验收为 44/44；独立 PG 新建链 33/33、LDAP 新建链 24/24。重复完整安装退出成功，46 份身份文件不变、数据库 sentinel 保留后清理。精简公开证据见 [from-zero-summary.json](reports/from-zero-summary.json)。
+
+~~~bash
+python3 verification/scripts/verify-cold-bootstrap.py --root /path/to/this-fresh-repo
+~~~
+
+该脚本读取本实例 bootstrap-settings.json 和受限凭据，检查严格 TLS 的 72 个 BMC、数据库、LDAP 正负登录、9 Ready 工作负载、PRS/S3 集成和实际存储的 AgentId。默认 CLI 凭据保持不变；临时 UI 会话注销、S3 对象删除。报告留在目标 root/verification/reports/cold-bootstrap-fullstack.json（600）；不部署、激活拓扑或写 BMC 功率。新脚本适用于从零入口生成的实例，不能替代旧实例维护验收入口。
+
+本轮全栈复用了 L20-12 已有物理机原生 K3s；未在空白 OS 上执行系统软件/K3s 首次安装。默认原生配置和下载/重定位链另做源码与格式检查，不把该检查等同于裸机首次运行验收。测试日志、详细报告与试验身份仅在 verification/archive/cold-bootstrap 保留，不推 Git。
+
 ## 当前 PRS 部署检查
 
 PRS 对应实际 DPS 0.9 chart 中的 PowerSteering 2.1.0。独立数据库先决条件在 `reports/prs-databases.json`（18/18）检查三个库的 owner/ACL、EngineFactory/SQLAlchemy/psycopg2 严格 TLS 与错误条件；探针在 host-network 镜像内执行，不代表实际 PRS Pod 验收。

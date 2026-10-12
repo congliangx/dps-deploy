@@ -15,6 +15,7 @@
 !/dps-install/README.md
 !/dps-install/dps-access.md
 !/dps-install/prerequisites.md
+!/dps-install/from-zero.md
 !/dps-install/scripts/
 !/dps-install/config/
 !/dps-install/packages/
@@ -24,6 +25,8 @@
 !/dps-install/scripts/*.sh
 /dps-install/config/*
 !/dps-install/config/values.example.yaml
+!/dps-install/config/artifact-sources.json
+!/dps-install/config/bootstrap.example.yaml
 !/dps-install/config/dps-env.sh
 !/dps-install/config/gb300-power-shelf-devices.yaml
 !/dps-install/config/topology-4rack-dps09.json
@@ -91,6 +94,7 @@
 !/verification/scripts/*.py
 !/verification/scripts/*.sh
 /verification/reports/*
+!/verification/reports/from-zero-summary.json
 !/verification/reports/bmc-health.json
 !/verification/reports/bmc-dps-health-check.json
 !/verification/reports/dps-current-state.json

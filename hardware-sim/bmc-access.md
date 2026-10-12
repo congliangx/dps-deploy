@@ -1,5 +1,7 @@
 # 四个 GB300 rack 的 SDK BMC 模拟环境
 
+首次从仓库创建新的四 rack 模拟器使用 [从零部署](../dps-install/from-zero.md) 的 prepare-bmc-fresh.py：生成新的模拟凭据和对外 CA/证书，不依赖本机旧 SDK/vendor。以下地址与凭据说明属于 L20-12 已运行实例。
+
 远程主机：`root@L20-12`（管理 IP `10.6.131.43`）；工作目录：`/raid/vince/deploy`。
 
 ## 已部署内容

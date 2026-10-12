@@ -1,0 +1,189 @@
+{
+  "schema_version": 1,
+  "platform": "linux/amd64",
+  "chart": {
+    "name": "dps",
+    "version": "0.9.0",
+    "path": "dps-install/packages/dps-0.9.0.tgz",
+    "url": "https://helm.ngc.nvidia.com/nvidia/charts/dps-0.9.0.tgz",
+    "sha256": "2fc7b6e098b17085bf9aaf010d86dfeaf62677fd0f80bb4c2702e91b0b3fd6ef",
+    "source_index": "https://helm.ngc.nvidia.com/nvidia/index.yaml",
+    "source_documentation": "https://docs.nvidia.com/datacenter/dps/versions/0.9/guides/installation/airgap-deployment.html"
+  },
+  "images": [
+    {
+      "name": "dps-core-agent",
+      "tag": "nvcr.io/nvidia/dps-server:0.9.0",
+      "image_digest": "nvcr.io/nvidia/dps-server@sha256:1339fd2cb60b3c3d92686541d18c0668d081a892e89c5618335892721cc1c504"
+    },
+    {
+      "name": "dps-ui",
+      "tag": "nvcr.io/nvidia/dps-ui:0.9.0",
+      "image_digest": "nvcr.io/nvidia/dps-ui@sha256:3171e9f0018a74fbf525828fba492064d8754bc2635a117faf97863f63773d53"
+    },
+    {
+      "name": "postgresql-server-and-migration-client",
+      "tag": "postgres:17",
+      "image_digest": "postgres@sha256:2d2b8998d31037bf721cfdf764d76ba74171b4fab3431b7f72c27c56ddbdf9e3"
+    },
+    {
+      "name": "dpsctl",
+      "tag": "nvcr.io/nvidia/dpsctl:0.9.0",
+      "image_digest": "nvcr.io/nvidia/dpsctl@sha256:27fa8297f0efc18a0d22a6822c812347a7706bb2fc19f4d5c901f7125361bfdb"
+    },
+    {
+      "name": "bmc-simulator",
+      "tag": "nvcr.io/nvidia/dps-bmc-simulator:0.9.0",
+      "image_digest": "nvcr.io/nvidia/dps-bmc-simulator@sha256:3f81152ee055b95e0bda512227cd6ecbb4813f97dad0c654477a4afbf8caff7e"
+    },
+    {
+      "name": "nginx-proxy",
+      "tag": null,
+      "image_digest": "nginx@sha256:a8b39bd9cf0f83869a2162827a0caf6137ddf759d50a171451b335cecc87d236"
+    },
+    {
+      "name": "power-config",
+      "tag": "nvcr.io/nvidia/power-config:2.1.0",
+      "image_digest": "nvcr.io/nvidia/power-config@sha256:2824790b955776a0383c22e3cffd31f98793f80b6517d98074fd55ce75cb37e5"
+    },
+    {
+      "name": "power-controller",
+      "tag": "nvcr.io/nvidia/power-controller:2.1.0",
+      "image_digest": "nvcr.io/nvidia/power-controller@sha256:4ce39dccc4e51083bc4c4ee64e9d382f1353301db50b1347ef1e03fb963bce4d"
+    },
+    {
+      "name": "busybox",
+      "tag": "busybox:1.37-glibc",
+      "image_digest": "busybox@sha256:42a9ff19af33811ee466b24c66384461d37c32dcc28d1d27d49b8aca816bd5ee"
+    },
+    {
+      "name": "seaweedfs",
+      "tag": "chrislusf/seaweedfs:4.18",
+      "image_digest": "chrislusf/seaweedfs@sha256:37ff8b1c2aff48edc2ac4439d0c5b0b73a9ee100e0ab93c68e6bceb00d1cba28"
+    },
+    {
+      "name": "opentelemetry-collector-contrib",
+      "tag": "otel/opentelemetry-collector-contrib:0.110.0",
+      "image_digest": "otel/opentelemetry-collector-contrib@sha256:0ed3688bbb02dabc0429ef648ebe3e9c53aca5e7c5a6b1a4a61b9f583b823e36"
+    }
+  ],
+  "ldap": {
+    "image": "dps-openldap:2.6.10-bootstrap",
+    "slapd_version": "2.6.10+dfsg-1",
+    "base_image": "debian@sha256:a29215f6a35e51e22adffa17f89e9d2ef06214e64a2bad10d765c46aea49f11f",
+    "build_directory": "dps-install/packages/ldap/build",
+    "archive": "dps-install/packages/ldap/openldap-2.6.10-bootstrap-runtime.tar",
+    "runtime_manifest": "dps-install/config/ldap/runtime-build.json",
+    "recipe_sha256": {
+      "Dockerfile": "0b575dd665e549d88db2b6dd6cd17b20afaef4f678f5e9166d46aff9c2f86572",
+      "entrypoint.sh": "0f81c06167a8d5febe2372b26f8ed7a84a199cade56ee30a65bfd18f91c37e9c",
+      "SHA256SUMS": "d323f6b3791f8ae8b11fedd0e0541c75194d90447298c205050d2b2c583ad5ec"
+    },
+    "debs": [
+      {
+        "filename": "adduser_3.152_all.deb",
+        "sha256": "e50984d2e1ef6300e3fd51303839842189a077b10cb5cadff1923df10c61c493",
+        "sha1_content_address": "4381d3865d7422032b5acc9a59003ef39e59d09d",
+        "url": "https://snapshot.debian.org/file/4381d3865d7422032b5acc9a59003ef39e59d09d"
+      },
+      {
+        "filename": "ca-certificates_20250419_all.deb",
+        "sha256": "ef590f89563aa4b46c8260d49d1cea0fc1b181d19e8df3782694706adf05c184",
+        "sha1_content_address": "3003d7ee20f8100b1c4064f06db3347479a45468",
+        "url": "https://snapshot.debian.org/file/3003d7ee20f8100b1c4064f06db3347479a45468"
+      },
+      {
+        "filename": "ldap-utils_2.6.10+dfsg-1_amd64.deb",
+        "sha256": "a5ae9e06620b0c40ed5532f52873f61622387c38c5cf060f704f504f07030498",
+        "sha1_content_address": "9837df6e6cea7f8e27c66919d7c4d0592a10b094",
+        "url": "https://snapshot.debian.org/file/9837df6e6cea7f8e27c66919d7c4d0592a10b094"
+      },
+      {
+        "filename": "libargon2-1_0~20190702+dfsg-4+b2_amd64.deb",
+        "sha256": "a54a6640be69c29c1e43b14ee464484a6f20e33fe73200c02949cfeb03228547",
+        "sha1_content_address": "5cc3a7ecf3b722822f731ed9ce46808f5d05858a",
+        "url": "https://snapshot.debian.org/file/5cc3a7ecf3b722822f731ed9ce46808f5d05858a"
+      },
+      {
+        "filename": "libgdbm-compat4t64_1.24-2_amd64.deb",
+        "sha256": "2cbd43cf2dfbf57ff48188b5d79d29cf7ea8f0dedaa61ab0bcc02eceff50ea01",
+        "sha1_content_address": "99eade0456a55035ce891d7f85cb620b0dcd7871",
+        "url": "https://snapshot.debian.org/file/99eade0456a55035ce891d7f85cb620b0dcd7871"
+      },
+      {
+        "filename": "libgdbm6t64_1.24-2_amd64.deb",
+        "sha256": "e7b42c68c391e278733adb3c1efdacd24d660862bd7bac0efbc10a91e5696dfc",
+        "sha1_content_address": "8212065c80c91a05839e26821dc65088f4ffe67d",
+        "url": "https://snapshot.debian.org/file/8212065c80c91a05839e26821dc65088f4ffe67d"
+      },
+      {
+        "filename": "libldap2_2.6.10+dfsg-1_amd64.deb",
+        "sha256": "60069e4a550ca890113fa89d3001417781b18e146ec5d637d31e368dec9909bd",
+        "sha1_content_address": "156554a5a8064d450c2103819c5e1901f2482ef9",
+        "url": "https://snapshot.debian.org/file/156554a5a8064d450c2103819c5e1901f2482ef9"
+      },
+      {
+        "filename": "libltdl7_2.5.4-4_amd64.deb",
+        "sha256": "ab38167fc5aba8d133309fa98ca0a8b4e8b3c31588214ea70803a2bf3c6aa5ba",
+        "sha1_content_address": "2cd716ae18845411266139f22adc754f8d6018ef",
+        "url": "https://snapshot.debian.org/file/2cd716ae18845411266139f22adc754f8d6018ef"
+      },
+      {
+        "filename": "libodbc2_2.3.12-2+deb13u1_amd64.deb",
+        "sha256": "c106c001b9e81f75d89e1126ff4eb10b437371dfaee6c4457f218846796e7187",
+        "sha1_content_address": "a464f2a5f2e0c28e9f5c22e7683e75437b933672",
+        "url": "https://snapshot.debian.org/file/a464f2a5f2e0c28e9f5c22e7683e75437b933672"
+      },
+      {
+        "filename": "libperl5.40_5.40.1-6+deb13u1_amd64.deb",
+        "sha256": "e44777ff47ad248d1debd57e1f96ab5e89061a341008ae39880ba3b5fc15f273",
+        "sha1_content_address": "af4cd0adb0e67e6e30e04a39ff617d94cc05fc77",
+        "url": "https://snapshot.debian.org/file/af4cd0adb0e67e6e30e04a39ff617d94cc05fc77"
+      },
+      {
+        "filename": "libsasl2-2_2.1.28+dfsg1-9_amd64.deb",
+        "sha256": "66e49d7ae026811b49a0050f18b0325960a2625ffd1ff60d91b7844a815fa9d2",
+        "sha1_content_address": "d33dd3ff8f88f8ae9a84bad1df925ea1b2ea0904",
+        "url": "https://snapshot.debian.org/file/d33dd3ff8f88f8ae9a84bad1df925ea1b2ea0904"
+      },
+      {
+        "filename": "libsasl2-modules-db_2.1.28+dfsg1-9_amd64.deb",
+        "sha256": "a5c38659fbd62c33c6d9bfa2be43e75a572d1818531aad32dd74d0a58cc4bd19",
+        "sha1_content_address": "8c66ab6412351683261d50959984811c0480087b",
+        "url": "https://snapshot.debian.org/file/8c66ab6412351683261d50959984811c0480087b"
+      },
+      {
+        "filename": "libwrap0_7.6.q-36_amd64.deb",
+        "sha256": "cde12afa15d6b1556c5e0564d22edf3b99e6b8fa94c59ccd8b8eebbb62dc19ec",
+        "sha1_content_address": "f68950b258f62f06af58295d7ae6c141a9a0e47d",
+        "url": "https://snapshot.debian.org/file/f68950b258f62f06af58295d7ae6c141a9a0e47d"
+      },
+      {
+        "filename": "openssl_3.5.7-1~deb13u3_amd64.deb",
+        "sha256": "43a9cbcf2a8a0e1f0a1c3f5a33ee1f56b269690e7a2129f2b2d0582e789589d7",
+        "sha1_content_address": "3543ac94c6886f288a387c583f5ee8977b1cf94d",
+        "url": "https://snapshot.debian.org/file/3543ac94c6886f288a387c583f5ee8977b1cf94d"
+      },
+      {
+        "filename": "perl-modules-5.40_5.40.1-6+deb13u1_all.deb",
+        "sha256": "4c46cdd8f3135aa1c95f07e817f8e5d9be590687441ac1c27e3a8c49400f35ce",
+        "sha1_content_address": "c2434b7c6d75e490cbf036fce4d99970f50ce44f",
+        "url": "https://snapshot.debian.org/file/c2434b7c6d75e490cbf036fce4d99970f50ce44f"
+      },
+      {
+        "filename": "psmisc_23.7-2_amd64.deb",
+        "sha256": "19e772bca5ad0b28620229fe4f91383044c5c6322c7c50ae46da1c60d73d9960",
+        "sha1_content_address": "e3503756e8f55e59f66efde77227bb508aef4905",
+        "url": "https://snapshot.debian.org/file/e3503756e8f55e59f66efde77227bb508aef4905"
+      },
+      {
+        "filename": "slapd_2.6.10+dfsg-1_amd64.deb",
+        "sha256": "abcc0cfa47d8569c7ead866d257e5398f2168bd7d08de9727823021492a579e9",
+        "sha1_content_address": "9c414db715167425fdccd505ca40f6ec5d02c39b",
+        "url": "https://snapshot.debian.org/file/9c414db715167425fdccd505ca40f6ec5d02c39b"
+      }
+    ],
+    "source_documentation": "https://salsa.debian.org/snapshot-team/snapshot/raw/master/API",
+    "integrity_note": "Snapshot URLs use SHA1 content addresses; every downloaded file is verified against the pinned SHA256 in the tracked LDAP recipe."
+  }
+}

@@ -4,9 +4,20 @@
 
 在 L20-12 上手动安装并验证 NVIDIA Dynamic Power Software（DPS）0.9；DPS SDK 仅模拟 4 个 GB300 rack，不能管理 DPS Helm release。
 
-截至 2026-10-10，物理单节点原生 K3s 上 DPS 0.9.0 Helm release dps / namespace dps / revision 5 deployed；Core、Agent、UI、Power Config/Controller 2.1.0 及 SeaweedFS 4.18 共 9 个工作负载 Ready。独立 PostgreSQL 17.11 与 OpenLDAP 2.6.10 提供数据库及真实身份验证。DPS 持久化 prs_enabled=true，headroom -15%、调度间隔 5 秒；PRS 部署与实际 Pod 集成验收 35/35。上午 LDAP 18/18 与 CLI/UI 认证授权 28/28 作为带时间的历史结果保留。SDK BMC Simulator 提供 4 rack、72 计算节点；拓扑 dps-gb300-4rack 仍 inactive，没有资源组或 PRS domain，未执行动态功率控制。
+现有运行实例（2026-10-10 安装快照）：物理单节点原生 K3s 上 DPS 0.9.0 Helm release dps / namespace dps / revision 5 deployed；Core、Agent、UI、Power Config/Controller 2.1.0 及 SeaweedFS 4.18 共 9 个工作负载 Ready。独立 PostgreSQL 17.11 与 OpenLDAP 2.6.10 提供数据库及真实身份验证。DPS 持久化 prs_enabled=true，headroom -15%、调度间隔 5 秒；PRS 部署与实际 Pod 集成验收 35/35。上午 LDAP 18/18 与 CLI/UI 认证授权 28/28 作为带时间的历史结果保留。SDK BMC Simulator 提供 4 rack、72 计算节点；拓扑 dps-gb300-4rack 仍 inactive，没有资源组或 PRS domain，未执行动态功率控制。
 
-用户最新要求打开 PRS，替代此前保持 Power Steering/PRS 禁用的约定；已完成服务、数据库、S3 和 DPS 全局开关配置。此前要求独立 OpenLDAP 的授权继续有效。旧安装约定及历史保存在 verification/archive/ldap-auth-migration 与 prs-enablement，不作为当前禁用要求。当前入口为 dps-install/README.md、dps-install/dps-access.md 和 installstep.md。
+用户已要求打开 PRS，替代此前保持 Power Steering/PRS 禁用的约定；已完成服务、数据库、S3 和 DPS 全局开关配置。此前要求独立 OpenLDAP 的授权继续有效。旧安装约定及历史保存在 verification/archive/ldap-auth-migration 与 prs-enablement，不作为当前禁用要求。当前入口为 dps-install/README.md、dps-install/dps-access.md 和 installstep.md。
+
+## 新实例从零部署约定
+
+2026-10-12 用户要求仓库能从零生成 BMC、PostgreSQL、DPS 的完整安装输入，包括证书、密码和 Secret；新密码和身份无需与 L20-12 原实例一致。已补充 [从零部署](dps-install/from-zero.md)、公开参数/资源清单和 install-from-zero.sh；默认直接安装物理机原生 K3s，再启动独立 BMC/PG/LDAP 并通过 Helm 安装 DPS/PRS。SDK 仍只提供 BMC 模拟器。
+
+- 首次新实例使用干净仓库与新生成身份，不能重放旧 alwaysAllow→LDAP JWT 迁移，不依赖现有私密文件、原 LDAP 镜像 ID 或旧下载包。
+- 入口下载固定 chart/digest/deb，生成随机密码、独立 CA/证书、JWT、13 个 Secret 输入和真实 LDAP 用户。密码/私钥/Secret/令牌不入 Git；重复执行保留身份和数据库，参数漂移或已有非 bootstrap 身份必须停止。
+- 原 /raid/vince/deploy 实例继续按现有维护流程操作，不在它上面执行新实例初始化。复用现有原生 K3s 必须显式 --kubeconfig 并选择另一份 root、namespace/release/prefix、端口/域名/子网；不创建 k3d/kind 节点。
+- 新实例默认 4 rack / 72 节点；导入后核对服务端 72 个 AgentId，拓扑保持 inactive，PRS=true / headroom=-15 / scheduler=5 秒。不激活拓扑、不创建资源组或写 BMC 功率。
+- 2026-10-12 已在空源码副本上完成新身份/新数据的隔离全栈验收 44/44，复用本机已有原生 K3s。独立 PG 新建链 33/33、LDAP 新建链 24/24。该轮未在另一台空白 OS 上执行系统依赖与 K3s 首次安装，不能称为完整裸机重装验收；精简证据见 verification/reports/from-zero-summary.json。
+- 资源下载/身份生成/安装脚本属于 dps-install；验证与试验日志属于 verification。安装不依赖验收报告。归档中的试验身份和下载缓存不提交仓库。
 
 ## 执行位置与目录
 
