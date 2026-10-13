@@ -65,6 +65,7 @@ prepare 工具生成输入，不启动服务。首次入口不接管无归属的
 | configure-prs.py | PRS、PG TLS、内部 S3 与 Controller LDAP 配置 |
 | install-dps.sh | 显式 Helm upgrade --install；只查状态无需运行 |
 | dps-login.sh | 读取私密凭据，通过 password-stdin 登录 LDAP |
+| shared-ui-start.sh | 通过统一配置恢复/检查已经配置的共享 HTTPS 代理；核对镜像、证书、实例与 UI Service 归属，--check 只读 |
 | register-devices.sh | 登记 33kW/95% 电源类型；匹配时不写，差异时拒绝 |
 | import-topology.sh | 首次导入并核对 72 AgentId，保持 inactive |
 | update-topology.sh | 用 current hash 更新关系；匹配时不写，保持 inactive |

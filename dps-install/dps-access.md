@@ -89,6 +89,51 @@ dps-login.sh 读取 runtime/dps-install/config/dps-access.json 中的真实 LDAP
 
 将 runtime/dps-install/config/tls/ca.crt 这份**公开 CA 证书**导入客户端操作系统或浏览器的受信根证书存储；DPS CLI 已通过 DPSCTL_CA_CERT_PATH 使用同一份 CA。客户入口使用现有受信 PKI 时，按客户证书链配置。无需把服务端私钥、kubeconfig 或 CLI token 复制给浏览器。
 
+## 4.1 恢复已经配置好的共享 HTTPS 入口
+
+`shared-ui-start.sh` 是共享入口的恢复/检查工具，适用于按本仓库 Lab 参数维护的实例。前置条件是当前 runtime 已存在 `dps-install/config/access/shared-ui/compose.yaml`、`nginx.conf`、`access.json` 和原有 TLS 文件，以及对应的 Kubernetes UI Service；它不负责首次安装 DPS 或初始化共享代理。
+
+在源码根执行：
+
+~~~bash
+# 启动或恢复现有共享代理；使用本仓库 deployment.yaml。
+bash dps-install/scripts/shared-ui-start.sh
+
+# 只读检查：不创建容器、不启动或重新加载服务。
+bash dps-install/scripts/shared-ui-start.sh --check
+
+# 其他实例：指定自己的配置；runtime_root 默认从该配置解析。
+bash dps-install/scripts/shared-ui-start.sh --config /path/to/deployment.yaml
+
+# 明确覆盖运行目录时使用 --runtime-root，仍需与保存的实例归属一致。
+bash dps-install/scripts/shared-ui-start.sh \
+  --config /path/to/deployment.yaml --runtime-root /path/to/runtime --check
+~~~
+
+脚本通过 `deployment-env.sh` 加载统一配置，使用 `artifact-sources.json` 中的 `nginx-proxy` 固定 digest，核对本地镜像、现有 Compose project/container 归属、CA 身份、TLS 主机校验及 UI Service UID/ClusterIP。主机、release、运行目录或 Service 身份与保存配置不一致时停止，不隐式接管实例、改代理目标或重新生成证书/密码。源码与运行目录同根时只读取已有输入，不覆盖公开模板或资源清单。
+
+默认启动使用现有 Compose 的 `ui-access` 服务；Nginx 以 HTTPS 代理原 UI Service，保留原 Host/Origin 与 LDAP 认证。重复执行不会强制重启；Compose 配置或镜像发生变化时可能重建该代理容器。不会重启 Kubernetes UI Pod。`--help` 无需读取配置或连接 Docker/Kubernetes。
+
+访问地址读取 runtime 的 `access.json`。当前 L20-12 已配置的共享入口是 `https://10.6.131.43:8443`，客户端无需 SSH 转发，须能连接公司内网/VPN 并信任原有公开 Lab CA；继续使用原 LDAP 账号。
+
+对应原生命令如下，使用已经加载的 Bash 环境和已经生成的共享配置：
+
+~~~bash
+DPS_UI_ACCESS_DIR="$DPS_RUNTIME_ROOT/dps-install/config/access/shared-ui"
+DPS_UI_ACCESS_PROJECT="${DPS_RELEASE}-ui-access"
+
+docker compose -p "$DPS_UI_ACCESS_PROJECT" \
+  -f "$DPS_UI_ACCESS_DIR/compose.yaml" config --quiet
+
+docker compose -p "$DPS_UI_ACCESS_PROJECT" \
+  -f "$DPS_UI_ACCESS_DIR/compose.yaml" up -d ui-access
+
+docker compose -p "$DPS_UI_ACCESS_PROJECT" \
+  -f "$DPS_UI_ACCESS_DIR/compose.yaml" ps
+~~~
+
+共享配置、元数据、证书和私钥均保存在 runtime，不提交 Git。源码仓库只交付恢复脚本与说明。若没有这些共享代理配置，请先完成入口配置；不要从其他实例复制身份文件绕过检查。重启后 Docker 应已运行、Kubernetes UI 应已就绪；代理已有 `unless-stopped` 策略，恢复脚本提供人工恢复入口，没有新增系统启动单元。
+
 ## 5. 安装后的文件在哪里
 
 本 Lab 的访问材料位于 DPS_RUNTIME_ROOT/dps-install/config。当前 L20-12 的 DPS_RUNTIME_ROOT 是 /raid/vince/deployed-test，因此对应目录为 /raid/vince/deployed-test/dps-install/config。

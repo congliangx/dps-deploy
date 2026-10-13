@@ -205,6 +205,117 @@ def main():
             assert all((source / relative).read_bytes() == value for relative, value in before.items())
         case("same-root staging preserves checked-in source inputs", same_root)
 
+        # Shared UI recovery must remain tied to the selected deployment and saved inputs.
+        shared_body = re.search(r"<<'PREFLIGHT'\n(.*?)\nPREFLIGHT", ctx.source_path(
+            "dps-install/scripts/shared-ui-start.sh").read_text(), re.S).group(1)
+
+        def shared_ui_preflight(mode):
+            import hashlib
+            selected = root / ("shared-ui-" + mode)
+            selected.mkdir()
+            same = mode == "same-root"
+            selected_source = selected if same else ctx.source_root
+            selected_runtime = selected if same else selected / "runtime"
+            selected_runtime.mkdir(exist_ok=True)
+            artifact_relative = "dps-install/config/artifact-sources.json"
+            if same:
+                target = selected_source / artifact_relative
+                target.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(ctx.source_path(artifact_relative), target)
+            artifact = selected_source / artifact_relative
+            before_artifact = artifact.read_bytes()
+            access = selected_runtime / "dps-install/config/access/shared-ui"
+            tls = selected_runtime / "dps-install/config/tls"
+            access.mkdir(parents=True); tls.mkdir(parents=True, exist_ok=True)
+            for name in ("ingress.crt", "ingress.key", "ca.crt"):
+                (tls / name).write_bytes(b"offline public test fixture")
+            pin = next(row["image_digest"] for row in pins if row["name"] == "nginx-proxy")
+            image_id = "offline-shared-ui-image"
+            selected_host = "192.0.2.23"
+            project = "offline-lab-dps-ui-access"
+            service_uid = "offline-ui-service"
+            upstream = "http://192.0.2.90:80"
+            metadata = {"compose_project": project, "container": project, "image_digest": pin,
+                        "image_id": image_id, "public_ca_sha256": hashlib.sha256(
+                            (tls / "ca.crt").read_bytes()).hexdigest(),
+                        "url": "https://" + selected_host + ":9443", "upstream": upstream}
+            labels = {"com.nvidia.dps.runtime-root": str(selected_runtime),
+                      "com.nvidia.dps.source-service-uid": service_uid}
+            volumes = [str(access / "nginx.conf") + ":/etc/nginx/nginx.conf:ro"]
+            volumes += [str(tls / name) + ":/etc/dps-ui-tls/" + name + ":ro"
+                        for name in ("ingress.crt", "ingress.key", "ca.crt")]
+            if mode == "relative-mounts":
+                volumes = ["nginx.conf:/etc/nginx/nginx.conf:ro"] + [
+                    "../../tls/" + name + ":/etc/dps-ui-tls/" + name + ":ro"
+                    for name in ("ingress.crt", "ingress.key", "ca.crt")]
+            if mode == "saved-image-conflict":
+                metadata["image_digest"] = "nginx@sha256:" + "0" * 64
+            if mode == "wrong-release":
+                metadata["compose_project"] = metadata["container"] = "another-release-ui-access"
+            if mode == "wrong-host":
+                metadata["url"] = "https://192.0.2.24:9443"
+            (access / "access.json").write_text(json.dumps(metadata))
+            (access / "compose.yaml").write_text(yaml.safe_dump({"services": {"ui-access": {
+                "image": metadata["image_digest"], "container_name": metadata["container"],
+                "network_mode": "host", "labels": labels, "volumes": volumes}}}))
+            (access / "nginx.conf").write_text("listen 192.0.2.23:9443 ssl;\nproxy_pass " + upstream + ";\n")
+            if mode == "changed-ca":
+                (tls / "ca.crt").write_bytes(b"changed offline CA")
+            original_inputs = {p: p.read_bytes() for p in [*access.iterdir(), *tls.iterdir()]}
+            shared_calls = []
+
+            def read_command(argv, **kwargs):
+                argv = list(argv); shared_calls.append(argv)
+                if argv[:3] == ["docker", "image", "inspect"]:
+                    return json.dumps([{"Id": image_id, "RepoDigests": [] if mode == "cached-digest-conflict" else [pin]}])
+                assert argv[0] == "kubectl" and "get" in argv and "service" in argv
+                assert argv[argv.index("--context") + 1] == "offline-context"
+                assert argv[argv.index("-n") + 1] == "offline-namespace"
+                assert argv[argv.index("service") + 1] == "offline-lab-dps-ui"
+                return json.dumps({"metadata": {"uid": "changed-service" if mode == "stale-service-uid" else service_uid},
+                    "spec": {"clusterIP": "192.0.2.91" if mode == "stale-service-ip" else "192.0.2.90",
+                             "ports": [{"port": 80}]}})
+
+            def inspect_command(argv, **kwargs):
+                argv = list(argv); shared_calls.append(argv)
+                assert argv == ["docker", "inspect", project]
+                owned = {"com.docker.compose.project": "foreign-project" if mode == "foreign-container" else project,
+                         "com.nvidia.dps.purpose": "shared-ui-access",
+                         "com.nvidia.dps.runtime-root": str(selected_runtime)}
+                return subprocess.CompletedProcess(argv, 0, stdout=json.dumps([{"Config": {"Labels": owned}}]), stderr="")
+
+            public_environment = {"DPS_SOURCE_ROOT": str(selected_source), "DPS_RUNTIME_ROOT": str(selected_runtime),
+                "DPS_RELEASE": "offline-lab-dps", "DPS_HOST_IP": selected_host, "DPS_FULLNAME": "offline-lab-dps",
+                "DPS_NAMESPACE": "offline-namespace", "DPS_KUBE_CONTEXT": "offline-context",
+                "KUBECONFIG": str(selected_runtime / "dps-install/config/kubernetes/kubeconfig.yaml")}
+            captured = io.StringIO(); failure = None
+            with mock.patch.dict(os.environ, public_environment), mock.patch.object(sys, "argv", ["preflight", str(access)]), \
+                    mock.patch("subprocess.check_output", side_effect=read_command), \
+                    mock.patch("subprocess.run", side_effect=inspect_command), contextlib.redirect_stdout(captured):
+                try: exec(compile(shared_body, "shared UI preflight fixture", "exec"), {})
+                except SystemExit as error: failure = str(error.code)
+            errors = {"saved-image-conflict": "canonical", "cached-digest-conflict": "RepoDigest",
+                      "wrong-release": "different release", "wrong-host": "host differs",
+                      "changed-ca": "Public CA", "stale-service-uid": "identity changed",
+                      "stale-service-ip": "ClusterIP changed", "foreign-container": "another Compose project"}
+            if mode in errors:
+                assert failure and errors[mode] in failure, (mode, failure)
+            else:
+                assert failure is None, failure
+                parameters = captured.getvalue().splitlines()
+                assert len(parameters) == 7 and parameters[:3] == [project, project, metadata["url"]]
+                assert parameters[3] == str(tls / "ca.crt") and parameters[6] == selected_host
+            assert all(path.read_bytes() == value for path, value in original_inputs.items())
+            assert artifact.read_bytes() == before_artifact
+            assert all(argv[0] == "kubectl" or argv[:2] == ["docker", "inspect"] or argv[:3] == ["docker", "image", "inspect"]
+                       for argv in shared_calls)
+
+        for mode in ("different-instance", "same-root", "relative-mounts", "saved-image-conflict",
+                     "cached-digest-conflict", "wrong-release", "wrong-host", "changed-ca",
+                     "stale-service-uid", "stale-service-ip", "foreign-container"):
+            case("shared UI preflight " + mode + " preserves input files and avoids mutations",
+                 lambda m=mode: shared_ui_preflight(m))
+
         body = re.search(r"<<'PYTHON'\n(.*?)\nPYTHON", ctx.source_path(
             "dps-install/scripts/prepare-namespace.sh").read_text(), re.S).group(1)
         config = fixture.runtime_path("dps-install/config")
